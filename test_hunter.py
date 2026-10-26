@@ -202,13 +202,31 @@ def test_notifier_email(monkeypatch):
     import notifier
     monkeypatch.setattr(notifier.config, "NOTIFIER", "email")
     monkeypatch.setenv("EMAIL", "test@gmail.com")
-    monkeypatch.setenv("APP_PASSWORD", "abcd-efgh-ijkl-mnop")
+    monkeypatch.setenv("APP_PASSWORD", "abcd efgh ijkl mnop")  # Test with spaces
 
     with patch("smtplib.SMTP_SSL") as mock_smtp:
         mock_server = MagicMock()
         mock_smtp.return_value.__enter__.return_value = mock_server
         notifier.send("Test email message")
         mock_smtp.assert_called_once_with("smtp.gmail.com", 465, timeout=15)
-        mock_server.login.assert_called_once_with("test@gmail.com", "abcd-efgh-ijkl-mnop")
+        # Spaces in the App Password should be stripped automatically
+        mock_server.login.assert_called_once_with("test@gmail.com", "abcdefghijklmnop")
         mock_server.send_message.assert_called_once()
+
+
+def test_load_dotenv(tmp_path, monkeypatch):
+    """Test loading environment variables from a custom .env file."""
+    import notifier
+    env_file = tmp_path / ".env"
+    env_file.write_text("TEST_KEY=secret_val_123\n# comment line\nANOTHER_KEY='quoted_value'\n")
+
+    monkeypatch.delenv("TEST_KEY", raising=False)
+    monkeypatch.delenv("ANOTHER_KEY", raising=False)
+
+    notifier.load_dotenv(str(env_file))
+
+    import os
+    assert os.environ.get("TEST_KEY") == "secret_val_123"
+    assert os.environ.get("ANOTHER_KEY") == "quoted_value"
+
 
