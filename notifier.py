@@ -49,8 +49,62 @@ def load_dotenv(filepath: str = None) -> None:
 load_dotenv()
 
 
-def _send_email(text: str) -> None:
-    """Send digest email to self via Gmail SMTP over SSL."""
+def get_sender_email() -> str:
+    """Return the configured sender email address."""
+    load_dotenv()
+    return (os.environ.get("EMAIL") or getattr(config, "EMAIL", "") or "").strip()
+
+
+def validate_credentials() -> tuple:
+    """
+    Validate that required credentials for the active notifier are present.
+    Returns (is_valid: bool, error_message: str).
+    """
+    load_dotenv()
+    method = (getattr(config, "NOTIFIER", "") or "").strip().lower()
+
+    if method == "email":
+        email_addr = (os.environ.get("EMAIL") or getattr(config, "EMAIL", "") or "").strip()
+        app_password = (os.environ.get("APP_PASSWORD") or getattr(config, "APP_PASSWORD", "") or "").strip()
+        if not email_addr or not app_password:
+            missing = []
+            if not email_addr:
+                missing.append("EMAIL")
+            if not app_password:
+                missing.append("APP_PASSWORD")
+            return (
+                False,
+                f"Missing required secret(s) for email notifier: {', '.join(missing)}. "
+                "Please set them in GitHub Repository Secrets or in a local .env file.",
+            )
+        return (True, "")
+
+    elif method == "ntfy":
+        topic = (os.environ.get("NTFY_TOPIC") or getattr(config, "NTFY_TOPIC", "") or "").strip()
+        if not topic:
+            return (
+                False,
+                "Missing NTFY_TOPIC for ntfy notifier. Set it in GitHub Secrets or .env file.",
+            )
+        return (True, "")
+
+    elif method == "discord":
+        url = (os.environ.get("WEBHOOK_URL") or getattr(config, "WEBHOOK_URL", "") or "").strip()
+        if not url:
+            return (
+                False,
+                "Missing WEBHOOK_URL for discord notifier. Set it in GitHub Secrets or .env file.",
+            )
+        return (True, "")
+
+    return (
+        False,
+        f"Unsupported NOTIFIER '{config.NOTIFIER}'. Supported options: 'email', 'ntfy', 'discord'.",
+    )
+
+
+def _send_email(text: str, to_email: str = None, subject: str = None) -> None:
+    """Send digest email to a recipient via Gmail SMTP over SSL."""
     load_dotenv()
     email_addr = (os.environ.get("EMAIL") or getattr(config, "EMAIL", "") or "").strip()
     app_password = (os.environ.get("APP_PASSWORD") or getattr(config, "APP_PASSWORD", "") or "").strip()
@@ -60,19 +114,30 @@ def _send_email(text: str) -> None:
             "Missing EMAIL or APP_PASSWORD in environment variables, .env file, or config.py."
         )
 
+    target_email = (to_email or email_addr).strip()
+
     # Google App Passwords are 16 letters, often copied with spaces (e.g. 'xxxx xxxx xxxx xxxx')
     clean_password = app_password.replace(" ", "")
 
     msg = EmailMessage()
-    msg["Subject"] = "Daily Digest: Free Courses & Remote Jobs"
+    msg["Subject"] = subject or "Daily Digest: Free Courses & Remote Jobs"
     msg["From"] = email_addr
-    msg["To"] = email_addr
+    msg["To"] = target_email
     msg.set_content(text)
 
-    # Gmail SMTP over SSL on port 465
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=15) as server:
-        server.login(email_addr, clean_password)
-        server.send_message(msg)
+    try:
+        # Gmail SMTP over SSL on port 465
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=15) as server:
+            server.login(email_addr, clean_password)
+            server.send_message(msg)
+    except smtplib.SMTPAuthenticationError as e:
+        raise RuntimeError(
+            f"Gmail SMTP authentication failed for '{email_addr}'. "
+            "Please verify that: 1) 2-Step Verification is ON in your Google Account, "
+            "and 2) APP_PASSWORD is an active 16-character App Password generated at "
+            "https://myaccount.google.com/apppasswords. "
+            f"Server details: {e}"
+        ) from e
 
 
 def _send_ntfy(text: str) -> None:
@@ -112,14 +177,15 @@ def _send_discord(text: str) -> None:
     response.raise_for_status()
 
 
-def send(text: str) -> None:
+def send(text: str, to_email: str = None, subject: str = None) -> None:
     """
     Route the notification to the provider configured in config.NOTIFIER.
+    For email, sends to `to_email` (defaulting to self if omitted).
     """
     method = (config.NOTIFIER or "").strip().lower()
 
     if method == "email":
-        _send_email(text)
+        _send_email(text, to_email=to_email, subject=subject)
     elif method == "ntfy":
         _send_ntfy(text)
     elif method == "discord":

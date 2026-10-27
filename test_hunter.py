@@ -230,3 +230,113 @@ def test_load_dotenv(tmp_path, monkeypatch):
     assert os.environ.get("ANOTHER_KEY") == "quoted_value"
 
 
+def test_per_person_keyword_filtering():
+    """Test that Person A and Person B each receive only the items matching their own keywords."""
+    courses = [
+        {"type": "course", "title": "Complete Python 2026 Bootcamp", "link": "https://example.com/python", "feed_url": "feed1"},
+        {"type": "course", "title": "Advanced Excel Automation", "link": "https://example.com/excel", "feed_url": "feed1"},
+    ]
+
+    alice_keywords = ["python"]
+    bob_keywords = ["excel"]
+
+    alice_matches = [c for c in courses if matches_keywords(c["title"], alice_keywords)]
+    bob_matches = [c for c in courses if matches_keywords(c["title"], bob_keywords)]
+
+    assert len(alice_matches) == 1
+    assert alice_matches[0]["link"] == "https://example.com/python"
+
+    assert len(bob_matches) == 1
+    assert bob_matches[0]["link"] == "https://example.com/excel"
+
+
+def test_per_person_dont_repeat_logic():
+    """Test that links seen by Person A do not block Person B from receiving them."""
+    seen_dict = {
+        "alice@example.com": {"https://example.com/shared-python-course"},
+        "bob@example.com": set(),
+    }
+
+    course = {
+        "type": "course",
+        "title": "Mastering Python",
+        "link": "https://example.com/shared-python-course",
+        "feed_url": "feed1",
+    }
+
+    # Alice has already seen it
+    alice_seen = seen_dict["alice@example.com"]
+    alice_gets = [course] if course["link"] not in alice_seen else []
+    assert len(alice_gets) == 0
+
+    # Bob has NOT seen it
+    bob_seen = seen_dict["bob@example.com"]
+    bob_gets = [course] if course["link"] not in bob_seen else []
+    assert len(bob_gets) == 1
+    assert bob_gets[0]["link"] == "https://example.com/shared-python-course"
+
+
+def test_skip_inactive_person(monkeypatch):
+    """Test that a recipient with active: false is skipped completely."""
+    from main import load_recipients
+    dummy_recipients = [
+        {"name": "Alice", "email": "alice@example.com", "active": True, "keywords": ["python"]},
+        {"name": "Inactive Charlie", "email": "charlie@example.com", "active": False, "keywords": ["python"]},
+    ]
+
+    monkeypatch.setenv("RECIPIENTS_JSON", __import__("json").dumps(dummy_recipients))
+
+    recipients = load_recipients()
+    active_recipients = [r for r in recipients if r.get("active", True)]
+
+    assert len(active_recipients) == 1
+    assert active_recipients[0]["name"] == "Alice"
+    assert not any(r["name"] == "Inactive Charlie" for r in active_recipients)
+
+
+def test_missing_secret_exits_with_error(monkeypatch):
+    """Test that main.py exits cleanly with status 1 when a secret is missing."""
+    import pytest
+    from main import run
+    import notifier
+
+    # Ensure local .env file doesn't override test environment
+    monkeypatch.setattr(notifier, "load_dotenv", lambda *args, **kwargs: None)
+    monkeypatch.setattr(notifier.config, "NOTIFIER", "email")
+    monkeypatch.delenv("EMAIL", raising=False)
+    monkeypatch.delenv("APP_PASSWORD", raising=False)
+    monkeypatch.setattr(notifier.config, "EMAIL", "", raising=False)
+    monkeypatch.setattr(notifier.config, "APP_PASSWORD", "", raising=False)
+
+    # Running with dry_run=False should trigger upfront validation and exit with code 1
+    with pytest.raises(SystemExit) as exc_info:
+        run(dry_run=False)
+
+    assert exc_info.value.code == 1
+
+
+def test_recipients_json_from_secret(monkeypatch):
+    """Test loading recipients from RECIPIENTS_JSON environment variable."""
+    import json
+    from main import load_recipients
+
+    secret_data = [
+        {
+            "name": "Secret Friend",
+            "email": "secret@example.com",
+            "active": True,
+            "keywords": ["ai", "python"],
+            "job_searches": ["python"],
+            "max_items": 10,
+        }
+    ]
+    monkeypatch.setenv("RECIPIENTS_JSON", json.dumps(secret_data))
+
+    loaded = load_recipients()
+    assert len(loaded) == 1
+    assert loaded[0]["name"] == "Secret Friend"
+    assert loaded[0]["email"] == "secret@example.com"
+    assert loaded[0]["max_items"] == 10
+
+
+

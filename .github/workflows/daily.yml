@@ -2,9 +2,11 @@ name: Daily Course & Job Hunter
 
 on:
   schedule:
-    # Runs every day at 02:30 UTC (8:00 AM India Standard Time / IST)
-    - cron: '30 2 * * *'
-  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+    # Runs daily at 01:45 UTC (7:15 AM India Standard Time / IST).
+    # GitHub Actions scheduled triggers often experience 15 to 40 minutes of queue latency,
+    # so scheduling at 01:45 UTC ensures the digest reliably arrives around 8:00 AM IST.
+    - cron: '45 1 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab anytime
 
 permissions:
   contents: write
@@ -34,6 +36,7 @@ jobs:
           APP_PASSWORD: ${{ secrets.APP_PASSWORD }}
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          RECIPIENTS_JSON: ${{ secrets.RECIPIENTS_JSON }}
         run: |
           python main.py
 
@@ -46,5 +49,6 @@ jobs:
             echo "No changes in seen.json to commit."
           else
             git commit -m "chore: update seen.json [skip ci]"
+            git pull --rebase
             git push
           fi
