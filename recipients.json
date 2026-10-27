@@ -23,6 +23,22 @@
     ],
     "course_feeds": [],
     "max_items": 15
+  },
+  {
+    "name": "Saurabh",
+    "email": "schamyal@vincular.in",
+    "active": true,
+    "keywords": [
+      "project management",
+      "free",
+      "compliance",
+      "regulatory",
+      "ai"
+    ],
+    "job_searches": [
+      "project management"
+    ],
+    "course_feeds": [],
+    "max_items": 10
   }
 ]
-
