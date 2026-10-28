@@ -4,9 +4,19 @@ Configuration settings for course-job-hunter.
 Customize your sources, keywords, limits, and notification channel here.
 """
 
-# RSS feeds for free courses (add any standard RSS/Atom URL)
+# RSS feeds for free courses and certifications
+# Includes Reddit plus dedicated free course platforms and learning hubs
 COURSE_FEEDS = [
+    # Reddit Udemy Freebies
     "https://www.reddit.com/r/udemyfreebies/.rss",
+    # TutorialBar (Daily 100% OFF coupons for Udemy, tech, business & management)
+    "https://tutorialbar.com/feed/",
+    # Discudemy (Curated 100% free courses across programming, AI, IT, Excel, etc.)
+    "https://www.discudemy.com/feed",
+    # freeCodeCamp (Top-tier free programming, Python, AI, security & DevOps tutorials)
+    "https://www.freecodecamp.org/news/rss/",
+    # AnswersQ (Free certificates, Coursera/Google courses & tech roadmaps)
+    "https://answersq.com/feed/",
 ]
 
 # Remote job search terms for Remotive API (https://remotive.com/api/remote-jobs)

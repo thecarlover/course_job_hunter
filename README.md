@@ -9,10 +9,11 @@ It supports **multiple recipients**—each person gets their own private email w
 ## What It Does
 
 1. **Multi-Person Support**: Send personalized digests to you and your friends. Each person gets their own email starting with `"Hi <name>,"`. No shared To/CC headers!
-2. **Efficient Fetching**: Checks each RSS feed and job API **only once** per run, then filters results individually for each person using their chosen keywords.
-3. **Independent History**: Tracks seen links per person in `seen.json` so one person's digest never affects another's.
-4. **Quiet When Empty**: If a person has no new items for the day, the bot skips them silently without sending empty emails.
-5. **Resilient**: If an RSS feed fails or sending to one person encounters an issue, the bot logs the error and continues with the others without crashing.
+2. **Multi-Source Course Feeds**: Aggregates 100+ free courses daily from 5 major platforms (TutorialBar, Discudemy, freeCodeCamp, AnswersQ, and Reddit) so you get high-quality 100% free coupons, tutorials, and certifications every morning.
+3. **Efficient Single-Pass Fetching**: Checks each RSS feed and job API **only once** per run, then filters results individually for each person using their chosen keywords.
+4. **Independent History**: Tracks seen links per person in `seen.json` so one person's digest never affects another's.
+5. **Quiet When Empty**: If a person has no new items for the day, the bot skips them silently without sending empty emails.
+6. **Resilient**: If an RSS feed fails or sending to one person encounters an issue, the bot logs the error and continues with the others without crashing.
 
 ---
 

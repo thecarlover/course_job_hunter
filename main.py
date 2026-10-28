@@ -205,7 +205,13 @@ def fetch_raw_courses(feeds: List[str]) -> List[Dict[str, str]]:
     Tagged with origin feed_url.
     """
     raw_courses = []
-    headers = {"User-Agent": "CourseJobHunter/1.0 (Daily digest bot)"}
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 "
+            "CourseJobHunter/2.0"
+        )
+    }
 
     for feed_url in feeds:
         url = feed_url.strip()
@@ -243,7 +249,13 @@ def fetch_raw_jobs(search_terms: List[str]) -> List[Dict[str, str]]:
     Tagged with origin search_term.
     """
     raw_jobs = []
-    headers = {"User-Agent": "CourseJobHunter/1.0 (Daily digest bot)"}
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 "
+            "CourseJobHunter/2.0"
+        )
+    }
 
     for term in search_terms:
         clean_term = term.strip()
