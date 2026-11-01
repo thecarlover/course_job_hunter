@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Course & Job Hunter — Admin Control Center</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans antialiased">
+
+  <!-- Top Navigation Header -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white font-bold text-lg">
+          🎓💼
+        </div>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
+            Course & Job Hunter
+            <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">Admin Portal</span>
+          </h1>
+          <p class="text-xs text-slate-400">Testing, Subscriber Management & Database Control</p>
+        </div>
+      </div>
+
+      <!-- Cloud DB & System Badges -->
+      <div class="flex items-center gap-3">
+        <div id="dbBadge" class="hidden sm:flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="text-slate-300">Supabase Connected</span>
+        </div>
+        <button onclick="triggerQuickDryRun()" class="text-xs px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium shadow-md transition flex items-center gap-1.5">
+          <i class="fa-solid fa-play"></i> Quick Dry-Run
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-2 border-t border-slate-800/60 overflow-x-auto">
+      <button onclick="switchTab('subscribers')" id="tab-subscribers" class="tab-btn px-4 py-2.5 text-sm font-medium border-b-2 border-emerald-500 text-emerald-400 flex items-center gap-2 whitespace-nowrap">
+        <i class="fa-solid fa-users"></i> Subscribers (<span id="subscriberCount">0</span>)
+      </button>
+      <button onclick="switchTab('test-runner')" id="tab-test-runner" class="tab-btn px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
+        <i class="fa-solid fa-flask"></i> Test Runner & Simulator
+      </button>
+      <button onclick="switchTab('database')" id="tab-database" class="tab-btn px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
+        <i class="fa-solid fa-database"></i> Supabase Explorer (<span id="dbRowCount">0</span>)
+      </button>
+      <button onclick="switchTab('sources')" id="tab-sources" class="tab-btn px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
+        <i class="fa-solid fa-satellite-dish"></i> Sources Health
+      </button>
+      <button onclick="switchTab('insights')" id="tab-insights" class="tab-btn px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
+        <i class="fa-solid fa-chart-line"></i> Weekly Insights
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+
+    <!-- ===================================================================== -->
+    <!-- TAB 1: SUBSCRIBERS -->
+    <!-- ===================================================================== -->
+    <section id="content-subscribers" class="space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900 p-4 rounded-xl border border-slate-800">
+        <div>
+          <h2 class="text-base font-semibold text-white">Active Recipients & Friends</h2>
+          <p class="text-xs text-slate-400">Manage who receives the daily digest and their tailored preferences.</p>
+        </div>
+        <button onclick="openAddSubscriberModal()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold shadow transition flex items-center gap-2">
+          <i class="fa-solid fa-user-plus"></i> Add Subscriber
+        </button>
+      </div>
+
+      <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/60 shadow-xl">
+        <table class="w-full text-left text-sm text-slate-300">
+          <thead class="bg-slate-800/80 text-xs uppercase tracking-wider text-slate-400 border-b border-slate-800">
+            <tr>
+              <th class="px-4 py-3">Subscriber</th>
+              <th class="px-4 py-3">Status</th>
+              <th class="px-4 py-3">Keywords</th>
+              <th class="px-4 py-3">Job Searches</th>
+              <th class="px-4 py-3 text-center">Max Items</th>
+              <th class="px-4 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="subscribersTableBody" class="divide-y divide-slate-800/60">
+            <!-- Dynamic rows -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 2: TEST RUNNER & SIMULATOR -->
+    <!-- ===================================================================== -->
+    <section id="content-test-runner" class="hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Controls Column -->
+        <div class="space-y-4">
+          <div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-xl space-y-4">
+            <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+              <i class="fa-solid fa-sliders text-emerald-400"></i> Execution Controls
+            </h3>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-400 mb-1">Target Subscriber</label>
+              <select id="testTargetUser" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-emerald-500">
+                <option value="ALL">All Active Subscribers</option>
+              </select>
+            </div>
+
+            <div class="space-y-2 pt-2 border-t border-slate-800">
+              <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-300">
+                <input type="checkbox" id="testDryRun" checked class="rounded border-slate-700 bg-slate-800 text-emerald-500 focus:ring-0">
+                <span><strong>Dry Run Mode</strong> (Preview only; do not send real email)</span>
+              </label>
+
+              <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-300">
+                <input type="checkbox" id="testWeeklyFlag" class="rounded border-slate-700 bg-slate-800 text-emerald-500 focus:ring-0">
+                <span>Force include Weekly Market Insights report</span>
+              </label>
+            </div>
+
+            <button onclick="executeTestRun()" id="btnRunTest" class="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold rounded-lg text-sm shadow-lg shadow-emerald-900/30 transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-rocket"></i> Run Digest Engine
+            </button>
+          </div>
+
+          <!-- Quick Test Tips -->
+          <div class="bg-slate-900/70 p-4 rounded-xl border border-slate-800 text-xs text-slate-400 space-y-2">
+            <div class="font-semibold text-slate-200 flex items-center gap-1.5">
+              <i class="fa-solid fa-lightbulb text-amber-400"></i> Testing Tips:
+            </div>
+            <p>• In <strong>Dry Run</strong> mode, no emails are sent and `seen_items` is not modified.</p>
+            <p>• If you want to re-test receiving the same jobs, go to the <strong>Supabase</strong> tab and click <em>"Clear Seen Links"</em>.</p>
+          </div>
+        </div>
+
+        <!-- Output & Preview Column -->
+        <div class="lg:col-span-2 space-y-4">
+          <!-- Live Terminal Output -->
+          <div class="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden shadow-xl">
+            <div class="bg-slate-800/80 px-4 py-2 border-b border-slate-800 flex items-center justify-between">
+              <span class="text-xs font-mono text-slate-300 flex items-center gap-2">
+                <i class="fa-solid fa-terminal text-emerald-400"></i> Engine Console Output
+              </span>
+              <button onclick="clearConsole()" class="text-[10px] text-slate-400 hover:text-slate-200">Clear</button>
+            </div>
+            <pre id="consoleOutput" class="p-4 text-xs font-mono text-slate-300 bg-slate-950/90 h-64 overflow-y-auto whitespace-pre-wrap leading-relaxed">Ready. Select options on the left and click 'Run Digest Engine'.</pre>
+          </div>
+
+          <!-- Email Digest Preview Container -->
+          <div class="bg-slate-900 rounded-xl border border-slate-800 p-4 shadow-xl space-y-3">
+            <h4 class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+              <i class="fa-solid fa-envelope-open-text text-indigo-400"></i> Formatted Digest Previews
+            </h4>
+            <div id="emailPreviewContainer" class="space-y-4">
+              <div class="text-center py-6 text-slate-500 text-xs italic">
+                Digest preview will render here after running a test.
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 3: SUPABASE EXPLORER -->
+    <!-- ===================================================================== -->
+    <section id="content-database" class="hidden space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-900 p-4 rounded-xl border border-slate-800">
+        <div>
+          <h2 class="text-base font-semibold text-white flex items-center gap-2">
+            <i class="fa-solid fa-cloud text-emerald-400"></i> Supabase Cloud Database Explorer
+          </h2>
+          <p class="text-xs text-slate-400">View and reset seen opportunities tracked in your PostgreSQL cloud database.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="loadSupabaseRows()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-medium border border-slate-700 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-rotate"></i> Refresh
+          </button>
+          <button onclick="clearSeenPrompt()" class="px-3 py-1.5 bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 rounded-lg text-xs font-semibold transition flex items-center gap-1.5">
+            <i class="fa-solid fa-trash-can"></i> Reset Seen for User
+          </button>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="flex flex-col sm:flex-row gap-3">
+        <input type="text" id="dbSearchInput" oninput="filterSupabaseTable()" placeholder="Search by title, company, or link..." class="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500">
+        <select id="dbFilterUser" onchange="filterSupabaseTable()" class="bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500">
+          <option value="ALL">All Subscribers</option>
+        </select>
+      </div>
+
+      <!-- Live Table -->
+      <div class="overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/60 shadow-xl max-h-[500px]">
+        <table class="w-full text-left text-xs text-slate-300">
+          <thead class="bg-slate-800/80 uppercase tracking-wider text-[11px] text-slate-400 sticky top-0 z-10 border-b border-slate-800">
+            <tr>
+              <th class="px-4 py-3">ID</th>
+              <th class="px-4 py-3">Subscriber</th>
+              <th class="px-4 py-3">Type</th>
+              <th class="px-4 py-3">Title & Company</th>
+              <th class="px-4 py-3">Badges</th>
+              <th class="px-4 py-3">Seen Date</th>
+            </tr>
+          </thead>
+          <tbody id="supabaseTableBody" class="divide-y divide-slate-800/60 font-mono">
+            <!-- Dynamic rows -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 4: SOURCES HEALTH -->
+    <!-- ===================================================================== -->
+    <section id="content-sources" class="hidden space-y-4">
+      <div class="flex items-center justify-between bg-slate-900 p-4 rounded-xl border border-slate-800">
+        <div>
+          <h2 class="text-base font-semibold text-white">Source Health & Live Harvester</h2>
+          <p class="text-xs text-slate-400">Live inspection of all 5 course feeds and 3 free remote job boards.</p>
+        </div>
+        <button onclick="testSourcesHealth()" id="btnTestSources" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition flex items-center gap-2">
+          <i class="fa-solid fa-satellite-dish"></i> Ping All Sources
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="sourcesContainer">
+        <!-- Dynamic Source Cards -->
+        <div class="text-xs text-slate-400 p-6 text-center col-span-2">Click "Ping All Sources" to check real-time availability and count.</div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- TAB 5: WEEKLY INSIGHTS -->
+    <!-- ===================================================================== -->
+    <section id="content-insights" class="hidden space-y-4">
+      <div class="flex items-center justify-between bg-slate-900 p-4 rounded-xl border border-slate-800">
+        <div>
+          <h2 class="text-base font-semibold text-white">Weekly Market & Tech Insights Preview</h2>
+          <p class="text-xs text-slate-400">Aggregates trends, top skills, and top hiring companies across the past 7 days.</p>
+        </div>
+        <button onclick="loadWeeklyInsights()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold transition flex items-center gap-2">
+          <i class="fa-solid fa-arrows-rotate"></i> Refresh Report
+        </button>
+      </div>
+
+      <div class="bg-slate-900 p-6 rounded-xl border border-slate-800 shadow-xl">
+        <pre id="weeklyInsightsPre" class="text-xs font-mono text-emerald-400 whitespace-pre-wrap leading-relaxed">Loading weekly insights...</pre>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Add/Edit Subscriber Modal -->
+  <div id="subscriberModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 id="modalTitle" class="text-sm font-semibold text-white">Add New Subscriber</h3>
+        <button onclick="closeSubscriberModal()" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form id="subscriberForm" onsubmit="saveSubscriber(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Name</label>
+          <input type="text" id="subName" required placeholder="e.g. Alex" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Email Address</label>
+          <input type="email" id="subEmail" required placeholder="e.g. alex@example.com" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Keywords (Comma separated)</label>
+          <input type="text" id="subKeywords" required placeholder="python, automation, excel, ai" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Job Searches (Comma separated)</label>
+          <input type="text" id="subSearches" placeholder="python, automation" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-400 mb-1">Max Items</label>
+            <input type="number" id="subMaxItems" value="15" min="1" max="50" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-400 mb-1">Status</label>
+            <select id="subActive" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+              <option value="true">Active 🟢</option>
+              <option value="false">Paused ⏸️</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pt-3 flex gap-2">
+          <button type="button" onclick="closeSubscriberModal()" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-medium transition">Cancel</button>
+          <button type="submit" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold shadow transition">Save Subscriber</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- JavaScript Application Logic -->
+  <script>
+    let currentSubscribers = [];
+    let currentDbRows = [];
+
+    // Switch active tab
+    function switchTab(tabId) {
+      document.querySelectorAll('section[id^="content-"]').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('border-emerald-500', 'text-emerald-400');
+        btn.classList.add('border-transparent', 'text-slate-400');
+      });
+
+      document.getElementById(`content-${tabId}`).classList.remove('hidden');
+      const activeBtn = document.getElementById(`tab-${tabId}`);
+      activeBtn.classList.remove('border-transparent', 'text-slate-400');
+      activeBtn.classList.add('border-emerald-500', 'text-emerald-400');
+
+      if (tabId === 'database') loadSupabaseRows();
+      if (tabId === 'insights') loadWeeklyInsights();
+    }
+
+    // Load subscribers list
+    async function loadSubscribers() {
+      try {
+        const res = await fetch('/api/subscribers');
+        const data = await res.json();
+        currentSubscribers = data;
+        document.getElementById('subscriberCount').innerText = data.length;
+
+        const tbody = document.getElementById('subscribersTableBody');
+        tbody.innerHTML = '';
+
+        const targetSelect = document.getElementById('testTargetUser');
+        targetSelect.innerHTML = '<option value="ALL">All Active Subscribers</option>';
+
+        const dbUserFilter = document.getElementById('dbFilterUser');
+        dbUserFilter.innerHTML = '<option value="ALL">All Subscribers</option>';
+
+        data.forEach(sub => {
+          // Add to dropdowns
+          targetSelect.innerHTML += `<option value="${sub.email}">${sub.name} (${sub.email})</option>`;
+          dbUserFilter.innerHTML += `<option value="${sub.email}">${sub.name} (${sub.email})</option>`;
+
+          const statusBadge = sub.active
+            ? `<span class="px-2 py-0.5 rounded text-[11px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">Active</span>`
+            : `<span class="px-2 py-0.5 rounded text-[11px] bg-slate-700 text-slate-400 font-medium">Paused</span>`;
+
+          const kwBadges = (sub.keywords || []).map(k => `<span class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 text-[10px] border border-slate-700">${k}</span>`).join(' ');
+          const searchBadges = (sub.job_searches || []).map(s => `<span class="px-1.5 py-0.5 rounded bg-indigo-950/60 text-indigo-300 text-[10px] border border-indigo-800/40">${s}</span>`).join(' ');
+
+          tbody.innerHTML += `
+            <tr class="hover:bg-slate-800/30 transition">
+              <td class="px-4 py-3">
+                <div class="font-medium text-white">${sub.name}</div>
+                <div class="text-xs text-slate-400">${sub.email}</div>
+              </td>
+              <td class="px-4 py-3">${statusBadge}</td>
+              <td class="px-4 py-3 max-w-xs truncate">${kwBadges}</td>
+              <td class="px-4 py-3 max-w-xs truncate">${searchBadges}</td>
+              <td class="px-4 py-3 text-center font-mono">${sub.max_items || 15}</td>
+              <td class="px-4 py-3 text-right space-x-2">
+                <button onclick="toggleSubscriberActive('${sub.email}', ${!sub.active})" class="text-xs text-slate-400 hover:text-emerald-400 transition" title="Toggle Active">
+                  <i class="fa-solid fa-power-off"></i>
+                </button>
+                <button onclick="deleteSubscriber('${sub.email}')" class="text-xs text-slate-400 hover:text-rose-400 transition" title="Delete">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </td>
+            </tr>
+          `;
+        });
+      } catch (err) {
+        console.error("Failed to load subscribers", err);
+      }
+    }
+
+    // Toggle active status
+    async function toggleSubscriberActive(email, newStatus) {
+      const sub = currentSubscribers.find(s => s.email === email);
+      if (!sub) return;
+      sub.active = newStatus;
+      await fetch(`/api/subscribers/${encodeURIComponent(email)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sub)
+      });
+      loadSubscribers();
+    }
+
+    // Delete subscriber
+    async function deleteSubscriber(email) {
+      if (!confirm(`Are you sure you want to remove ${email}?`)) return;
+      await fetch(`/api/subscribers/${encodeURIComponent(email)}`, { method: 'DELETE' });
+      loadSubscribers();
+    }
+
+    // Add subscriber modal
+    function openAddSubscriberModal() {
+      document.getElementById('subscriberForm').reset();
+      document.getElementById('subscriberModal').classList.remove('hidden');
+    }
+    function closeSubscriberModal() {
+      document.getElementById('subscriberModal').classList.add('hidden');
+    }
+    async function saveSubscriber(e) {
+      e.preventDefault();
+      const newSub = {
+        name: document.getElementById('subName').value.trim(),
+        email: document.getElementById('subEmail').value.trim(),
+        keywords: document.getElementById('subKeywords').value.split(',').map(s => s.trim()).filter(Boolean),
+        job_searches: document.getElementById('subSearches').value.split(',').map(s => s.trim()).filter(Boolean),
+        max_items: parseInt(document.getElementById('subMaxItems').value) || 15,
+        active: document.getElementById('subActive').value === 'true',
+        course_feeds: []
+      };
+
+      await fetch('/api/subscribers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newSub)
+      });
+
+      closeSubscriberModal();
+      loadSubscribers();
+    }
+
+    // Execute test run
+    async function executeTestRun() {
+      const btn = document.getElementById('btnRunTest');
+      const consoleEl = document.getElementById('consoleOutput');
+      const previewContainer = document.getElementById('emailPreviewContainer');
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Running Engine...`;
+      consoleEl.innerText = "Starting engine test run...\nConnecting to feeds and job boards...\n";
+      previewContainer.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs"><i class="fa-solid fa-circle-notch fa-spin text-emerald-400 mr-2"></i> Generating preview...</div>`;
+
+      const target = document.getElementById('testTargetUser').value;
+      const dryRun = document.getElementById('testDryRun').checked;
+      const weekly = document.getElementById('testWeeklyFlag').checked;
+
+      try {
+        const res = await fetch('/api/test-run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ target, dry_run: dryRun, weekly })
+        });
+        const data = await res.json();
+
+        consoleEl.innerText = data.logs || "Execution finished with no output.";
+
+        if (data.digests && data.digests.length > 0) {
+          previewContainer.innerHTML = '';
+          data.digests.forEach(d => {
+            previewContainer.innerHTML += `
+              <div class="border border-slate-800 rounded-xl bg-slate-950 p-4 space-y-2">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                  <div class="text-xs font-semibold text-white">Recipient: ${d.recipient}</div>
+                  <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400">${d.items_count} Item(s) Selected</span>
+                </div>
+                <div class="text-xs text-slate-300 font-sans whitespace-pre-wrap leading-relaxed">${formatLinks(d.content)}</div>
+              </div>
+            `;
+          });
+        } else {
+          previewContainer.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs">No new items found today for the selected recipient(s).</div>`;
+        }
+      } catch (err) {
+        consoleEl.innerText += `\n[Fatal Error]: ${err.message}`;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-rocket"></i> Run Digest Engine`;
+      }
+    }
+
+    function formatLinks(text) {
+      // Auto-hyperlink URLs in preview
+      return text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="text-emerald-400 underline hover:text-emerald-300 break-all">$1</a>');
+    }
+
+    function triggerQuickDryRun() {
+      switchTab('test-runner');
+      document.getElementById('testDryRun').checked = true;
+      executeTestRun();
+    }
+
+    function clearConsole() {
+      document.getElementById('consoleOutput').innerText = '';
+    }
+
+    // Load Supabase rows
+    async function loadSupabaseRows() {
+      const tbody = document.getElementById('supabaseTableBody');
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-500">Loading live data from Supabase...</td></tr>`;
+
+      try {
+        const res = await fetch('/api/supabase/items');
+        const data = await res.json();
+        currentDbRows = data.items || [];
+        document.getElementById('dbRowCount').innerText = currentDbRows.length;
+        filterSupabaseTable();
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-rose-400">Failed to load Supabase records: ${err.message}</td></tr>`;
+      }
+    }
+
+    function filterSupabaseTable() {
+      const search = document.getElementById('dbSearchInput').value.toLowerCase();
+      const filterUser = document.getElementById('dbFilterUser').value;
+      const tbody = document.getElementById('supabaseTableBody');
+
+      const filtered = currentDbRows.filter(r => {
+        const matchesUser = filterUser === 'ALL' || (r.user_email === filterUser);
+        const text = `${r.title || ''} ${r.company || ''} ${r.link || ''} ${r.user_email || ''}`.toLowerCase();
+        const matchesSearch = !search || text.includes(search);
+        return matchesUser && matchesSearch;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-500">No matching records found.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(r => `
+        <tr class="hover:bg-slate-800/40 transition">
+          <td class="px-4 py-2.5 text-slate-500">${r.id || '-'}</td>
+          <td class="px-4 py-2.5 text-slate-300">${r.user_email || ''}</td>
+          <td class="px-4 py-2.5">
+            <span class="px-1.5 py-0.5 rounded text-[10px] ${r.item_type === 'course' ? 'bg-amber-500/10 text-amber-400' : 'bg-indigo-500/10 text-indigo-400'}">
+              ${r.item_type || 'job'}
+            </span>
+          </td>
+          <td class="px-4 py-2.5 max-w-sm">
+            <div class="font-medium text-white truncate">${r.title || 'Untitled'}</div>
+            <div class="text-[11px] text-slate-500 truncate"><a href="${r.link}" target="_blank" class="hover:underline">${r.link}</a></div>
+          </td>
+          <td class="px-4 py-2.5 text-[11px] text-slate-400">
+            ${r.salary ? `💰 ${r.salary}` : ''} ${r.location ? `📍 ${r.location}` : ''}
+          </td>
+          <td class="px-4 py-2.5 text-slate-400 text-[11px]">${r.seen_at || ''}</td>
+        </tr>
+      `).join('');
+    }
+
+    // Reset seen items
+    async function clearSeenPrompt() {
+      const email = prompt("Enter subscriber email to reset seen history for (or 'ALL' to reset test table):");
+      if (!email) return;
+
+      if (!confirm(`Are you sure you want to clear seen history for '${email}'?`)) return;
+
+      const res = await fetch(`/api/supabase/items?user_email=${encodeURIComponent(email)}`, { method: 'DELETE' });
+      const data = await res.json();
+      alert(data.message || "History cleared.");
+      loadSupabaseRows();
+    }
+
+    // Test Sources
+    async function testSourcesHealth() {
+      const container = document.getElementById('sourcesContainer');
+      const btn = document.getElementById('btnTestSources');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Pinging...`;
+
+      container.innerHTML = `<div class="text-xs text-slate-400 p-6 text-center col-span-2"><i class="fa-solid fa-circle-notch fa-spin text-emerald-400 mr-2"></i> Pinging live RSS feeds and Job APIs...</div>`;
+
+      try {
+        const res = await fetch('/api/sources/test');
+        const data = await res.json();
+
+        container.innerHTML = data.sources.map(s => `
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex items-start justify-between shadow">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full ${s.status === 'OK' ? 'bg-emerald-400' : 'bg-rose-400'}"></span>
+                <span class="text-sm font-semibold text-white">${s.name}</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">${s.type}</span>
+              </div>
+              <p class="text-xs text-slate-400 break-all font-mono">${s.url}</p>
+              ${s.error ? `<p class="text-xs text-rose-400 font-mono">${s.error}</p>` : ''}
+            </div>
+            <div class="text-right">
+              <div class="text-lg font-bold text-white">${s.harvested_count}</div>
+              <div class="text-[10px] text-slate-500 uppercase">Items</div>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        container.innerHTML = `<div class="text-xs text-rose-400 p-4 col-span-2">Failed: ${err.message}</div>`;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-satellite-dish"></i> Ping All Sources`;
+      }
+    }
+
+    // Load Weekly Insights
+    async function loadWeeklyInsights() {
+      const pre = document.getElementById('weeklyInsightsPre');
+      pre.innerText = "Analyzing opportunities from the last 7 days...";
+      try {
+        const res = await fetch('/api/weekly-insights');
+        const data = await res.json();
+        pre.innerText = data.report || "No insights report generated.";
+      } catch (err) {
+        pre.innerText = `Error generating insights: ${err.message}`;
+      }
+    }
+
+    // Initialize
+    loadSubscribers();
+  </script>
+</body>
+</html>
