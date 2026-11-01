@@ -1,109 +1,595 @@
 {
-  "ojasvimittalofficial@gmail.com": [
-    "https://answersq.com/ai-automation-specialist-roadmap/",
-    "https://answersq.com/cybersecurity-analyst-roadmap/",
-    "https://answersq.com/full-stack-developer-roadmap/",
-    "https://remotive.com/remote-jobs/artificial-intelligence/ai-trainer-video-annotation-2091161",
-    "https://remotive.com/remote-jobs/information-technology/tier-iii-service-desk-engineer-2091045",
-    "https://remotive.com/remote-jobs/marketing/remote-office-assistant-1680495",
-    "https://remotive.com/remote-jobs/sales/inside-sales-contractor-2086540",
-    "https://remotive.com/remote-jobs/software-development/full-stack-developer-2091165",
-    "https://remotive.com/remote-jobs/software-development/head-of-engineering-2091134",
-    "https://remotive.com/remote-jobs/software-development/senior-back-end-developer-2091135",
-    "https://remotive.com/remote-jobs/software-development/senior-back-end-engineer-2091132",
-    "https://remotive.com/remote-jobs/software-development/senior-react-full-stack-developer-2091133",
-    "https://remotive.com/remote-jobs/software-development/software-engineer-ai-coding-tasks-2091158",
-    "https://remotive.com/remote-jobs/software-development/tech-lead-full-stack-rails-engineer-2069746",
-    "https://remotive.com/remote-jobs/writing/freelance-copywriter-1749306",
-    "https://remotive.com/remote-jobs/writing/freelance-writer-1185979",
-    "https://tutorialbar.com/course/ai-900-azure-ai-fundamentals-practice-exams-2026-6-sets",
-    "https://tutorialbar.com/course/ai-agents-automate-everything-with-n8n-ai-automation",
-    "https://tutorialbar.com/course/css-javascript-and-python-complete-course",
-    "https://tutorialbar.com/course/genetic-from-mendal-to-era-of-microchip-molecular-genetic",
-    "https://tutorialbar.com/course/google-ai-leader-exam-prep-full-mock-exams-topic-quizzes",
-    "https://tutorialbar.com/course/google-generative-ai-leader-exam-complete-preparation-guide",
-    "https://tutorialbar.com/course/javascript-and-php-and-python-programming-complete-course",
-    "https://tutorialbar.com/course/langsmith-for-ai-agents-evaluate-secure-and-ship",
-    "https://tutorialbar.com/course/linkedin-advertising-marketing",
-    "https://tutorialbar.com/course/only-for-genius-python-vs-golang-for-absolute-beginners",
-    "https://tutorialbar.com/course/python-to-ai-mastery-the-only-course-youll-ever-need-2026",
-    "https://www.discudemy.com//ai-models-mastery-chatgpt-gemini-and-deepseek",
-    "https://www.discudemy.com//become-an-expert-in-excel-google-sheet-formula-functions",
-    "https://www.discudemy.com//deepseek-ai-masterclass-ai-search-insights-productivity",
-    "https://www.discudemy.com//excel-excel-essential-with-tips-trick-and-job-success",
-    "https://www.discudemy.com//excel-formulas-functions-basic-to-advanced",
-    "https://www.discudemy.com//gemini-ai-complete-guide-to-googles-powerful-ai",
-    "https://www.discudemy.com//machine-learning-ai-neural-networks-a-complete-course",
-    "https://www.discudemy.com//microsoft-excel-pivot-tables-with-formulas-functions",
-    "https://www.discudemy.com//perplexity-ai-masterclass-ai-search-and-research",
-    "https://www.discudemy.com//python-machine-learning-from-beginner-to-pro",
-    "https://www.discudemy.com//the-complete-microsoft-excel-data-analysis-bootcamp",
-    "https://www.discudemy.com//ultimate-microsoft-excel-with-data-analysis-vba-macros",
-    "https://www.discudemy.com/business/ab-100-microsoft-agentic-ai-business-solutions-architect-i",
-    "https://www.discudemy.com/business/data-analytics-for-project-management-c",
-    "https://www.discudemy.com/business/mastering-microsoft-copilot-studio-future-of-ai-agents",
-    "https://www.discudemy.com/business/project-management-interview-process-how-to-land-the-job",
-    "https://www.discudemy.com/cpp/cracking-cpp-interview",
-    "https://www.discudemy.com/development-tools/microsoft-power-automate-with-ai-builder",
-    "https://www.discudemy.com/development-tools/power-automate-desktop-course-intelligent-automation",
-    "https://www.discudemy.com/java/python-java-master-backend-frontend-web-developments",
-    "https://www.discudemy.com/photoshop/python-course-for-app-developers-build-your-first-app",
-    "https://www.discudemy.com/python/html-5-with-quizzes-and-python-3-complete-course-2023",
-    "https://www.discudemy.com/python/python-data-analysis-matplotlib-seaborn-pandas-numpy",
-    "https://www.discudemy.com/python/python-for-beginners-course-",
-    "https://www.freecodecamp.org/news/ai-search-visibility/",
-    "https://www.freecodecamp.org/news/how-to-build-a-command-line-weather-app-with-python/",
-    "https://www.freecodecamp.org/news/how-to-build-a-simple-data-analyzer-in-python-with-pandas/",
-    "https://www.freecodecamp.org/news/learn-model-context-protocol-mcp-security/",
-    "https://www.freecodecamp.org/news/python-in-marketing-a-practical-book/",
-    "https://www.freecodecamp.org/news/secure-your-ai-agents-free-model-context-protocol-mcp-security-course/",
-    "https://www.reddit.com/r/udemyfreebies/comments/1lsee75/docker_kubernetes_and_azure_container_services/",
-    "https://www.reddit.com/r/udemyfreebies/comments/1ltdae4/the_ultimate_python_bootcamp_learn_by_building_50/",
-    "https://www.reddit.com/r/udemyfreebies/comments/1pjfdp9/ai_engineer_agentic_track_the_complete_agent_mcp/",
-    "https://www.reddit.com/r/udemyfreebies/comments/1pwfqhp/tips_for_preparing_for_the_pspo_ii_certification/",
-    "https://www.reddit.com/r/udemyfreebies/comments/1rr7f33/list_of_free_and_best_selling_discounted_courses/",
-    "https://www.reddit.com/r/udemyfreebies/comments/zyv0zf/sharing_my_two_courses_for_free_spring_boot_and/"
-  ],
-  "schamyal@vincular.in": [
-    "https://answersq.com/ai-automation-specialist-roadmap/",
-    "https://answersq.com/full-stack-developer-roadmap/",
-    "https://remotive.com/remote-jobs/artificial-intelligence/ai-trainer-video-annotation-2091161",
-    "https://remotive.com/remote-jobs/information-technology/tier-iii-service-desk-engineer-2091045",
-    "https://remotive.com/remote-jobs/marketing/remote-office-assistant-1680495",
-    "https://remotive.com/remote-jobs/sales/inside-sales-contractor-2086540",
-    "https://remotive.com/remote-jobs/software-development/full-stack-developer-2091165",
-    "https://remotive.com/remote-jobs/software-development/head-of-engineering-2091134",
-    "https://remotive.com/remote-jobs/software-development/senior-back-end-developer-2091135",
-    "https://remotive.com/remote-jobs/software-development/senior-back-end-engineer-2091132",
-    "https://remotive.com/remote-jobs/software-development/senior-react-full-stack-developer-2091133",
-    "https://remotive.com/remote-jobs/software-development/software-engineer-ai-coding-tasks-2091158",
-    "https://remotive.com/remote-jobs/software-development/tech-lead-full-stack-rails-engineer-2069746",
-    "https://remotive.com/remote-jobs/writing/freelance-copywriter-1749306",
-    "https://remotive.com/remote-jobs/writing/freelance-writer-1185979",
-    "https://tutorialbar.com/course/ai-900-azure-ai-fundamentals-practice-exams-2026-6-sets",
-    "https://tutorialbar.com/course/ai-agents-automate-everything-with-n8n-ai-automation",
-    "https://tutorialbar.com/course/genetic-from-mendal-to-era-of-microchip-molecular-genetic",
-    "https://tutorialbar.com/course/google-ai-leader-exam-prep-full-mock-exams-topic-quizzes",
-    "https://tutorialbar.com/course/google-generative-ai-leader-exam-complete-preparation-guide",
-    "https://tutorialbar.com/course/langsmith-for-ai-agents-evaluate-secure-and-ship",
-    "https://tutorialbar.com/course/python-to-ai-mastery-the-only-course-youll-ever-need-2026",
-    "https://www.discudemy.com//ai-models-mastery-chatgpt-gemini-and-deepseek",
-    "https://www.discudemy.com//deepseek-ai-masterclass-ai-search-insights-productivity",
-    "https://www.discudemy.com//gemini-ai-complete-guide-to-googles-powerful-ai",
-    "https://www.discudemy.com//machine-learning-ai-neural-networks-a-complete-course",
-    "https://www.discudemy.com//perplexity-ai-masterclass-ai-search-and-research",
-    "https://www.discudemy.com/business/ab-100-microsoft-agentic-ai-business-solutions-architect-i",
-    "https://www.discudemy.com/business/data-analytics-for-project-management-c",
-    "https://www.discudemy.com/business/mastering-microsoft-copilot-studio-future-of-ai-agents",
-    "https://www.discudemy.com/business/project-management-interview-process-how-to-land-the-job",
-    "https://www.discudemy.com/cpp/cracking-cpp-interview",
-    "https://www.discudemy.com/development-tools/microsoft-power-automate-with-ai-builder",
-    "https://www.freecodecamp.org/news/ai-search-visibility/",
-    "https://www.freecodecamp.org/news/secure-your-ai-agents-free-model-context-protocol-mcp-security-course/",
-    "https://www.reddit.com/r/udemyfreebies/comments/1lsee75/docker_kubernetes_and_azure_container_services/",
-    "https://www.reddit.com/r/udemyfreebies/comments/1pjfdp9/ai_engineer_agentic_track_the_complete_agent_mcp/",
-    "https://www.reddit.com/r/udemyfreebies/comments/1pwfqhp/tips_for_preparing_for_the_pspo_ii_certification/",
-    "https://www.reddit.com/r/udemyfreebies/comments/1rr7f33/list_of_free_and_best_selling_discounted_courses/",
-    "https://www.reddit.com/r/udemyfreebies/comments/zyv0zf/sharing_my_two_courses_for_free_spring_boot_and/"
-  ]
+  "ojasvimittalofficial@gmail.com": {
+    "https://answersq.com/ai-automation-specialist-roadmap/": {
+      "date": "2026-11-01"
+    },
+    "https://answersq.com/cybersecurity-analyst-roadmap/": {
+      "date": "2026-11-01"
+    },
+    "https://answersq.com/full-stack-developer-roadmap/": {
+      "date": "2026-11-01"
+    },
+    "https://jobicy.com/jobs/158364-ai-trainers-network-german": {
+      "date": "2026-11-01",
+      "title": "AI Trainers Network - German (Welo Global)",
+      "type": "job",
+      "tags": [
+        "Data Science & Analytics",
+        "Any"
+      ],
+      "company": "Welo Global",
+      "source": "Jobicy",
+      "salary": "",
+      "location": "Argentina,  Austria,  Brazil,  France,  Germany,  Italy,  Poland,  Spain,  Switzerland,  Türkiye,  UK"
+    },
+    "https://jobicy.com/jobs/158366-applied-ai-engineer-3": {
+      "date": "2026-11-01",
+      "title": "Applied AI Engineer (Elevenlabs)",
+      "type": "job",
+      "tags": [
+        "Software Engineering",
+        "Any"
+      ],
+      "company": "Elevenlabs",
+      "source": "Jobicy",
+      "salary": "",
+      "location": "Bulgaria,  France,  Germany,  Hungary,  Ireland,  Italy,  Netherlands,  Poland,  Spain,  UK"
+    },
+    "https://jobicy.com/jobs/158367-ai-trainers-network-greek": {
+      "date": "2026-11-01",
+      "title": "AI Trainers Network - Greek (Welo Global)",
+      "type": "job",
+      "tags": [
+        "Data Science & Analytics",
+        "Any"
+      ],
+      "company": "Welo Global",
+      "source": "Jobicy",
+      "salary": "",
+      "location": "Greece"
+    },
+    "https://remotive.com/remote-jobs/artificial-intelligence/ai-trainer-video-annotation-2091161": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/information-technology/tier-iii-service-desk-engineer-2091045": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/marketing/remote-office-assistant-1680495": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/sales/inside-sales-contractor-2086540": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/software-development/full-stack-developer-2091165": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/software-development/head-of-engineering-2091134": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/software-development/senior-back-end-developer-2091135": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/software-development/senior-back-end-engineer-2091132": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/software-development/senior-react-full-stack-developer-2091133": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/software-development/software-engineer-ai-coding-tasks-2091158": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/software-development/tech-lead-full-stack-rails-engineer-2069746": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/writing/freelance-copywriter-1749306": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/writing/freelance-writer-1185979": {
+      "date": "2026-11-01"
+    },
+    "https://tutorialbar.com/course/ai-900-azure-ai-fundamentals-practice-exams-2026-6-sets": {
+      "date": "2026-11-01"
+    },
+    "https://tutorialbar.com/course/ai-agents-automate-everything-with-n8n-ai-automation": {
+      "date": "2026-11-01"
+    },
+    "https://tutorialbar.com/course/css-javascript-and-python-complete-course": {
+      "date": "2026-11-01"
+    },
+    "https://tutorialbar.com/course/genetic-from-mendal-to-era-of-microchip-molecular-genetic": {
+      "date": "2026-11-01"
+    },
+    "https://tutorialbar.com/course/google-ai-leader-exam-prep-full-mock-exams-topic-quizzes": {
+      "date": "2026-11-01"
+    },
+    "https://tutorialbar.com/course/google-generative-ai-leader-exam-complete-preparation-guide": {
+      "date": "2026-11-01"
+    },
+    "https://tutorialbar.com/course/javascript-and-php-and-python-programming-complete-course": {
+      "date": "2026-11-01"
+    },
+    "https://tutorialbar.com/course/langsmith-for-ai-agents-evaluate-secure-and-ship": {
+      "date": "2026-11-01"
+    },
+    "https://tutorialbar.com/course/linkedin-advertising-marketing": {
+      "date": "2026-11-01"
+    },
+    "https://tutorialbar.com/course/only-for-genius-python-vs-golang-for-absolute-beginners": {
+      "date": "2026-11-01"
+    },
+    "https://tutorialbar.com/course/python-to-ai-mastery-the-only-course-youll-ever-need-2026": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com//ai-for-geospatial-analysis": {
+      "date": "2026-11-01",
+      "title": "[100% OFF] Harnessing AI and Machine Learning for Geospatial Analysis",
+      "type": "course",
+      "tags": [],
+      "company": "",
+      "source": "",
+      "salary": "",
+      "location": ""
+    },
+    "https://www.discudemy.com//ai-models-mastery-chatgpt-gemini-and-deepseek": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com//become-an-expert-in-excel-google-sheet-formula-functions": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com//deepseek-ai-masterclass-ai-search-insights-productivity": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com//excel-excel-essential-with-tips-trick-and-job-success": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com//excel-formulas-functions-basic-to-advanced": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com//gemini-ai-complete-guide-to-googles-powerful-ai": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com//geospatial-ai-deep-learning": {
+      "date": "2026-11-01",
+      "title": "[100% OFF] Geospatial AI: Deep Learning for Satellite Imagery",
+      "type": "course",
+      "tags": [],
+      "company": "",
+      "source": "",
+      "salary": "",
+      "location": ""
+    },
+    "https://www.discudemy.com//machine-learning-ai-neural-networks-a-complete-course": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com//microsoft-excel-pivot-tables-with-formulas-functions": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com//perplexity-ai-masterclass-ai-search-and-research": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com//python-for-ai": {
+      "date": "2026-11-01",
+      "title": "[100% OFF] Python for AI and Machine Learning: From Beginner to Pro",
+      "type": "course",
+      "tags": [],
+      "company": "",
+      "source": "",
+      "salary": "",
+      "location": ""
+    },
+    "https://www.discudemy.com//python-machine-learning-from-beginner-to-pro": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com//the-complete-microsoft-excel-data-analysis-bootcamp": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com//ultimate-microsoft-excel-with-data-analysis-vba-macros": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com/business/ab-100-microsoft-agentic-ai-business-solutions-architect-i": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com/business/data-analytics-for-project-management-c": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com/business/mastering-microsoft-copilot-studio-future-of-ai-agents": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com/business/project-management-interview-process-how-to-land-the-job": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com/cpp/cracking-cpp-interview": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com/development-tools/microsoft-power-automate-with-ai-builder": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com/development-tools/power-automate-desktop-course-intelligent-automation": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com/ethical-hacking/owasp-top-102025-practical-web-security-attacks": {
+      "date": "2026-11-01",
+      "title": "[100% OFF] OWASP Top 10:2025 – Practical Web Security Attacks",
+      "type": "course",
+      "tags": [],
+      "company": "",
+      "source": "",
+      "salary": "",
+      "location": ""
+    },
+    "https://www.discudemy.com/java/python-java-master-backend-frontend-web-developments": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com/network-security/cyber-security-awareness-fraud-prevention-training": {
+      "date": "2026-11-01",
+      "title": "[100% OFF] Cyber Security Awareness & Fraud Prevention Training",
+      "type": "course",
+      "tags": [],
+      "company": "",
+      "source": "",
+      "salary": "",
+      "location": ""
+    },
+    "https://www.discudemy.com/photoshop/python-course-for-app-developers-build-your-first-app": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com/python/essentials-for-arcpy": {
+      "date": "2026-11-01",
+      "title": "[100% OFF] Essentials for ArcPy: Python for Geospatial Automation",
+      "type": "course",
+      "tags": [],
+      "company": "",
+      "source": "",
+      "salary": "",
+      "location": ""
+    },
+    "https://www.discudemy.com/python/essentials-pyqgis": {
+      "date": "2026-11-01",
+      "title": "[100% OFF] Essentials for PyQGIS: Python for Geospatial Automation",
+      "type": "course",
+      "tags": [],
+      "company": "",
+      "source": "",
+      "salary": "",
+      "location": ""
+    },
+    "https://www.discudemy.com/python/html-5-with-quizzes-and-python-3-complete-course-2023": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com/python/only-for-genius-four-handred-python-tricks-to-pass-pcep-certification": {
+      "date": "2026-11-01",
+      "title": "[100% OFF] Python For Beginners +400 Tricks To Pass PCEP Certification",
+      "type": "course",
+      "tags": [],
+      "company": "",
+      "source": "",
+      "salary": "",
+      "location": ""
+    },
+    "https://www.discudemy.com/python/only-for-genius-python-vs-golang-for-absolute-beginners": {
+      "date": "2026-11-01",
+      "title": "[100% OFF] Only For Genius : Golang Vs Python For Absolute Beginners",
+      "type": "course",
+      "tags": [],
+      "company": "",
+      "source": "",
+      "salary": "",
+      "location": ""
+    },
+    "https://www.discudemy.com/python/programming-for-scientific-research": {
+      "date": "2026-11-01",
+      "title": "[100% OFF] Programming for Scientific Research with Python and R",
+      "type": "course",
+      "tags": [],
+      "company": "",
+      "source": "",
+      "salary": "",
+      "location": ""
+    },
+    "https://www.discudemy.com/python/python-data-analysis-matplotlib-seaborn-pandas-numpy": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com/python/python-for-beginners-course-": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com/python/python-for-gis-automation": {
+      "date": "2026-11-01",
+      "title": "[100% OFF] Python for GIS Automation and Geospatial Applications",
+      "type": "course",
+      "tags": [],
+      "company": "",
+      "source": "",
+      "salary": "",
+      "location": ""
+    },
+    "https://www.discudemy.com/python/python-for-researchers": {
+      "date": "2026-11-01",
+      "title": "[100% OFF] Python for Scientific Research",
+      "type": "course",
+      "tags": [],
+      "company": "",
+      "source": "",
+      "salary": "",
+      "location": ""
+    },
+    "https://www.freecodecamp.org/news/ai-search-visibility/": {
+      "date": "2026-11-01"
+    },
+    "https://www.freecodecamp.org/news/how-to-build-a-command-line-weather-app-with-python/": {
+      "date": "2026-11-01"
+    },
+    "https://www.freecodecamp.org/news/how-to-build-a-simple-data-analyzer-in-python-with-pandas/": {
+      "date": "2026-11-01"
+    },
+    "https://www.freecodecamp.org/news/learn-model-context-protocol-mcp-security/": {
+      "date": "2026-11-01"
+    },
+    "https://www.freecodecamp.org/news/python-in-marketing-a-practical-book/": {
+      "date": "2026-11-01"
+    },
+    "https://www.freecodecamp.org/news/secure-your-ai-agents-free-model-context-protocol-mcp-security-course/": {
+      "date": "2026-11-01"
+    },
+    "https://www.reddit.com/r/udemyfreebies/comments/1lsee75/docker_kubernetes_and_azure_container_services/": {
+      "date": "2026-11-01"
+    },
+    "https://www.reddit.com/r/udemyfreebies/comments/1ltdae4/the_ultimate_python_bootcamp_learn_by_building_50/": {
+      "date": "2026-11-01"
+    },
+    "https://www.reddit.com/r/udemyfreebies/comments/1pjfdp9/ai_engineer_agentic_track_the_complete_agent_mcp/": {
+      "date": "2026-11-01"
+    },
+    "https://www.reddit.com/r/udemyfreebies/comments/1pwfqhp/tips_for_preparing_for_the_pspo_ii_certification/": {
+      "date": "2026-11-01"
+    },
+    "https://www.reddit.com/r/udemyfreebies/comments/1rr7f33/list_of_free_and_best_selling_discounted_courses/": {
+      "date": "2026-11-01"
+    },
+    "https://www.reddit.com/r/udemyfreebies/comments/zyv0zf/sharing_my_two_courses_for_free_spring_boot_and/": {
+      "date": "2026-11-01"
+    }
+  },
+  "schamyal@vincular.in": {
+    "https://answersq.com/ai-automation-specialist-roadmap/": {
+      "date": "2026-11-01"
+    },
+    "https://answersq.com/full-stack-developer-roadmap/": {
+      "date": "2026-11-01"
+    },
+    "https://jobicy.com/jobs/158352-ai-trainers-network-flemish": {
+      "date": "2026-11-01",
+      "title": "AI Trainers Network - Flemish (Welo Global)",
+      "type": "job",
+      "tags": [
+        "Data Science & Analytics",
+        "Any"
+      ],
+      "company": "Welo Global",
+      "source": "Jobicy",
+      "salary": "",
+      "location": "Belgium"
+    },
+    "https://jobicy.com/jobs/158355-ai-trainers-network-french": {
+      "date": "2026-11-01",
+      "title": "AI Trainers Network - French (Welo Global)",
+      "type": "job",
+      "tags": [
+        "Data Science & Analytics",
+        "Any"
+      ],
+      "company": "Welo Global",
+      "source": "Jobicy",
+      "salary": "",
+      "location": "Belgium,  France,  Spain,  Switzerland"
+    },
+    "https://jobicy.com/jobs/158358-ai-trainers-network-galician": {
+      "date": "2026-11-01",
+      "title": "AI Trainers Network - Galician (Welo Global)",
+      "type": "job",
+      "tags": [
+        "Data Science & Analytics",
+        "Any"
+      ],
+      "company": "Welo Global",
+      "source": "Jobicy",
+      "salary": "",
+      "location": "Spain"
+    },
+    "https://jobicy.com/jobs/158361-ai-trainers-network-georgian": {
+      "date": "2026-11-01",
+      "title": "AI Trainers Network - Georgian (Welo Global)",
+      "type": "job",
+      "tags": [
+        "Data Science & Analytics",
+        "Any"
+      ],
+      "company": "Welo Global",
+      "source": "Jobicy",
+      "salary": "",
+      "location": "Europe"
+    },
+    "https://jobicy.com/jobs/158364-ai-trainers-network-german": {
+      "date": "2026-11-01",
+      "title": "AI Trainers Network - German (Welo Global)",
+      "type": "job",
+      "tags": [
+        "Data Science & Analytics",
+        "Any"
+      ],
+      "company": "Welo Global",
+      "source": "Jobicy",
+      "salary": "",
+      "location": "Argentina,  Austria,  Brazil,  France,  Germany,  Italy,  Poland,  Spain,  Switzerland,  Türkiye,  UK"
+    },
+    "https://jobicy.com/jobs/158366-applied-ai-engineer-3": {
+      "date": "2026-11-01",
+      "title": "Applied AI Engineer (Elevenlabs)",
+      "type": "job",
+      "tags": [
+        "Software Engineering",
+        "Any"
+      ],
+      "company": "Elevenlabs",
+      "source": "Jobicy",
+      "salary": "",
+      "location": "Bulgaria,  France,  Germany,  Hungary,  Ireland,  Italy,  Netherlands,  Poland,  Spain,  UK"
+    },
+    "https://jobicy.com/jobs/158367-ai-trainers-network-greek": {
+      "date": "2026-11-01",
+      "title": "AI Trainers Network - Greek (Welo Global)",
+      "type": "job",
+      "tags": [
+        "Data Science & Analytics",
+        "Any"
+      ],
+      "company": "Welo Global",
+      "source": "Jobicy",
+      "salary": "",
+      "location": "Greece"
+    },
+    "https://remotive.com/remote-jobs/artificial-intelligence/ai-trainer-video-annotation-2091161": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/information-technology/tier-iii-service-desk-engineer-2091045": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/marketing/remote-office-assistant-1680495": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/sales/inside-sales-contractor-2086540": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/software-development/full-stack-developer-2091165": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/software-development/head-of-engineering-2091134": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/software-development/senior-back-end-developer-2091135": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/software-development/senior-back-end-engineer-2091132": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/software-development/senior-react-full-stack-developer-2091133": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/software-development/software-engineer-ai-coding-tasks-2091158": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/software-development/tech-lead-full-stack-rails-engineer-2069746": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/writing/freelance-copywriter-1749306": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/writing/freelance-writer-1185979": {
+      "date": "2026-11-01"
+    },
+    "https://tutorialbar.com/course/ai-900-azure-ai-fundamentals-practice-exams-2026-6-sets": {
+      "date": "2026-11-01"
+    },
+    "https://tutorialbar.com/course/ai-agents-automate-everything-with-n8n-ai-automation": {
+      "date": "2026-11-01"
+    },
+    "https://tutorialbar.com/course/genetic-from-mendal-to-era-of-microchip-molecular-genetic": {
+      "date": "2026-11-01"
+    },
+    "https://tutorialbar.com/course/google-ai-leader-exam-prep-full-mock-exams-topic-quizzes": {
+      "date": "2026-11-01"
+    },
+    "https://tutorialbar.com/course/google-generative-ai-leader-exam-complete-preparation-guide": {
+      "date": "2026-11-01"
+    },
+    "https://tutorialbar.com/course/langsmith-for-ai-agents-evaluate-secure-and-ship": {
+      "date": "2026-11-01"
+    },
+    "https://tutorialbar.com/course/python-to-ai-mastery-the-only-course-youll-ever-need-2026": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com//ai-for-geospatial-analysis": {
+      "date": "2026-11-01",
+      "title": "[100% OFF] Harnessing AI and Machine Learning for Geospatial Analysis",
+      "type": "course",
+      "tags": [],
+      "company": "",
+      "source": "",
+      "salary": "",
+      "location": ""
+    },
+    "https://www.discudemy.com//ai-models-mastery-chatgpt-gemini-and-deepseek": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com//deepseek-ai-masterclass-ai-search-insights-productivity": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com//gemini-ai-complete-guide-to-googles-powerful-ai": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com//geospatial-ai-deep-learning": {
+      "date": "2026-11-01",
+      "title": "[100% OFF] Geospatial AI: Deep Learning for Satellite Imagery",
+      "type": "course",
+      "tags": [],
+      "company": "",
+      "source": "",
+      "salary": "",
+      "location": ""
+    },
+    "https://www.discudemy.com//machine-learning-ai-neural-networks-a-complete-course": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com//perplexity-ai-masterclass-ai-search-and-research": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com//python-for-ai": {
+      "date": "2026-11-01",
+      "title": "[100% OFF] Python for AI and Machine Learning: From Beginner to Pro",
+      "type": "course",
+      "tags": [],
+      "company": "",
+      "source": "",
+      "salary": "",
+      "location": ""
+    },
+    "https://www.discudemy.com/business/ab-100-microsoft-agentic-ai-business-solutions-architect-i": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com/business/data-analytics-for-project-management-c": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com/business/mastering-microsoft-copilot-studio-future-of-ai-agents": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com/business/project-management-interview-process-how-to-land-the-job": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com/cpp/cracking-cpp-interview": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com/development-tools/microsoft-power-automate-with-ai-builder": {
+      "date": "2026-11-01"
+    },
+    "https://www.freecodecamp.org/news/ai-search-visibility/": {
+      "date": "2026-11-01"
+    },
+    "https://www.freecodecamp.org/news/secure-your-ai-agents-free-model-context-protocol-mcp-security-course/": {
+      "date": "2026-11-01"
+    },
+    "https://www.reddit.com/r/udemyfreebies/comments/1lsee75/docker_kubernetes_and_azure_container_services/": {
+      "date": "2026-11-01"
+    },
+    "https://www.reddit.com/r/udemyfreebies/comments/1pjfdp9/ai_engineer_agentic_track_the_complete_agent_mcp/": {
+      "date": "2026-11-01"
+    },
+    "https://www.reddit.com/r/udemyfreebies/comments/1pwfqhp/tips_for_preparing_for_the_pspo_ii_certification/": {
+      "date": "2026-11-01"
+    },
+    "https://www.reddit.com/r/udemyfreebies/comments/1rr7f33/list_of_free_and_best_selling_discounted_courses/": {
+      "date": "2026-11-01"
+    },
+    "https://www.reddit.com/r/udemyfreebies/comments/zyv0zf/sharing_my_two_courses_for_free_spring_boot_and/": {
+      "date": "2026-11-01"
+    }
+  }
 }
