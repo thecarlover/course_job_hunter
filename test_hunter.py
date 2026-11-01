@@ -515,5 +515,61 @@ def test_location_filter_matching():
     assert matches_location_filter("United States Only (US Citizens)", allowed_keywords) is False
 
 
+def test_db_fallback_local(tmp_path, monkeypatch):
+    """Test db module fallback to local file when Supabase is disabled."""
+    import db
+    monkeypatch.setattr(db, "is_supabase_enabled", lambda: False)
+    test_seen_file = str(tmp_path / "fallback_seen.json")
+    monkeypatch.setattr(db, "SEEN_FILE", test_seen_file)
+
+    # Initially empty
+    seen = db.load_seen_for_user("user@example.com")
+    assert seen == set()
+
+    # Record batch
+    batch = {
+        "user@example.com": [
+            {"link": "https://remotive.com/job1", "title": "Job 1", "company": "Co1"},
+            {"link": "https://remotive.com/job2", "title": "Job 2", "company": "Co2"},
+        ]
+    }
+    db.record_seen_batch(batch)
+
+    # Reload
+    reloaded = db.load_seen_for_user("user@example.com")
+    assert reloaded == {"https://remotive.com/job1", "https://remotive.com/job2"}
+
+
+def test_db_supabase_mock(monkeypatch):
+    """Test db module querying and inserting with Supabase REST API."""
+    import db
+    monkeypatch.setattr(db, "is_supabase_enabled", lambda: True)
+    monkeypatch.setattr(db, "get_supabase_credentials", lambda: ("https://test.supabase.co", "test_key"))
+
+    # Test load_seen_for_user via mock GET
+    mock_get_resp = MagicMock()
+    mock_get_resp.status_code = 200
+    mock_get_resp.json.return_value = [{"link": "https://remotive.com/api-job"}]
+
+    with patch("requests.get", return_value=mock_get_resp) as mock_get:
+        seen = db.load_seen_for_user("alex@example.com")
+        assert "https://remotive.com/api-job" in seen
+        mock_get.assert_called_once()
+        assert "alex@example.com" in mock_get.call_args[1]["params"]["user_email"]
+
+    # Test record_seen_batch via mock POST
+    mock_post_resp = MagicMock()
+    mock_post_resp.status_code = 201
+
+    with patch("requests.post", return_value=mock_post_resp) as mock_post:
+        success = db.record_seen_batch({"alex@example.com": [{"link": "https://remotive.com/new-job", "title": "New"}]})
+        assert success is True
+        mock_post.assert_called_once()
+        payload = mock_post.call_args[1]["json"]
+        assert len(payload) == 1
+        assert payload[0]["link"] == "https://remotive.com/new-job"
+
+
+
 
 

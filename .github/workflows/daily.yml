@@ -46,6 +46,8 @@ jobs:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
           RECIPIENTS_JSON: ${{ secrets.RECIPIENTS_JSON }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: |
           if [ "${{ github.event.inputs.weekly }}" = "true" ]; then
             python main.py --weekly

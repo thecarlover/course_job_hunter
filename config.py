@@ -86,6 +86,14 @@ PREFERRED_LOCATIONS = [
 # If False, keep all jobs and display location/salary/visa badges prominently
 STRICT_LOCATION_FILTER = False
 
+# ============================================================================
+# Cloud Database Settings (Supabase)
+# ============================================================================
+# The bot automatically stores seen history in Supabase (PostgreSQL) instead of Git.
+# Reads from SUPABASE_URL and SUPABASE_KEY environment variables first, or fallback here:
+SUPABASE_URL = "https://totcwrqgyrdwuylgyccb.supabase.co"
+SUPABASE_KEY = "sb_publishable_i8emK6yLcbCARlWWyc1X1Q_PSJRgeZ6"
+
 # Notification service to use.
 # Options: "email", "ntfy", "discord"
 NOTIFIER = "email"

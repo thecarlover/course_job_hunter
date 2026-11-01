@@ -21,6 +21,7 @@ import feedparser
 import requests
 
 import config
+import db
 import notifier
 
 # Base paths
@@ -709,10 +710,15 @@ def run(dry_run: bool = False, weekly: bool = False) -> None:
         status = "Active" if r.get("active", True) else "PAUSED (skipped)"
         print(f"  - {r.get('name', 'Friend')} <{r.get('email')}>: {status}")
 
-    # 3. Load per-person seen history (Auto-pruning runs here automatically)
+    # 3. Load seen history & database status
     primary_email = active_recipients[0].get("email")
+    if db.is_supabase_enabled():
+        print("[Database] ☁️ Supabase Cloud Database active (scalable to 1000s of users, no git bloat).")
+    else:
+        print("[Database] 📁 Using local seen.json fallback.")
+
     seen_dict = load_seen_dict(SEEN_FILE, primary_email=primary_email)
-    print(f"[History] Loaded seen history for {len(seen_dict)} recipient(s).")
+    print(f"[History] Loaded seen history for {len(active_recipients)} active recipient(s).")
 
     # Handle dedicated weekly insights trigger (--weekly)
     if weekly:
@@ -780,6 +786,8 @@ def run(dry_run: bool = False, weekly: bool = False) -> None:
 
     today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
+    delivered_by_email: Dict[str, List[Dict[str, Any]]] = {}
+
     for recipient in active_recipients:
         name = recipient.get("name", "Friend").strip()
         email = recipient.get("email", "").strip()
@@ -792,7 +800,12 @@ def run(dry_run: bool = False, weekly: bool = False) -> None:
             print(f"[Warning] Recipient '{name}' has no email address. Skipping.")
             continue
 
-        recipient_seen = seen_dict.setdefault(email, {})
+        # Load seen history from Cloud Database (or local fallback)
+        recipient_seen = db.load_seen_for_user(email, expiry_days=getattr(config, "SEEN_EXPIRY_DAYS", 60))
+        # Also union with local seen_dict if present
+        local_seen_set = set(seen_dict.get(email, {}).keys())
+        recipient_seen.update(local_seen_set)
+
         print(f"\nEvaluating for {name} <{email}> (already seen {len(recipient_seen)} items):")
 
         # Filter courses: must belong to recipient's subscribed feeds, match keywords, and not be seen
@@ -870,28 +883,18 @@ def run(dry_run: bool = False, weekly: bool = False) -> None:
                 print(f"  -> ✅ Email successfully sent to {name} <{email}>!")
                 emails_sent += 1
 
-                # Update recipient's seen dictionary with full metadata for auto-pruning & insights
-                for item in selected_items:
-                    recipient_seen[item["link"]] = {
-                        "date": today_str,
-                        "title": item.get("title", ""),
-                        "type": item.get("type", "job"),
-                        "tags": item.get("tags") or [],
-                        "company": item.get("company", ""),
-                        "source": item.get("source", ""),
-                        "salary": item.get("salary", ""),
-                        "location": item.get("location", ""),
-                    }
+                # Record delivered items for batch save
+                delivered_by_email[email] = selected_items
 
             except Exception as e:
                 # Rule: If sending to one person fails, log the error and continue with the others.
                 print(f"  -> [Error] Failed to send email to {name} <{email}>: {e}")
                 errors_count += 1
 
-    # 6. Save updated seen history (pruned and with new items)
-    if not dry_run and (emails_sent > 0 or len(seen_dict) > 0):
-        save_seen_dict(seen_dict, SEEN_FILE)
-        print(f"\n[Storage] Updated '{os.path.basename(SEEN_FILE)}' with new seen entries.")
+    # 6. Save updated seen history to Supabase Cloud Database and backup
+    if not dry_run and emails_sent > 0:
+        db.record_seen_batch(delivered_by_email)
+        db.prune_expired_cloud(expiry_days=getattr(config, "SEEN_EXPIRY_DAYS", 60))
 
     # 7. Final execution summary for GitHub Actions log visibility
     print("\n" + "=" * 65)
