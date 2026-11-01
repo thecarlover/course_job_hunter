@@ -339,4 +339,181 @@ def test_recipients_json_from_secret(monkeypatch):
     assert loaded[0]["max_items"] == 10
 
 
+# ============================================================================
+# Tests for New Features: Auto-Prune, Weekly Insights, Multi-Board, Badges
+# ============================================================================
+
+def test_auto_pruning(tmp_path):
+    """Test that seen entries older than expiry_days are automatically pruned."""
+    from datetime import datetime, timezone, timedelta
+    from main import load_seen_dict, save_seen_dict
+
+    test_file = str(tmp_path / "prune_seen.json")
+    today = datetime.now(timezone.utc).date()
+    old_date = (today - timedelta(days=90)).isoformat()
+    recent_date = (today - timedelta(days=10)).isoformat()
+
+    sample_history = {
+        "user@example.com": {
+            "https://remotive.com/old-job": {"date": old_date, "title": "Old Job"},
+            "https://remotive.com/recent-job": {"date": recent_date, "title": "Recent Job"},
+        }
+    }
+
+    # Save to disk
+    save_seen_dict(sample_history, test_file)
+
+    # Load with 60 days expiration limit
+    pruned = load_seen_dict(test_file, expiry_days=60)
+
+    user_seen = pruned.get("user@example.com", {})
+    assert "https://remotive.com/old-job" not in user_seen
+    assert "https://remotive.com/recent-job" in user_seen
+
+
+def test_weekly_insights():
+    """Test generating weekly market insights report from recent seen history."""
+    from datetime import datetime, timezone, timedelta
+    from main import generate_weekly_insights
+
+    today = datetime.now(timezone.utc).date()
+    three_days_ago = (today - timedelta(days=3)).isoformat()
+
+    sample_seen = {
+        "dev@example.com": {
+            "https://job1.com": {
+                "date": three_days_ago,
+                "type": "job",
+                "title": "Senior Python Automation Engineer",
+                "company": "GitLab",
+                "tags": ["Python", "Automation", "AWS", "Docker"],
+            },
+            "https://job2.com": {
+                "date": three_days_ago,
+                "type": "job",
+                "title": "Cloud Cybersecurity Architect",
+                "company": "GitLab",
+                "tags": ["Cybersecurity", "Cloud", "Compliance"],
+            },
+            "https://course1.com": {
+                "date": three_days_ago,
+                "type": "course",
+                "title": "Complete AI & Agent Bootcamp",
+            },
+        }
+    }
+
+    report = generate_weekly_insights(sample_seen, days=7)
+    assert "WEEKLY TECH & JOB MARKET INSIGHTS" in report
+    assert "2 Remote Job(s)" in report
+    assert "1 Free Certification Course(s)" in report
+    assert "GitLab" in report
+    assert "Python" in report or "Cybersecurity" in report
+
+
+def test_jobicy_fetch():
+    """Test fetching and parsing jobs from Jobicy API."""
+    from main import fetch_jobicy_jobs
+
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.json.return_value = {
+        "jobs": [
+            {
+                "jobTitle": "Lead Python Developer",
+                "companyName": "TechCo",
+                "url": "https://jobicy.com/jobs/lead-python-dev",
+                "annualSalaryMin": 90000,
+                "annualSalaryMax": 120000,
+                "salaryCurrency": "USD",
+                "jobGeo": "Worldwide",
+                "jobType": ["Full-Time"],
+                "jobIndustry": ["Software Development"],
+                "jobLevel": "Senior",
+            }
+        ]
+    }
+
+    with patch("requests.get", return_value=mock_resp):
+        jobs = fetch_jobicy_jobs(["python"])
+
+        assert len(jobs) == 1
+        job = jobs[0]
+        assert job["source"] == "Jobicy"
+        assert job["title"] == "Lead Python Developer (TechCo)"
+        assert job["salary"] == "$90,000–$120,000 USD"
+        assert job["location"] == "Worldwide"
+        assert job["job_type"] == "Full-Time"
+
+
+def test_arbeitnow_fetch():
+    """Test fetching and parsing jobs from Arbeitnow API."""
+    from main import fetch_arbeitnow_jobs
+
+    mock_resp = MagicMock()
+    mock_resp.status_code = 200
+    mock_resp.json.return_value = {
+        "data": [
+            {
+                "title": "Senior Automation QA",
+                "company_name": "Acme Europe",
+                "url": "https://arbeitnow.com/jobs/acme-qa",
+                "remote": True,
+                "location": "Berlin",
+                "tags": ["QA", "Automation", "Python"],
+            }
+        ]
+    }
+
+    with patch("requests.get", return_value=mock_resp):
+        jobs = fetch_arbeitnow_jobs(["automation"])
+
+        assert len(jobs) == 1
+        job = jobs[0]
+        assert job["source"] == "Arbeitnow"
+        assert job["title"] == "Senior Automation QA (Acme Europe)"
+        assert "Remote" in job["location"]
+        assert job["job_type"] == "Remote"
+
+
+def test_job_badges_formatting():
+    """Test format_item produces rich badges for location, salary, job type, and visa."""
+    from main import format_item
+
+    job_with_all_badges = {
+        "type": "job",
+        "source": "Remotive",
+        "title": "Principal Architect (Canonical)",
+        "link": "https://remotive.com/arch",
+        "location": "Worldwide",
+        "salary": "$140k - $170k",
+        "job_type": "Full-Time",
+        "tags": ["python", "cloud", "visa sponsorship"],
+    }
+
+    formatted = format_item(job_with_all_badges)
+    assert "💼 Principal Architect (Canonical) [Remotive]" in formatted
+    assert "📍 Worldwide" in formatted
+    assert "💰 $140k - $170k" in formatted
+    assert "⏱️ Full-Time" in formatted
+    assert "🛂 Visa Sponsored" in formatted
+    assert "https://remotive.com/arch" in formatted
+
+
+def test_location_filter_matching():
+    """Test matches_location_filter helper."""
+    from main import matches_location_filter
+
+    allowed_keywords = ["worldwide", "anywhere", "remote", "global", "apac"]
+
+    assert matches_location_filter("Worldwide", allowed_keywords) is True
+    assert matches_location_filter("Anywhere (100% Remote)", allowed_keywords) is True
+    assert matches_location_filter("APAC / Remote", allowed_keywords) is True
+    assert matches_location_filter("", allowed_keywords) is True  # Unknown location allowed
+
+    # Negative match
+    assert matches_location_filter("United States Only (US Citizens)", allowed_keywords) is False
+
+
+
 

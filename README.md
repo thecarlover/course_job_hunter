@@ -85,7 +85,40 @@ git push
 
 ---
 
-## 3. How to Check If the Daily Run Worked
+## 3. New Features
+
+### 1. 🧹 Auto-Pruning
+- The `seen.json` file automatically tracks the date each opportunity was seen.
+- Any link older than **`SEEN_EXPIRY_DAYS = 60`** (configurable in `config.py`) is pruned automatically on every run.
+- Keeps `seen.json` clean, small, and fast forever without manual maintenance.
+
+### 2. 📊 Weekly Market & Skills Insights
+- Every Sunday (or by running `python main.py --weekly`), the bot analyzes all opportunities tracked during the past 7 days across all job boards.
+- Compiles an insights summary:
+  - Top in-demand skills and tools (e.g. Python, Automation, Cybersecurity, AWS, Docker).
+  - Top active hiring companies.
+  - Automatically appends this section to your Sunday digest!
+
+### 3. 🌐 Multi-Board Job Aggregation (100% Free APIs)
+- Instead of relying on just one source, the bot aggregates jobs across **3 free, zero-key job boards**:
+  1. **Remotive** (`https://remotive.com`) - Curated tech and automation roles.
+  2. **Jobicy** (`https://jobicy.com`) - International remote roles across development, security, and management.
+  3. **Arbeitnow** (`https://www.arbeitnow.com`) - Remote and visa-friendly tech roles.
+- Customize enabled boards in `config.py` with `JOB_SOURCES = ["remotive", "jobicy", "arbeitnow"]`.
+
+### 4. 🏷️ Salary, Location & Visa Badges
+- Every job now comes with rich, clean badges:
+  ```text
+  💼 Full-Stack Developer (Fluence International, Inc.) [Remotive]
+     📍 Worldwide | 💰 $3.5k–$5k/month | ⏱️ Contract | 🌍 Open Worldwide
+  https://remotive.com/...
+  ```
+- **Location filtering**: In `config.py`, customize `PREFERRED_LOCATIONS` (e.g. `worldwide`, `remote`, `apac`, `india`).
+- Toggle `STRICT_LOCATION_FILTER = True` to only receive jobs matching your preferred regions, or keep `False` to view all roles with transparent badges.
+
+---
+
+## 4. How to Check If the Daily Run Worked
 
 1. Go to your repository on GitHub.
 2. Click the **Actions** tab at the top.

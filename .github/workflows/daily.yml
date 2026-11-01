@@ -10,6 +10,12 @@ on:
     # If GitHub's queue dropped or delayed the first trigger, this backup ensures delivery by ~8:00 AM.
     - cron: '15 2 * * *'
   workflow_dispatch: # Allows manual trigger from GitHub Actions tab anytime
+    inputs:
+      weekly:
+        description: 'Generate and send Weekly Market Insights report only'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -41,7 +47,11 @@ jobs:
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
           RECIPIENTS_JSON: ${{ secrets.RECIPIENTS_JSON }}
         run: |
-          python main.py
+          if [ "${{ github.event.inputs.weekly }}" = "true" ]; then
+            python main.py --weekly
+          else
+            python main.py
+          fi
 
       - name: Commit and push updated seen.json
         run: |
