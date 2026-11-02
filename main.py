@@ -309,6 +309,36 @@ def matches_location_filter(location: str, preferred_locations: List[str]) -> bo
     return any(p.strip().lower() in loc_lower for p in preferred_locations if p.strip())
 
 
+def compose_digest_subject(
+    name: str,
+    courses_count: int,
+    jobs_count: int,
+    date_label: str = None,
+) -> str:
+    """
+    Generate an engaging, personalized email subject with exact item counts and date.
+    Examples:
+    - 🎓 4 Free Courses, 💼 8 Remote Jobs for you today (Nov 02)
+    - 🎓 5 Free Courses for you today (Nov 02)
+    - 💼 10 Remote Jobs for you today (Nov 02)
+    - Hi Ishita: 6 New Opportunities Matched (Nov 02)
+    """
+    if not date_label:
+        date_label = datetime.now(timezone.utc).strftime("%b %d")
+
+    parts = []
+    if courses_count > 0:
+        parts.append(f"🎓 {courses_count} Free Course{'s' if courses_count != 1 else ''}")
+    if jobs_count > 0:
+        parts.append(f"💼 {jobs_count} Remote Job{'s' if jobs_count != 1 else ''}")
+
+    if parts:
+        summary = ", ".join(parts)
+        return f"{summary} for you today ({date_label})"
+
+    return f"Daily Digest: Free Courses & Remote Jobs ({date_label})"
+
+
 # ============================================================================
 # Welcome Email System for Newly Added Friends
 # ============================================================================
@@ -779,7 +809,11 @@ def fetch_jobs(search_terms: List[str], seen: Any) -> List[Dict[str, Any]]:
 # Main Execution Workflow
 # ============================================================================
 
-def run(dry_run: bool = False, weekly: bool = False) -> None:
+def run(
+    dry_run: bool = False,
+    weekly: bool = False,
+    target_recipients: Optional[List[Dict[str, Any]]] = None,
+) -> None:
     """
     Main workflow:
     1. Validates required credentials upfront (exits cleanly with error if missing).
@@ -809,7 +843,7 @@ def run(dry_run: bool = False, weekly: bool = False) -> None:
         print("[Mode] Running in DRY-RUN mode. Notifications will NOT be sent.")
 
     # 2. Load recipients
-    recipients = load_recipients(RECIPIENTS_FILE)
+    recipients = target_recipients if target_recipients is not None else load_recipients(RECIPIENTS_FILE)
     active_recipients = [r for r in recipients if r.get("active", True)]
 
     print(f"[Recipients] Total configured: {len(recipients)} | Active: {len(active_recipients)}")
@@ -1004,8 +1038,13 @@ def run(dry_run: bool = False, weekly: bool = False) -> None:
         footer = f"\n\nWant changes to your keywords or want to stop these emails? Reply to {sender_email}."
         message = header + body + insights_block + footer
 
+        courses_count = sum(1 for item in selected_items if item.get("type") == "course")
+        jobs_count = sum(1 for item in selected_items if item.get("type") == "job")
+        digest_subject = compose_digest_subject(name, courses_count, jobs_count)
+
         if dry_run:
             print(f"\n--- [DRY RUN: Digest for {name} <{email}>] ---")
+            print(f"Subject: {digest_subject}")
             print(message)
             print("--- [END OF MESSAGE] ---")
         else:
@@ -1014,7 +1053,7 @@ def run(dry_run: bool = False, weekly: bool = False) -> None:
                 notifier.send(
                     message,
                     to_email=email,
-                    subject="Daily Digest: Free Courses & Remote Jobs",
+                    subject=digest_subject,
                 )
                 print(f"  -> ✅ Email successfully sent to {name} <{email}>!")
                 emails_sent += 1

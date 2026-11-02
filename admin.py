@@ -157,44 +157,86 @@ async def run_test(payload: Dict[str, Any]):
     weekly = payload.get("weekly", False)
 
     log_buffer = io.StringIO()
-
-    # Intercept print output
-    with contextlib.redirect_stdout(log_buffer):
-        try:
-            # If target user specified, temporarily filter recipients
-            original_recipients = main.load_recipients(RECIPIENTS_FILE)
-            if target != "ALL":
-                target_recipients = [r for r in original_recipients if r.get("email") == target]
-            else:
-                target_recipients = original_recipients
-
-            # Run engine
-            main.run(dry_run=dry_run, weekly=weekly)
-        except Exception as e:
-            print(f"[Engine Error]: {e}")
-
-    logs = log_buffer.getvalue()
-
-    # Extract digest previews from output
+    logs = ""
     digests = []
-    blocks = logs.split("--- [DRY RUN: Digest for ")
-    for block in blocks[1:]:
-        if "--- [END OF MESSAGE] ---" in block:
-            header_part, rest = block.split("]\n", 1)
-            content_part = rest.split("--- [END OF MESSAGE] ---")[0].strip()
-            # Count items in digest
-            items_count = content_part.count("🎓") + content_part.count("💼")
-            digests.append({
-                "recipient": header_part.strip(),
-                "content": content_part,
-                "items_count": items_count,
-            })
 
-    return JSONResponse({
-        "success": True,
-        "logs": logs,
-        "digests": digests,
-    })
+    try:
+        # Intercept print output
+        with contextlib.redirect_stdout(log_buffer):
+            try:
+                # If target user specified, filter recipients
+                original_recipients = main.load_recipients(RECIPIENTS_FILE)
+                if target != "ALL":
+                    target_recipients = [r for r in original_recipients if r.get("email") == target]
+                else:
+                    target_recipients = None
+
+                # Run engine
+                main.run(dry_run=dry_run, weekly=weekly, target_recipients=target_recipients)
+            except Exception as e:
+                print(f"[Engine Error]: {e}")
+
+        logs = log_buffer.getvalue()
+
+        # Extract regular digest previews from output safely
+        blocks = logs.split("--- [DRY RUN: Digest for ")
+        for block in blocks[1:]:
+            if "--- [END OF MESSAGE] ---" in block:
+                content_part, _, _ = block.partition("--- [END OF MESSAGE] ---")
+                lines = content_part.splitlines()
+                if lines:
+                    header_line = lines[0].replace("] ---", "").replace("]", "").strip()
+                    body = "\n".join(lines[1:]).strip()
+                    subject_line = ""
+                    if body.startswith("Subject:"):
+                        subject_part, _, remaining_body = body.partition("\n")
+                        subject_line = subject_part.replace("Subject:", "").strip()
+                        body = remaining_body.strip()
+
+                    items_count = body.count("🎓") + body.count("💼")
+                    digests.append({
+                        "recipient": header_line,
+                        "subject": subject_line,
+                        "content": body,
+                        "items_count": items_count,
+                    })
+
+        # Extract welcome email previews if present
+        welcome_blocks = logs.split("--- [DRY RUN: Welcome Email for ")
+        for block in welcome_blocks[1:]:
+            if "--- [END OF WELCOME EMAIL] ---" in block:
+                content_part, _, _ = block.partition("--- [END OF WELCOME EMAIL] ---")
+                lines = content_part.splitlines()
+                if lines:
+                    header_line = lines[0].replace("] ---", "").replace("]", "").strip()
+                    body = "\n".join(lines[1:]).strip()
+                    subject_line = ""
+                    if body.startswith("Subject:"):
+                        subject_part, _, remaining_body = body.partition("\n")
+                        subject_line = subject_part.replace("Subject:", "").strip()
+                        body = remaining_body.strip()
+
+                    digests.append({
+                        "recipient": f"👋 Welcome Email: {header_line}",
+                        "subject": subject_line,
+                        "content": body,
+                        "items_count": 1,
+                    })
+
+        return JSONResponse({
+            "success": True,
+            "logs": logs,
+            "digests": digests,
+        })
+    except Exception as e:
+        import traceback
+        err_msg = traceback.format_exc()
+        return JSONResponse({
+            "success": False,
+            "error": str(e),
+            "logs": logs + f"\n\n[Server Handler Error]:\n{err_msg}",
+            "digests": digests,
+        })
 
 
 # ============================================================================

@@ -56,5 +56,24 @@
     "max_items": 10,
     "active": true,
     "course_feeds": []
+  },
+  {
+    "name": "Ishani Ganguly",
+    "email": "Ishaniganguly2610@gmail.com",
+    "keywords": [
+      "Project Management",
+      "MBA",
+      "Business",
+      "BIS",
+      "Regulatory",
+      "Free"
+    ],
+    "job_searches": [
+      "Project Management",
+      "Regulatory"
+    ],
+    "max_items": 10,
+    "active": true,
+    "course_feeds": []
   }
 ]
