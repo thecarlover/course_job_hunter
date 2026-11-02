@@ -540,7 +540,7 @@ async def get_weekly_insights_preview():
 
 if __name__ == "__main__":
     local_ip = get_local_ip()
-    port = 8000
+    port = int(os.environ.get("PORT", 8000))
     print("\n" + "=" * 65)
     print(" 🚀 Course & Job Hunter — Admin Control Center")
     print("=" * 65)

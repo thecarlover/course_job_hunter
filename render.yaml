@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: course-job-hunter-admin
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn admin:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: ADMIN_PASSWORD
+        value: hunter2026
+      - key: SUPABASE_URL
+        value: https://totcwrqgyrdwuylgyccb.supabase.co
+      - key: SUPABASE_KEY
+        value: sb_publishable_i8emK6yLcbCARlWWyc1X1Q_PSJRgeZ6
