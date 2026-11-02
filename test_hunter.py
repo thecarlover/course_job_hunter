@@ -678,3 +678,45 @@ def test_compose_digest_subject():
     assert "for Friend (" in subj6
 
 
+def test_admin_auth_and_network_endpoints():
+    """Test admin portal password protection and network phone endpoints."""
+    from fastapi.testclient import TestClient
+    from admin import app, ADMIN_PASSWORD
+
+    client = TestClient(app)
+
+    # 1. Unauthenticated request to protected endpoint -> 401
+    res = client.get("/api/subscribers")
+    assert res.status_code == 401
+    assert res.json().get("auth_required") is True
+
+    # 2. Login with wrong password -> 401
+    res = client.post("/api/auth/login", json={"password": "wrong_password_123"})
+    assert res.status_code == 401
+    assert res.json().get("success") is False
+
+    # 3. Login with correct password -> 200 & token
+    res = client.post("/api/auth/login", json={"password": ADMIN_PASSWORD})
+    assert res.status_code == 200
+    assert res.json().get("success") is True
+    assert res.json().get("token") == ADMIN_PASSWORD
+
+    # 4. Request with X-Admin-Password header -> 200
+    res = client.get("/api/subscribers", headers={"X-Admin-Password": ADMIN_PASSWORD})
+    assert res.status_code == 200
+    assert isinstance(res.json(), list)
+
+    # 5. Network info for phone access -> 200
+    res = client.get("/api/network-info")
+    assert res.status_code == 200
+    data = res.json()
+    assert "local_ip" in data
+    assert "phone_url" in data
+    assert ":8000" in data["phone_url"]
+
+    # 6. Public HTML dashboard serves without password -> 200
+    res = client.get("/")
+    assert res.status_code == 200
+    assert "Course & Job Hunter" in res.text
+
+

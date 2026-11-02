@@ -52,13 +52,19 @@
       </div>
 
       <!-- Cloud DB & System Badges -->
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2 sm:gap-3">
         <div id="dbBadge" class="hidden sm:flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700">
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
           <span class="text-slate-300">Supabase Connected</span>
         </div>
+        <button onclick="openPhoneModal()" class="text-xs px-3 py-1.5 rounded-lg bg-indigo-600/80 hover:bg-indigo-600 text-white font-medium shadow-md transition flex items-center gap-1.5" title="Access on Phone">
+          <i class="fa-solid fa-mobile-screen-button"></i> <span class="hidden sm:inline">Phone Access</span>
+        </button>
         <button onclick="triggerQuickDryRun()" class="text-xs px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium shadow-md transition flex items-center gap-1.5">
-          <i class="fa-solid fa-play"></i> Quick Dry-Run
+          <i class="fa-solid fa-play"></i> <span class="hidden sm:inline">Quick Dry-Run</span>
+        </button>
+        <button onclick="logoutAdmin()" class="text-xs px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-rose-900/40 text-slate-300 hover:text-rose-400 border border-slate-700 transition flex items-center gap-1.5" title="Lock / Log Out">
+          <i class="fa-solid fa-lock"></i>
         </button>
       </div>
     </div>
@@ -287,7 +293,7 @@
 
   <!-- Add/Edit Subscriber Modal -->
   <div id="subscriberModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <h3 id="modalTitle" class="text-sm font-semibold text-white">Add New Subscriber</h3>
         <button onclick="closeSubscriberModal()" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark"></i></button>
@@ -302,22 +308,28 @@
         <div>
           <label class="block text-xs font-medium text-slate-400 mb-1">Email Address</label>
           <input type="email" id="subEmail" required placeholder="e.g. alex@example.com" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+          <p id="subEmailHint" class="text-[10px] text-slate-500 mt-1 hidden">Email is the primary ID and cannot be modified directly.</p>
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-slate-400 mb-1">Keywords (Comma separated)</label>
-          <input type="text" id="subKeywords" required placeholder="python, automation, excel, ai" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+          <label class="block text-xs font-medium text-slate-400 mb-1">Course & Tech Keywords (Comma separated)</label>
+          <input type="text" id="subKeywords" required placeholder="python, automation, excel, ai, project management" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
         </div>
 
         <div>
-          <label class="block text-xs font-medium text-slate-400 mb-1">Job Searches (Comma separated)</label>
-          <input type="text" id="subSearches" placeholder="python, automation" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+          <label class="block text-xs font-medium text-slate-400 mb-1">Job Search Terms (Comma separated)</label>
+          <input type="text" id="subSearches" placeholder="project management, regulatory, compliance, python" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Preferred Locations (Comma separated, optional)</label>
+          <input type="text" id="subLocations" placeholder="e.g. worldwide, remote, india, apac, usa" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-medium text-slate-400 mb-1">Max Items</label>
-            <input type="number" id="subMaxItems" value="15" min="1" max="50" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
+            <label class="block text-xs font-medium text-slate-400 mb-1">Max Items Daily</label>
+            <input type="number" id="subMaxItems" value="10" min="1" max="50" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500">
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-400 mb-1">Status</label>
@@ -330,9 +342,77 @@
 
         <div class="pt-3 flex gap-2">
           <button type="button" onclick="closeSubscriberModal()" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-medium transition">Cancel</button>
-          <button type="submit" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold shadow transition">Save Subscriber</button>
+          <button type="submit" id="subSubmitBtn" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold shadow transition">Save Subscriber</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Phone Access & QR Code Modal -->
+  <div id="phoneModal" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl text-center space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+          <i class="fa-solid fa-mobile-screen-button text-indigo-400"></i> Open on Your Phone
+        </h3>
+        <button onclick="closePhoneModal()" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <p class="text-xs text-slate-300">Connect your phone to the <strong>same Wi-Fi network</strong>, then scan the QR code or tap the URL below:</p>
+
+      <div class="bg-white p-3 rounded-2xl inline-block shadow-lg mx-auto">
+        <img id="phoneQrImg" src="" alt="Phone QR Code" class="w-44 h-44 mx-auto block" />
+      </div>
+
+      <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 flex items-center justify-between gap-2">
+        <span id="phoneUrlText" class="text-xs font-mono text-emerald-400 truncate select-all">Loading...</span>
+        <button onclick="copyPhoneUrl()" class="px-2.5 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-white rounded-lg transition shrink-0" id="btnCopyPhone">
+          <i class="fa-solid fa-copy"></i> Copy
+        </button>
+      </div>
+
+      <div class="text-[11px] text-slate-400 bg-slate-800/60 p-2.5 rounded-lg border border-slate-700/50 text-left space-y-1">
+        <div class="font-medium text-slate-300 flex items-center gap-1.5">
+          <i class="fa-solid fa-key text-amber-400"></i> Password Protected
+        </div>
+        <div class="text-slate-400">Use your admin password to log in and manage everything right from your mobile browser!</div>
+      </div>
+
+      <button onclick="closePhoneModal()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-medium transition">Done</button>
+    </div>
+  </div>
+
+  <!-- Admin Login Modal -->
+  <div id="loginModal" class="hidden fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-sm p-6 shadow-2xl space-y-4">
+      <div class="text-center space-y-2">
+        <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white font-bold text-xl mx-auto">
+          🎓💼
+        </div>
+        <h2 class="text-base font-bold text-white">Course & Job Hunter</h2>
+        <p class="text-xs text-slate-400">Admin Authentication Required</p>
+      </div>
+
+      <div id="loginError" class="hidden text-xs text-rose-400 bg-rose-500/10 border border-rose-500/20 p-2.5 rounded-lg text-center"></div>
+
+      <form onsubmit="handleLoginSubmit(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-medium text-slate-400 mb-1">Admin Password</label>
+          <div class="relative">
+            <input type="password" id="loginPasswordInput" required placeholder="Enter admin password..." class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500 pr-9">
+            <button type="button" onclick="togglePasswordVisibility()" class="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-200 text-xs">
+              <i id="passwordEyeIcon" class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" id="btnLoginSubmit" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold shadow-lg shadow-emerald-600/20 transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-unlock"></i> Unlock Dashboard
+        </button>
+      </form>
+      <div class="text-center text-[10px] text-slate-500">
+        Configured via <code class="text-slate-400">ADMIN_PASSWORD</code> in <code class="text-slate-400">.env</code>.
+      </div>
     </div>
   </div>
 
@@ -340,6 +420,149 @@
   <script>
     let currentSubscribers = [];
     let currentDbRows = [];
+    let currentEditingEmail = null;
+    let cachedNetworkInfo = null;
+
+    // Authentication Headers
+    function getAuthHeaders() {
+      const token = localStorage.getItem('admin_token') || '';
+      return {
+        'Content-Type': 'application/json',
+        'X-Admin-Password': token,
+        'Authorization': 'Bearer ' + token
+      };
+    }
+
+    // Check Authentication Status
+    async function checkAuthStatus() {
+      try {
+        const res = await fetch('/api/auth/status', { headers: getAuthHeaders() });
+        const data = await res.json();
+        if (!data.authenticated && data.password_required) {
+          openLoginModal();
+        } else {
+          closeLoginModal();
+          loadSubscribers();
+        }
+      } catch (err) {
+        console.error("Auth check failed:", err);
+        openLoginModal();
+      }
+    }
+
+    function openLoginModal() {
+      document.getElementById('loginModal').classList.remove('hidden');
+      document.getElementById('loginPasswordInput').value = '';
+      document.getElementById('loginError').classList.add('hidden');
+      setTimeout(() => document.getElementById('loginPasswordInput').focus(), 150);
+    }
+
+    function closeLoginModal() {
+      document.getElementById('loginModal').classList.add('hidden');
+    }
+
+    function togglePasswordVisibility() {
+      const input = document.getElementById('loginPasswordInput');
+      const icon = document.getElementById('passwordEyeIcon');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+      } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+      }
+    }
+
+    async function handleLoginSubmit(e) {
+      e.preventDefault();
+      const password = document.getElementById('loginPasswordInput').value.trim();
+      const btn = document.getElementById('btnLoginSubmit');
+      const errEl = document.getElementById('loginError');
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Verifying...`;
+      errEl.classList.add('hidden');
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          localStorage.setItem('admin_token', data.token);
+          closeLoginModal();
+          loadSubscribers();
+        } else {
+          errEl.innerText = data.error || "Incorrect password. Please try again.";
+          errEl.classList.remove('hidden');
+        }
+      } catch (err) {
+        errEl.innerText = "Connection error: " + err.message;
+        errEl.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-unlock"></i> Unlock Dashboard`;
+      }
+    }
+
+    async function logoutAdmin() {
+      if (!confirm("Are you sure you want to lock the admin portal?")) return;
+      localStorage.removeItem('admin_token');
+      try {
+        await fetch('/api/auth/logout', { method: 'POST', headers: getAuthHeaders() });
+      } catch (e) {}
+      openLoginModal();
+    }
+
+    // Phone / Mobile Access
+    async function openPhoneModal() {
+      document.getElementById('phoneModal').classList.remove('hidden');
+      const urlTextEl = document.getElementById('phoneUrlText');
+      const qrImgEl = document.getElementById('phoneQrImg');
+
+      if (cachedNetworkInfo) {
+        renderPhoneInfo(cachedNetworkInfo);
+        return;
+      }
+
+      urlTextEl.innerText = "Discovering LAN IP...";
+      try {
+        const res = await fetch('/api/network-info', { headers: getAuthHeaders() });
+        const data = await res.json();
+        cachedNetworkInfo = data;
+        renderPhoneInfo(data);
+      } catch (err) {
+        const fallbackUrl = window.location.origin;
+        urlTextEl.innerText = fallbackUrl;
+        qrImgEl.src = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' + encodeURIComponent(fallbackUrl);
+      }
+    }
+
+    function renderPhoneInfo(info) {
+      const phoneUrl = info.phone_url || window.location.origin;
+      document.getElementById('phoneUrlText').innerText = phoneUrl;
+      document.getElementById('phoneQrImg').src = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' + encodeURIComponent(phoneUrl);
+    }
+
+    function closePhoneModal() {
+      document.getElementById('phoneModal').classList.add('hidden');
+    }
+
+    function copyPhoneUrl() {
+      const url = document.getElementById('phoneUrlText').innerText;
+      navigator.clipboard.writeText(url).then(() => {
+        const btn = document.getElementById('btnCopyPhone');
+        btn.innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i> Copied!`;
+        setTimeout(() => {
+          btn.innerHTML = `<i class="fa-solid fa-copy"></i> Copy`;
+        }, 2000);
+      });
+    }
 
     // Switch active tab
     function switchTab(tabId) {
@@ -361,7 +584,9 @@
     // Load subscribers list
     async function loadSubscribers() {
       try {
-        const res = await fetch('/api/subscribers');
+        const res = await fetch('/api/subscribers', { headers: getAuthHeaders() });
+        if (res.status === 401) { openLoginModal(); return; }
+
         const data = await res.json();
         currentSubscribers = data;
         document.getElementById('subscriberCount').innerText = data.length;
@@ -386,18 +611,25 @@
 
           const kwBadges = (sub.keywords || []).map(k => `<span class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 text-[10px] border border-slate-700">${k}</span>`).join(' ');
           const searchBadges = (sub.job_searches || []).map(s => `<span class="px-1.5 py-0.5 rounded bg-indigo-950/60 text-indigo-300 text-[10px] border border-indigo-800/40">${s}</span>`).join(' ');
+          const locText = (sub.preferred_locations && sub.preferred_locations.length > 0)
+            ? `<div class="mt-1 text-[10px] text-slate-400 font-mono">📍 ${sub.preferred_locations.join(', ')}</div>`
+            : '';
 
           tbody.innerHTML += `
             <tr class="hover:bg-slate-800/30 transition">
               <td class="px-4 py-3">
                 <div class="font-medium text-white">${sub.name}</div>
                 <div class="text-xs text-slate-400">${sub.email}</div>
+                ${locText}
               </td>
               <td class="px-4 py-3">${statusBadge}</td>
               <td class="px-4 py-3 max-w-xs truncate">${kwBadges}</td>
               <td class="px-4 py-3 max-w-xs truncate">${searchBadges}</td>
-              <td class="px-4 py-3 text-center font-mono">${sub.max_items || 15}</td>
-              <td class="px-4 py-3 text-right space-x-2">
+              <td class="px-4 py-3 text-center font-mono">${sub.max_items || 10}</td>
+              <td class="px-4 py-3 text-right space-x-2 whitespace-nowrap">
+                <button onclick="openEditSubscriberModal('${sub.email}')" class="text-xs text-slate-400 hover:text-indigo-400 transition" title="Edit Configuration">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </button>
                 <button onclick="toggleSubscriberActive('${sub.email}', ${!sub.active})" class="text-xs text-slate-400 hover:text-emerald-400 transition" title="Toggle Active">
                   <i class="fa-solid fa-power-off"></i>
                 </button>
@@ -415,49 +647,107 @@
 
     // Toggle active status
     async function toggleSubscriberActive(email, newStatus) {
-      const sub = currentSubscribers.find(s => s.email === email);
+      const sub = currentSubscribers.find(s => s.email.toLowerCase() === email.toLowerCase());
       if (!sub) return;
       sub.active = newStatus;
-      await fetch(`/api/subscribers/${encodeURIComponent(email)}`, {
+      const res = await fetch(`/api/subscribers/${encodeURIComponent(email)}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getAuthHeaders(),
         body: JSON.stringify(sub)
       });
+      if (res.status === 401) { openLoginModal(); return; }
       loadSubscribers();
     }
 
     // Delete subscriber
     async function deleteSubscriber(email) {
       if (!confirm(`Are you sure you want to remove ${email}?`)) return;
-      await fetch(`/api/subscribers/${encodeURIComponent(email)}`, { method: 'DELETE' });
+      const res = await fetch(`/api/subscribers/${encodeURIComponent(email)}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
+      if (res.status === 401) { openLoginModal(); return; }
       loadSubscribers();
     }
 
-    // Add subscriber modal
+    // Open Add Modal
     function openAddSubscriberModal() {
+      currentEditingEmail = null;
+      document.getElementById('modalTitle').innerText = 'Add New Subscriber';
+      document.getElementById('subSubmitBtn').innerText = 'Save Subscriber';
+      document.getElementById('subEmail').disabled = false;
+      document.getElementById('subEmailHint').classList.add('hidden');
       document.getElementById('subscriberForm').reset();
+      document.getElementById('subMaxItems').value = '10';
+      document.getElementById('subActive').value = 'true';
       document.getElementById('subscriberModal').classList.remove('hidden');
     }
+
+    // Open Edit Modal
+    function openEditSubscriberModal(email) {
+      const sub = currentSubscribers.find(s => s.email.toLowerCase() === email.toLowerCase());
+      if (!sub) return;
+
+      currentEditingEmail = sub.email;
+      document.getElementById('modalTitle').innerHTML = `<i class="fa-solid fa-pen-to-square mr-1.5 text-indigo-400"></i> Edit: ${sub.name}`;
+      document.getElementById('subSubmitBtn').innerText = 'Save Changes';
+
+      document.getElementById('subName').value = sub.name || '';
+      document.getElementById('subEmail').value = sub.email || '';
+      document.getElementById('subEmail').disabled = true;
+      document.getElementById('subEmailHint').classList.remove('hidden');
+
+      document.getElementById('subKeywords').value = (sub.keywords || []).join(', ');
+      document.getElementById('subSearches').value = (sub.job_searches || []).join(', ');
+      document.getElementById('subLocations').value = (sub.preferred_locations || []).join(', ');
+      document.getElementById('subMaxItems').value = sub.max_items || 10;
+      document.getElementById('subActive').value = sub.active !== false ? 'true' : 'false';
+
+      document.getElementById('subscriberModal').classList.remove('hidden');
+    }
+
     function closeSubscriberModal() {
       document.getElementById('subscriberModal').classList.add('hidden');
+      currentEditingEmail = null;
+      document.getElementById('subEmail').disabled = false;
     }
+
     async function saveSubscriber(e) {
       e.preventDefault();
-      const newSub = {
-        name: document.getElementById('subName').value.trim(),
-        email: document.getElementById('subEmail').value.trim(),
-        keywords: document.getElementById('subKeywords').value.split(',').map(s => s.trim()).filter(Boolean),
-        job_searches: document.getElementById('subSearches').value.split(',').map(s => s.trim()).filter(Boolean),
-        max_items: parseInt(document.getElementById('subMaxItems').value) || 15,
-        active: document.getElementById('subActive').value === 'true',
+      const name = document.getElementById('subName').value.trim();
+      const email = (currentEditingEmail || document.getElementById('subEmail').value).trim();
+      const keywords = document.getElementById('subKeywords').value.split(',').map(s => s.trim()).filter(Boolean);
+      const job_searches = document.getElementById('subSearches').value.split(',').map(s => s.trim()).filter(Boolean);
+      const preferred_locations = document.getElementById('subLocations').value.split(',').map(s => s.trim()).filter(Boolean);
+      const max_items = parseInt(document.getElementById('subMaxItems').value) || 10;
+      const active = document.getElementById('subActive').value === 'true';
+
+      const subscriberPayload = {
+        name,
+        email,
+        keywords,
+        job_searches,
+        preferred_locations,
+        max_items,
+        active,
         course_feeds: []
       };
 
-      await fetch('/api/subscribers', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newSub)
-      });
+      if (currentEditingEmail) {
+        const res = await fetch(`/api/subscribers/${encodeURIComponent(currentEditingEmail)}`, {
+          method: 'PUT',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(subscriberPayload)
+        });
+        if (res.status === 401) { openLoginModal(); return; }
+      } else {
+        const res = await fetch('/api/subscribers', {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify(subscriberPayload)
+        });
+        if (res.status === 401) { openLoginModal(); return; }
+      }
 
       closeSubscriberModal();
       loadSubscribers();
@@ -481,9 +771,14 @@
       try {
         const res = await fetch('/api/test-run', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: getAuthHeaders(),
           body: JSON.stringify({ target, dry_run: dryRun, weekly })
         });
+
+        if (res.status === 401) {
+          openLoginModal();
+          return;
+        }
 
         if (!res.ok) {
           const errText = await res.text();
@@ -530,7 +825,6 @@
     }
 
     function formatLinks(text) {
-      // Auto-hyperlink URLs in preview
       return text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="text-emerald-400 underline hover:text-emerald-300 break-all">$1</a>');
     }
 
@@ -550,7 +844,9 @@
       tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-500">Loading live data from Supabase...</td></tr>`;
 
       try {
-        const res = await fetch('/api/supabase/items');
+        const res = await fetch('/api/supabase/items', { headers: getAuthHeaders() });
+        if (res.status === 401) { openLoginModal(); return; }
+
         const data = await res.json();
         currentDbRows = data.items || [];
         document.getElementById('dbRowCount').innerText = currentDbRows.length;
@@ -605,7 +901,12 @@
 
       if (!confirm(`Are you sure you want to clear seen history for '${email}'?`)) return;
 
-      const res = await fetch(`/api/supabase/items?user_email=${encodeURIComponent(email)}`, { method: 'DELETE' });
+      const res = await fetch(`/api/supabase/items?user_email=${encodeURIComponent(email)}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
+      if (res.status === 401) { openLoginModal(); return; }
+
       const data = await res.json();
       alert(data.message || "History cleared.");
       loadSupabaseRows();
@@ -621,7 +922,9 @@
       container.innerHTML = `<div class="text-xs text-slate-400 p-6 text-center col-span-2"><i class="fa-solid fa-circle-notch fa-spin text-emerald-400 mr-2"></i> Pinging live RSS feeds and Job APIs...</div>`;
 
       try {
-        const res = await fetch('/api/sources/test');
+        const res = await fetch('/api/sources/test', { headers: getAuthHeaders() });
+        if (res.status === 401) { openLoginModal(); return; }
+
         const data = await res.json();
 
         container.innerHTML = data.sources.map(s => `
@@ -654,7 +957,9 @@
       const pre = document.getElementById('weeklyInsightsPre');
       pre.innerText = "Analyzing opportunities from the last 7 days...";
       try {
-        const res = await fetch('/api/weekly-insights');
+        const res = await fetch('/api/weekly-insights', { headers: getAuthHeaders() });
+        if (res.status === 401) { openLoginModal(); return; }
+
         const data = await res.json();
         pre.innerText = data.report || "No insights report generated.";
       } catch (err) {
@@ -662,8 +967,8 @@
       }
     }
 
-    // Initialize
-    loadSubscribers();
+    // Initialize with auth check
+    checkAuthStatus();
   </script>
 </body>
 </html>

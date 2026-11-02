@@ -13,6 +13,7 @@ import contextlib
 import io
 import json
 import os
+import socket
 import sys
 from typing import Any, Dict, List, Optional
 
@@ -24,12 +25,129 @@ import uvicorn
 import config
 import db
 import main
+import notifier
+
+# Ensure environment variables are loaded
+notifier.load_dotenv()
+ADMIN_PASSWORD = (os.environ.get("ADMIN_PASSWORD") or "hunter2026").strip()
 
 app = fastapi.FastAPI(title="Course & Job Hunter Admin Portal")
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 RECIPIENTS_FILE = os.path.join(BASE_DIR, "recipients.json")
+
+
+def get_local_ip() -> str:
+    """Retrieve the primary local LAN IP address of this machine for phone/mobile access."""
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.settimeout(0.5)
+        s.connect(('8.8.8.8', 80))
+        local_ip = s.getsockname()[0]
+        s.close()
+        return local_ip
+    except Exception:
+        return "127.0.0.1"
+
+
+def is_authenticated(request: fastapi.Request) -> bool:
+    """Verify that the request has the correct password via header, cookie, or query param."""
+    if not ADMIN_PASSWORD:
+        return True
+
+    # 1. Custom Header
+    token = request.headers.get("X-Admin-Password") or ""
+    if token == ADMIN_PASSWORD:
+        return True
+
+    # 2. Authorization Header
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        if auth_header[7:].strip() == ADMIN_PASSWORD:
+            return True
+
+    # 3. Cookie
+    if request.cookies.get("admin_token") == ADMIN_PASSWORD:
+        return True
+
+    # 4. Query param
+    if request.query_params.get("token") == ADMIN_PASSWORD:
+        return True
+
+    return False
+
+
+@app.middleware("http")
+async def auth_middleware(request: fastapi.Request, call_next):
+    """Enforce authentication for protected API endpoints."""
+    path = request.url.path
+    public_paths = [
+        "/",
+        "/favicon.ico",
+        "/api/auth/login",
+        "/api/auth/status",
+        "/api/auth/logout",
+        "/api/network-info",
+    ]
+    if path in public_paths:
+        return await call_next(request)
+
+    if path.startswith("/api/"):
+        if not is_authenticated(request):
+            return JSONResponse({"error": "Unauthorized: Admin password required", "auth_required": True}, status_code=401)
+
+    return await call_next(request)
+
+
+# ============================================================================
+# Authentication & Network APIs
+# ============================================================================
+
+@app.post("/api/auth/login")
+async def auth_login(payload: Dict[str, Any], response: fastapi.Response):
+    """Validate admin password and issue authentication token/cookie."""
+    password = (payload.get("password") or "").strip()
+    if not ADMIN_PASSWORD or password == ADMIN_PASSWORD:
+        response.set_cookie(
+            key="admin_token",
+            value=ADMIN_PASSWORD,
+            httponly=False,
+            samesite="lax",
+            max_age=86400 * 30,  # 30 days
+        )
+        return JSONResponse({"success": True, "token": ADMIN_PASSWORD})
+    return JSONResponse({"success": False, "error": "Incorrect password. Please try again."}, status_code=401)
+
+
+@app.get("/api/auth/status")
+async def auth_status(request: fastapi.Request):
+    """Check current authentication status."""
+    return JSONResponse({
+        "authenticated": is_authenticated(request),
+        "password_required": bool(ADMIN_PASSWORD),
+    })
+
+
+@app.post("/api/auth/logout")
+async def auth_logout(response: fastapi.Response):
+    """Log out and remove session cookie."""
+    response.delete_cookie("admin_token")
+    return JSONResponse({"success": True})
+
+
+@app.get("/api/network-info")
+async def get_network_info():
+    """Return local LAN IP and mobile connection URL."""
+    local_ip = get_local_ip()
+    port = 8000
+    phone_url = f"http://{local_ip}:{port}"
+    return JSONResponse({
+        "local_ip": local_ip,
+        "port": port,
+        "phone_url": phone_url,
+    })
+
 
 
 # ============================================================================
@@ -109,6 +227,11 @@ async def update_subscriber(email: str, updated_sub: Dict[str, Any]):
     found = False
     for i, s in enumerate(subscribers):
         if s.get("email", "").lower() == clean_email:
+            # Preserve existing course_feeds or welcome_sent if not provided in updated_sub
+            if "course_feeds" not in updated_sub:
+                updated_sub["course_feeds"] = s.get("course_feeds", [])
+            if "welcome_sent" in s and "welcome_sent" not in updated_sub:
+                updated_sub["welcome_sent"] = s.get("welcome_sent")
             subscribers[i] = updated_sub
             found = True
             break
@@ -416,10 +539,15 @@ async def get_weekly_insights_preview():
 
 
 if __name__ == "__main__":
+    local_ip = get_local_ip()
+    port = 8000
     print("\n" + "=" * 65)
     print(" 🚀 Course & Job Hunter — Admin Control Center")
     print("=" * 65)
-    print("  Local URL   : http://localhost:8000")
-    print("  Press Ctrl+C to stop the server anytime.")
-    print("=" * 65 + "\n")
-    uvicorn.run("admin:app", host="127.0.0.1", port=8000, reload=True)
+    print(f"  💻 On this Mac   : http://localhost:{port}")
+    print(f"  📱 On your Phone : http://{local_ip}:{port}")
+    print(f"  🔐 Admin Password: {ADMIN_PASSWORD}")
+    print("=" * 65)
+    print("  Connect your phone to the same Wi-Fi network and open the phone URL.")
+    print("  Press Ctrl+C to stop the server anytime.\n")
+    uvicorn.run("admin:app", host="0.0.0.0", port=port, reload=True)
