@@ -40,5 +40,21 @@
     ],
     "course_feeds": [],
     "max_items": 10
+  },
+  {
+    "name": "Ishita",
+    "email": "joshi.ishita0516@gmail.com",
+    "keywords": [
+      "Project Management",
+      "MBA",
+      "Business",
+      "English"
+    ],
+    "job_searches": [
+      "Project Management"
+    ],
+    "max_items": 10,
+    "active": true,
+    "course_feeds": []
   }
 ]

@@ -100,6 +100,7 @@ def add_friend_interactive():
         "job_searches": job_searches,
         "course_feeds": [],
         "max_items": max_items,
+        "welcome_sent": False,
     }
 
     recipients.append(new_person)
@@ -112,7 +113,23 @@ def add_friend_interactive():
     print(f"   Max items: {max_items}")
     print(f"   Status: Active")
     print("=" * 55)
-    print("They will start receiving digests on the next run.")
+
+    send_now = input("\nWould you like to send their Welcome Email right now? (Y/n): ").strip().lower()
+    if send_now != "n":
+        try:
+            import notifier
+            from main import compose_welcome_message, mark_welcome_sent, load_seen_dict
+            welcome_msg = compose_welcome_message(name, email, keywords, job_searches, max_items)
+            print(f"Sending welcome email to {email}...")
+            notifier.send(welcome_msg, to_email=email, subject=f"👋 Welcome to Course & Job Hunter, {name}!")
+            seen_dict = load_seen_dict()
+            mark_welcome_sent(new_person, seen_dict, RECIPIENTS_FILE)
+            print(f"✅ Welcome email successfully sent to {name} <{email}>!")
+        except Exception as e:
+            print(f"[Notice] Could not send welcome email immediately ({e}).")
+            print("It will be sent automatically on the next daily run.")
+    else:
+        print("Welcome email will be sent automatically on the next daily run.")
 
 
 if __name__ == "__main__":

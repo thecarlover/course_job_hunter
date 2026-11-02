@@ -310,6 +310,117 @@ def matches_location_filter(location: str, preferred_locations: List[str]) -> bo
 
 
 # ============================================================================
+# Welcome Email System for Newly Added Friends
+# ============================================================================
+
+def compose_welcome_message(
+    name: str,
+    email: str,
+    keywords: List[str],
+    job_searches: List[str],
+    max_items: int,
+) -> str:
+    """Compose a warm, clean introductory welcome email for a new friend."""
+    sender_email = notifier.get_sender_email() or "ojasvimittalofficial@gmail.com"
+    kw_str = ", ".join(keywords) if keywords else "All curated courses"
+    js_str = ", ".join(job_searches) if job_searches else "All remote opportunities"
+
+    return f"""Hi {name},
+
+🎉 Welcome to Course & Job Hunter!
+
+You are all set to receive your personalized daily morning digest of 100% free online courses, certification coupons, and remote job openings.
+
+Here is a summary of your subscription:
+• 🎯 Your Keywords      : {kw_str}
+• 💼 Your Job Searches  : {js_str}
+• 📦 Max Items Daily    : {max_items} opportunities
+• ⏰ Delivery Schedule  : Every morning (~8:00 AM IST)
+
+How it works:
+1. Every morning, we scan top learning platforms (freeCodeCamp, Discudemy, AnswersQ, Reddit) and verified remote job boards (Remotive, Jobicy, Arbeitnow).
+2. We match opportunities against your specific keywords.
+3. We track what you've received so you never see the same course or job twice.
+4. If there's nothing new on a given day, we keep your inbox quiet.
+
+Your daily digests will start arriving with the morning runs!
+
+Want changes to your keywords, search terms, or want to pause these emails?
+Simply reply directly to this email ({sender_email}) anytime.
+
+Cheers,
+Course & Job Hunter 🎓💼"""
+
+
+def is_welcome_sent(recipient: Dict[str, Any], seen_dict: Dict[str, Any]) -> bool:
+    """
+    Check if a welcome email has already been sent to this recipient.
+    - True if recipient has welcome_sent=True.
+    - True if seen_dict contains '__welcome_sent__' marker.
+    - True if recipient already has historical records in seen.json (prevents spamming established subscribers).
+    - False for newly added friends with no prior history.
+    """
+    if recipient.get("welcome_sent") is True:
+        return True
+
+    email = (recipient.get("email") or "").strip().lower()
+    if not email:
+        return True
+
+    user_seen = seen_dict.get(email)
+    if isinstance(user_seen, dict):
+        if "__welcome_sent__" in user_seen:
+            return True
+        # If user already has historical records in seen.json, they are an established subscriber
+        real_links_count = sum(1 for k in user_seen.keys() if not k.startswith("__"))
+        if real_links_count >= 3:
+            user_seen["__welcome_sent__"] = {
+                "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+                "auto_migrated": True,
+            }
+            return True
+
+    return False
+
+
+def mark_welcome_sent(
+    recipient: Dict[str, Any],
+    seen_dict: Dict[str, Any],
+    recipients_file: str = RECIPIENTS_FILE,
+) -> None:
+    """Mark welcome email as sent in memory, in seen_dict, and in recipients.json if writable."""
+    email = (recipient.get("email") or "").strip().lower()
+    recipient["welcome_sent"] = True
+
+    today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    if email not in seen_dict or not isinstance(seen_dict[email], dict):
+        seen_dict[email] = {}
+
+    seen_dict[email]["__welcome_sent__"] = {
+        "date": today_str,
+        "sent_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+    # Also persist to recipients.json if file exists and contains this email
+    if os.path.exists(recipients_file):
+        try:
+            with open(recipients_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            if isinstance(data, list):
+                updated = False
+                for r in data:
+                    if r.get("email", "").strip().lower() == email:
+                        r["welcome_sent"] = True
+                        updated = True
+                if updated:
+                    with open(recipients_file, "w", encoding="utf-8") as f:
+                        json.dump(data, f, indent=2, ensure_ascii=False)
+                        f.write("\n")
+        except Exception as e:
+            print(f"[Warning] Could not update welcome_sent in '{recipients_file}': {e}")
+
+
+# ============================================================================
 # Feature 2: Weekly Market & Skills Insights
 # ============================================================================
 
@@ -800,10 +911,35 @@ def run(dry_run: bool = False, weekly: bool = False) -> None:
             print(f"[Warning] Recipient '{name}' has no email address. Skipping.")
             continue
 
+        # Check and send one-time Welcome Email for newly added friends
+        if not is_welcome_sent(recipient, seen_dict):
+            welcome_msg = compose_welcome_message(name, email, keywords, job_searches, max_items)
+            welcome_subject = f"👋 Welcome to Course & Job Hunter, {name}!"
+            if dry_run:
+                print(f"\n--- [DRY RUN: Welcome Email for {name} <{email}>] ---")
+                print(f"Subject: {welcome_subject}")
+                print(welcome_msg)
+                print("--- [END OF WELCOME EMAIL] ---\n")
+            else:
+                try:
+                    print(f"  -> ✉️ Sending Welcome Email to new friend {name} <{email}>...")
+                    notifier.send(
+                        welcome_msg,
+                        to_email=email,
+                        subject=welcome_subject,
+                    )
+                    mark_welcome_sent(recipient, seen_dict, RECIPIENTS_FILE)
+                    emails_sent += 1
+                    print(f"  -> ✅ Welcome Email successfully sent to {name} <{email}>!")
+                except Exception as e:
+                    print(f"  -> [Error] Failed to send welcome email to {name} <{email}>: {e}")
+                    errors_count += 1
+
         # Load seen history from Cloud Database (or local fallback)
         recipient_seen = db.load_seen_for_user(email, expiry_days=getattr(config, "SEEN_EXPIRY_DAYS", 60))
-        # Also union with local seen_dict if present
-        local_seen_set = set(seen_dict.get(email, {}).keys())
+        # Exclude internal metadata markers like __welcome_sent__ from link matching
+        recipient_seen = {link for link in recipient_seen if not str(link).startswith("__")}
+        local_seen_set = {k for k in seen_dict.get(email, {}).keys() if not str(k).startswith("__")}
         recipient_seen.update(local_seen_set)
 
         print(f"\nEvaluating for {name} <{email}> (already seen {len(recipient_seen)} items):")
@@ -893,8 +1029,10 @@ def run(dry_run: bool = False, weekly: bool = False) -> None:
 
     # 6. Save updated seen history to Supabase Cloud Database and backup
     if not dry_run and emails_sent > 0:
-        db.record_seen_batch(delivered_by_email)
-        db.prune_expired_cloud(expiry_days=getattr(config, "SEEN_EXPIRY_DAYS", 60))
+        if delivered_by_email:
+            db.record_seen_batch(delivered_by_email)
+            db.prune_expired_cloud(expiry_days=getattr(config, "SEEN_EXPIRY_DAYS", 60))
+        save_seen_dict(seen_dict, SEEN_FILE)
 
     # 7. Final execution summary for GitHub Actions log visibility
     print("\n" + "=" * 65)

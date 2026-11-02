@@ -570,6 +570,78 @@ def test_db_supabase_mock(monkeypatch):
         assert payload[0]["link"] == "https://remotive.com/new-job"
 
 
+def test_welcome_message_composition():
+    """Test that compose_welcome_message personalizes name, keywords, and job searches."""
+    from main import compose_welcome_message
+
+    msg = compose_welcome_message(
+        name="Ishita",
+        email="ishita@example.com",
+        keywords=["Project Management", "MBA"],
+        job_searches=["Project Management"],
+        max_items=10,
+    )
+    assert "Hi Ishita," in msg
+    assert "Project Management, MBA" in msg
+    assert "10 opportunities" in msg
+    assert "Course & Job Hunter" in msg
+
+
+def test_is_welcome_sent_new_vs_existing():
+    """Test that new friends are flagged to receive welcome emails, while existing ones are not."""
+    from main import is_welcome_sent
+
+    seen_dict = {
+        "existing_user@example.com": {
+            f"https://link-{i}.com": {"date": "2026-11-01"} for i in range(10)
+        },
+        "welcomed_user@example.com": {
+            "__welcome_sent__": {"date": "2026-11-01"}
+        },
+    }
+
+    # New recipient with no history
+    new_friend = {"name": "Newbie", "email": "newbie@example.com"}
+    assert is_welcome_sent(new_friend, seen_dict) is False
+
+    # Explicit flag set on recipient
+    explicit_friend = {"name": "Explicit", "email": "other@example.com", "welcome_sent": True}
+    assert is_welcome_sent(explicit_friend, seen_dict) is True
+
+    # User who already has __welcome_sent__ in seen_dict
+    already_welcomed = {"name": "Welcomed", "email": "welcomed_user@example.com"}
+    assert is_welcome_sent(already_welcomed, seen_dict) is True
+
+    # Existing user with legacy history -> auto-migrated to not receive spam welcome email
+    existing_friend = {"name": "Existing", "email": "existing_user@example.com"}
+    assert is_welcome_sent(existing_friend, seen_dict) is True
+    assert "__welcome_sent__" in seen_dict["existing_user@example.com"]
+
+
+def test_mark_welcome_sent(tmp_path):
+    """Test marking welcome_sent updates seen_dict and recipients.json."""
+    import json
+    from main import mark_welcome_sent
+
+    recipients_file = tmp_path / "test_recipients.json"
+    data = [
+        {"name": "Friend A", "email": "friendA@example.com", "welcome_sent": False}
+    ]
+    recipients_file.write_text(json.dumps(data))
+
+    recipient = {"name": "Friend A", "email": "friendA@example.com", "welcome_sent": False}
+    seen_dict = {}
+
+    mark_welcome_sent(recipient, seen_dict, str(recipients_file))
+
+    assert recipient["welcome_sent"] is True
+    assert "__welcome_sent__" in seen_dict["frienda@example.com"]
+
+    reloaded = json.loads(recipients_file.read_text())
+    assert reloaded[0]["welcome_sent"] is True
+
+
+
 
 
 
