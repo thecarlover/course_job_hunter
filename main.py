@@ -310,21 +310,25 @@ def matches_location_filter(location: str, preferred_locations: List[str]) -> bo
 
 
 def compose_digest_subject(
-    name: str,
-    courses_count: int,
-    jobs_count: int,
-    date_label: str = None,
+    name: str = "",
+    courses_count: int = 0,
+    jobs_count: int = 0,
+    date_label: Optional[str] = None,
+    weekly: bool = False,
 ) -> str:
     """
-    Generate an engaging, personalized email subject with exact item counts and date.
+    Generate an engaging, personalized email subject with exact item counts, recipient name, and date.
     Examples:
-    - 🎓 4 Free Courses, 💼 8 Remote Jobs for you today (Nov 02)
-    - 🎓 5 Free Courses for you today (Nov 02)
-    - 💼 10 Remote Jobs for you today (Nov 02)
-    - Hi Ishita: 6 New Opportunities Matched (Nov 02)
+    - 🎓 4 Free Courses, 💼 6 Remote Jobs for Ishani (Nov 02)
+    - 🎓 5 Free Courses for Ishita (Nov 02)
+    - 💼 10 Remote Jobs for Saurabh (Nov 02)
+    - 📅 Weekly Wrap: 🎓 4 Courses, 💼 6 Jobs for Ojasvi (Nov 02)
     """
     if not date_label:
         date_label = datetime.now(timezone.utc).strftime("%b %d")
+
+    first_name = name.strip().split()[0] if name and name.strip() else ""
+    target_label = f"for {first_name}" if first_name else "for you"
 
     parts = []
     if courses_count > 0:
@@ -332,11 +336,14 @@ def compose_digest_subject(
     if jobs_count > 0:
         parts.append(f"💼 {jobs_count} Remote Job{'s' if jobs_count != 1 else ''}")
 
+    prefix = "📅 Weekly Wrap: " if weekly else ""
+
     if parts:
         summary = ", ".join(parts)
-        return f"{summary} for you today ({date_label})"
+        return f"{prefix}{summary} {target_label} ({date_label})"
 
-    return f"Daily Digest: Free Courses & Remote Jobs ({date_label})"
+    fallback_title = "Weekly Wrap" if weekly else "Daily Digest"
+    return f"{prefix}{fallback_title}: Free Courses & Remote Jobs {target_label} ({date_label})"
 
 
 # ============================================================================
@@ -1040,7 +1047,12 @@ def run(
 
         courses_count = sum(1 for item in selected_items if item.get("type") == "course")
         jobs_count = sum(1 for item in selected_items if item.get("type") == "job")
-        digest_subject = compose_digest_subject(name, courses_count, jobs_count)
+        digest_subject = compose_digest_subject(
+            name=name,
+            courses_count=courses_count,
+            jobs_count=jobs_count,
+            weekly=weekly,
+        )
 
         if dry_run:
             print(f"\n--- [DRY RUN: Digest for {name} <{email}>] ---")

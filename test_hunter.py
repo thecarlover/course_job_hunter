@@ -642,31 +642,39 @@ def test_mark_welcome_sent(tmp_path):
 
 
 def test_compose_digest_subject():
-    """Test generating dynamic email subject lines with counts and dates."""
+    """Test generating dynamic email subject lines with counts, recipient name, and dates."""
     from main import compose_digest_subject
 
-    # Both courses and jobs (plural)
-    subj1 = compose_digest_subject("Ishani", 4, 6, "Nov 02")
-    assert subj1 == "🎓 4 Free Courses, 💼 6 Remote Jobs for you today (Nov 02)"
+    # Both courses and jobs (plural) with full name (uses first name)
+    subj1 = compose_digest_subject("Ishani Ganguly", 4, 6, "Nov 02")
+    assert subj1 == "🎓 4 Free Courses, 💼 6 Remote Jobs for Ishani (Nov 02)"
 
     # Singular counts
     subj2 = compose_digest_subject("Ishita", 1, 1, "Nov 02")
-    assert subj2 == "🎓 1 Free Course, 💼 1 Remote Job for you today (Nov 02)"
+    assert subj2 == "🎓 1 Free Course, 💼 1 Remote Job for Ishita (Nov 02)"
 
     # Courses only
     subj3 = compose_digest_subject("Ojasvi", 5, 0, "Nov 02")
-    assert subj3 == "🎓 5 Free Courses for you today (Nov 02)"
+    assert subj3 == "🎓 5 Free Courses for Ojasvi (Nov 02)"
 
     # Jobs only
     subj4 = compose_digest_subject("Saurabh", 0, 3, "Nov 02")
-    assert subj4 == "💼 3 Remote Jobs for you today (Nov 02)"
+    assert subj4 == "💼 3 Remote Jobs for Saurabh (Nov 02)"
+
+    # Empty name fallback to 'for you'
+    subj_anon = compose_digest_subject("", 2, 3, "Nov 02")
+    assert subj_anon == "🎓 2 Free Courses, 💼 3 Remote Jobs for you (Nov 02)"
+
+    # Weekly wrap
+    subj_weekly = compose_digest_subject("Ojasvi", 3, 5, "Nov 02", weekly=True)
+    assert subj_weekly == "📅 Weekly Wrap: 🎓 3 Free Courses, 💼 5 Remote Jobs for Ojasvi (Nov 02)"
 
     # Neither (fallback)
     subj5 = compose_digest_subject("Friend", 0, 0, "Nov 02")
-    assert subj5 == "Daily Digest: Free Courses & Remote Jobs (Nov 02)"
+    assert subj5 == "Daily Digest: Free Courses & Remote Jobs for Friend (Nov 02)"
 
     # Default date formatting works
     subj6 = compose_digest_subject("Friend", 2, 2)
-    assert "for you today (" in subj6
+    assert "for Friend (" in subj6
 
 
