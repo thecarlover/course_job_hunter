@@ -347,6 +347,171 @@ def compose_digest_subject(
 
 
 # ============================================================================
+# Gamification System: Streak, Levels & Value Saved Counter
+# ============================================================================
+
+def calculate_hunter_stats(
+    email: str,
+    seen_dict: Dict[str, Any],
+    current_items: Optional[List[Dict[str, Any]]] = None,
+    course_nominal_value: int = 20,
+) -> Dict[str, Any]:
+    """
+    Calculate gamified stats for a subscriber:
+    - streak: consecutive days of received digests (minimum 1 on delivery day)
+    - total_courses: historical + current course count
+    - total_jobs: historical + current job count
+    - total_items: total opportunities unlocked
+    - money_saved: total_courses * course_nominal_value ($20)
+    - level_name: gamified title (e.g. 'Rookie Hunter', 'Opportunity Scout', etc.)
+    - level_num: level integer (1 to 5)
+    - badge: emoji badge for current level
+    """
+    user_key = (email or "").strip().lower()
+    user_history = seen_dict.get(user_key, {}) if isinstance(seen_dict, dict) else {}
+
+    historical_courses = 0
+    historical_jobs = 0
+    delivery_dates = set()
+
+    course_domains = (
+        "answersq.com",
+        "tutorialbar.com",
+        "discudemy.com",
+        "freecodecamp.org",
+        "udemyfreebies",
+        "udemy.com",
+        "coursera.org",
+    )
+
+    if isinstance(user_history, dict):
+        for url, meta in user_history.items():
+            if url == "__welcome_sent__":
+                continue
+            if isinstance(meta, dict):
+                d = meta.get("date")
+                if d and isinstance(d, str):
+                    delivery_dates.add(d.strip())
+                item_type = meta.get("type")
+                if item_type == "course" or any(cd in url.lower() for cd in course_domains):
+                    historical_courses += 1
+                else:
+                    historical_jobs += 1
+            elif isinstance(meta, str):
+                delivery_dates.add(meta.strip())
+                if any(cd in url.lower() for cd in course_domains):
+                    historical_courses += 1
+                else:
+                    historical_jobs += 1
+
+    current_courses = sum(1 for item in (current_items or []) if item.get("type") == "course")
+    current_jobs = sum(1 for item in (current_items or []) if item.get("type") == "job")
+    today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    if current_items:
+        delivery_dates.add(today_str)
+
+    total_courses = historical_courses + current_courses
+    total_jobs = historical_jobs + current_jobs
+    total_items = total_courses + total_jobs
+    money_saved = total_courses * course_nominal_value
+
+    # Parse and sort distinct dates descending
+    sorted_dates = []
+    for d_str in delivery_dates:
+        try:
+            sorted_dates.append(datetime.strptime(d_str, "%Y-%m-%d").date())
+        except Exception:
+            pass
+    sorted_dates = sorted(set(sorted_dates), reverse=True)
+
+    today_date = datetime.now(timezone.utc).date()
+    yesterday_date = today_date - timedelta(days=1)
+
+    streak = 0
+    if sorted_dates:
+        start_date = None
+        if sorted_dates[0] == today_date:
+            start_date = today_date
+        elif sorted_dates[0] == yesterday_date:
+            start_date = yesterday_date
+
+        if start_date:
+            expected = start_date
+            for d in sorted_dates:
+                if d == expected:
+                    streak += 1
+                    expected = expected - timedelta(days=1)
+                elif d > expected:
+                    continue
+                else:
+                    break
+
+    # If current items exist and streak is 0, start at 1
+    if current_items and streak == 0:
+        streak = 1
+
+    # Gamified Level Progression
+    if total_items <= 5:
+        level_num = 1
+        level_title = "Rookie Hunter"
+        badge = "🌱"
+    elif total_items <= 15:
+        level_num = 2
+        level_title = "Opportunity Scout"
+        badge = "⚡"
+    elif total_items <= 30:
+        level_num = 3
+        level_title = "Career Sniper"
+        badge = "🎯"
+    elif total_items <= 60:
+        level_num = 4
+        level_title = "Pro Opportunity Hunter"
+        badge = "🔥"
+    else:
+        level_num = 5
+        level_title = "Master Career Strategist"
+        badge = "👑"
+
+    return {
+        "streak": max(1, streak) if (current_items or historical_courses > 0 or historical_jobs > 0) else 0,
+        "total_courses": total_courses,
+        "total_jobs": total_jobs,
+        "total_items": total_items,
+        "money_saved": money_saved,
+        "level_num": level_num,
+        "level_title": level_title,
+        "badge": badge,
+    }
+
+
+def format_hunter_stats_banner(stats: Dict[str, Any]) -> str:
+    """
+    Format the gamified stats block for email digests.
+    Example:
+    🏆 Your Hunter Stats:
+    🔥 Day 3 Streak | ⚡ Level 2: Opportunity Scout
+    💰 Value Unlocked: $140 saved across 7 free certified courses!
+    """
+    streak = stats.get("streak", 1)
+    level_num = stats.get("level_num", 1)
+    level_title = stats.get("level_title", "Rookie Hunter")
+    badge = stats.get("badge", "🌱")
+    money_saved = stats.get("money_saved", 0)
+    total_courses = stats.get("total_courses", 0)
+
+    course_label = f"{total_courses} free certified course{'s' if total_courses != 1 else ''}"
+
+    lines = [
+        "🏆 Your Hunter Stats:",
+        f"🔥 Day {streak} Streak | {badge} Level {level_num}: {level_title}",
+        f"💰 Value Unlocked: ${money_saved} saved across {course_label}!",
+    ]
+    return "\n".join(lines) + "\n\n"
+
+
+
+# ============================================================================
 # Welcome Email System for Newly Added Friends
 # ============================================================================
 
@@ -1038,8 +1203,12 @@ def run(
 
         recipients_with_new_items += 1
 
+        # Compute gamified stats for this recipient
+        hunter_stats = calculate_hunter_stats(email, seen_dict, selected_items)
+        stats_banner = format_hunter_stats_banner(hunter_stats)
+
         # Compose personalized message
-        header = f"Hi {name},\n\nHere is your daily digest of free courses and remote jobs:\n\n"
+        header = f"Hi {name},\n\n{stats_banner}Here is your daily digest of free courses and remote jobs:\n\n"
         body = format_message(selected_items) if selected_items else "No new courses/jobs matching your filters today."
         insights_block = sunday_weekly_section if sunday_weekly_section else ""
         footer = f"\n\nWant changes to your keywords or want to stop these emails? Reply to {sender_email}."

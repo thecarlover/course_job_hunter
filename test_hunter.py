@@ -720,3 +720,59 @@ def test_admin_auth_and_network_endpoints():
     assert "Course & Job Hunter" in res.text
 
 
+def test_calculate_hunter_stats_and_banner():
+    """Test gamified streak, level-up, and money-saved counter calculations."""
+    from main import calculate_hunter_stats, format_hunter_stats_banner
+    from datetime import datetime, timezone, timedelta
+
+    today = datetime.now(timezone.utc).date()
+    yesterday = today - timedelta(days=1)
+    two_days_ago = today - timedelta(days=2)
+
+    mock_seen_dict = {
+        "gamer@example.com": {
+            "https://tutorialbar.com/course-1": {"date": two_days_ago.isoformat(), "type": "course"},
+            "https://answersq.com/course-2": {"date": yesterday.isoformat(), "type": "course"},
+            "https://remotive.com/job-1": {"date": yesterday.isoformat(), "type": "job"},
+        }
+    }
+
+    current_items = [
+        {"link": "https://discudemy.com/course-3", "type": "course"},
+        {"link": "https://jobicy.com/job-2", "type": "job"},
+    ]
+
+    # Calculate stats with current delivery today
+    stats = calculate_hunter_stats("gamer@example.com", mock_seen_dict, current_items, course_nominal_value=25)
+
+    # 3 consecutive days: two_days_ago, yesterday, today -> 3 day streak
+    assert stats["streak"] == 3
+    # 2 historical courses + 1 current course = 3 courses
+    assert stats["total_courses"] == 3
+    # 1 historical job + 1 current job = 2 jobs
+    assert stats["total_jobs"] == 2
+    assert stats["total_items"] == 5
+    # 3 courses * $25 = $75
+    assert stats["money_saved"] == 75
+    assert stats["level_num"] == 1
+    assert stats["level_title"] == "Rookie Hunter"
+
+    # Test Level 5 progression (65 items)
+    large_history = {
+        f"https://tutorialbar.com/c-{i}": {"date": yesterday.isoformat(), "type": "course"}
+        for i in range(65)
+    }
+    stats_lvl5 = calculate_hunter_stats("pro@example.com", {"pro@example.com": large_history}, course_nominal_value=20)
+    assert stats_lvl5["level_num"] == 5
+    assert stats_lvl5["level_title"] == "Master Career Strategist"
+    assert stats_lvl5["money_saved"] == 1300  # 65 * 20
+
+    # Test format banner
+    banner = format_hunter_stats_banner(stats)
+    assert "🏆 Your Hunter Stats:" in banner
+    assert "🔥 Day 3 Streak" in banner
+    assert "Level 1: Rookie Hunter" in banner
+    assert "$75 saved across 3 free certified courses!" in banner
+
+
+

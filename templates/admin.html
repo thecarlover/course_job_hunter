@@ -615,12 +615,28 @@
             ? `<div class="mt-1 text-[10px] text-slate-400 font-mono">📍 ${sub.preferred_locations.join(', ')}</div>`
             : '';
 
+          const stats = sub.stats || { streak: 0, money_saved: 0, total_courses: 0, level_title: 'Rookie Hunter', badge: '🌱' };
+          const gamifyPill = `
+            <div class="mt-1.5 flex flex-wrap items-center gap-1.5">
+              <span class="px-1.5 py-0.5 rounded text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium">
+                🔥 ${stats.streak}d streak
+              </span>
+              <span class="px-1.5 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
+                💰 $${stats.money_saved} saved
+              </span>
+              <span class="px-1.5 py-0.5 rounded text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-medium">
+                ${stats.badge} ${stats.level_title}
+              </span>
+            </div>
+          `;
+
           tbody.innerHTML += `
             <tr class="hover:bg-slate-800/30 transition">
               <td class="px-4 py-3">
                 <div class="font-medium text-white">${sub.name}</div>
                 <div class="text-xs text-slate-400">${sub.email}</div>
                 ${locText}
+                ${gamifyPill}
               </td>
               <td class="px-4 py-3">${statusBadge}</td>
               <td class="px-4 py-3 max-w-xs truncate">${kwBadges}</td>

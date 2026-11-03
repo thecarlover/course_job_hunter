@@ -171,13 +171,17 @@ async def serve_dashboard():
 
 @app.get("/api/subscribers")
 async def get_subscribers():
-    """Return all subscribers from recipients.json."""
+    """Return all subscribers from recipients.json with gamified hunter stats."""
     if not os.path.exists(RECIPIENTS_FILE):
         return JSONResponse([])
     try:
         with open(RECIPIENTS_FILE, "r", encoding="utf-8") as f:
             data = json.load(f)
-        return JSONResponse(data if isinstance(data, list) else [])
+        subscribers = data if isinstance(data, list) else []
+        seen_dict = main.load_seen_dict()
+        for sub in subscribers:
+            sub["stats"] = main.calculate_hunter_stats(sub.get("email", ""), seen_dict)
+        return JSONResponse(subscribers)
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
 

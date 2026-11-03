@@ -11,3 +11,4 @@ services:
         value: https://totcwrqgyrdwuylgyccb.supabase.co
       - key: SUPABASE_KEY
         value: sb_publishable_i8emK6yLcbCARlWWyc1X1Q_PSJRgeZ6
+
