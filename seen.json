@@ -1502,7 +1502,7 @@
   },
   "alex@example.com": {
     "https://remotive.com/new-job": {
-      "date": "2026-11-03",
+      "date": "2026-11-04",
       "title": "New",
       "type": "job",
       "company": "",
@@ -1521,6 +1521,609 @@
     "__welcome_sent__": {
       "date": "2026-11-03",
       "sent_at": "2026-11-03T03:42:05.212476+00:00"
+    }
+  },
+  "saurabhsinghchamyal@gmail.com": {
+    "https://answersq.com/ai-automation-specialist-roadmap/": {
+      "date": "2026-11-01"
+    },
+    "https://answersq.com/full-stack-developer-roadmap/": {
+      "date": "2026-11-01"
+    },
+    "https://jobicy.com/jobs/158352-ai-trainers-network-flemish": {
+      "date": "2026-11-01",
+      "title": "AI Trainers Network - Flemish (Welo Global)",
+      "type": "job",
+      "tags": [
+        "Data Science & Analytics",
+        "Any"
+      ],
+      "company": "Welo Global",
+      "source": "Jobicy",
+      "salary": "",
+      "location": "Belgium"
+    },
+    "https://jobicy.com/jobs/158355-ai-trainers-network-french": {
+      "date": "2026-11-01",
+      "title": "AI Trainers Network - French (Welo Global)",
+      "type": "job",
+      "tags": [
+        "Data Science & Analytics",
+        "Any"
+      ],
+      "company": "Welo Global",
+      "source": "Jobicy",
+      "salary": "",
+      "location": "Belgium,  France,  Spain,  Switzerland"
+    },
+    "https://jobicy.com/jobs/158358-ai-trainers-network-galician": {
+      "date": "2026-11-01",
+      "title": "AI Trainers Network - Galician (Welo Global)",
+      "type": "job",
+      "tags": [
+        "Data Science & Analytics",
+        "Any"
+      ],
+      "company": "Welo Global",
+      "source": "Jobicy",
+      "salary": "",
+      "location": "Spain"
+    },
+    "https://jobicy.com/jobs/158361-ai-trainers-network-georgian": {
+      "date": "2026-11-01",
+      "title": "AI Trainers Network - Georgian (Welo Global)",
+      "type": "job",
+      "tags": [
+        "Data Science & Analytics",
+        "Any"
+      ],
+      "company": "Welo Global",
+      "source": "Jobicy",
+      "salary": "",
+      "location": "Europe"
+    },
+    "https://jobicy.com/jobs/158364-ai-trainers-network-german": {
+      "date": "2026-11-01",
+      "title": "AI Trainers Network - German (Welo Global)",
+      "type": "job",
+      "tags": [
+        "Data Science & Analytics",
+        "Any"
+      ],
+      "company": "Welo Global",
+      "source": "Jobicy",
+      "salary": "",
+      "location": "Argentina,  Austria,  Brazil,  France,  Germany,  Italy,  Poland,  Spain,  Switzerland,  Türkiye,  UK"
+    },
+    "https://jobicy.com/jobs/158366-applied-ai-engineer-3": {
+      "date": "2026-11-01",
+      "title": "Applied AI Engineer (Elevenlabs)",
+      "type": "job",
+      "tags": [
+        "Software Engineering",
+        "Any"
+      ],
+      "company": "Elevenlabs",
+      "source": "Jobicy",
+      "salary": "",
+      "location": "Bulgaria,  France,  Germany,  Hungary,  Ireland,  Italy,  Netherlands,  Poland,  Spain,  UK"
+    },
+    "https://jobicy.com/jobs/158367-ai-trainers-network-greek": {
+      "date": "2026-11-01",
+      "title": "AI Trainers Network - Greek (Welo Global)",
+      "type": "job",
+      "tags": [
+        "Data Science & Analytics",
+        "Any"
+      ],
+      "company": "Welo Global",
+      "source": "Jobicy",
+      "salary": "",
+      "location": "Greece"
+    },
+    "https://remotive.com/remote-jobs/artificial-intelligence/ai-trainer-video-annotation-2091161": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/information-technology/tier-iii-service-desk-engineer-2091045": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/marketing/remote-office-assistant-1680495": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/sales/inside-sales-contractor-2086540": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/software-development/full-stack-developer-2091165": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/software-development/head-of-engineering-2091134": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/software-development/senior-back-end-developer-2091135": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/software-development/senior-back-end-engineer-2091132": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/software-development/senior-react-full-stack-developer-2091133": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/software-development/software-engineer-ai-coding-tasks-2091158": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/software-development/tech-lead-full-stack-rails-engineer-2069746": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/writing/freelance-copywriter-1749306": {
+      "date": "2026-11-01"
+    },
+    "https://remotive.com/remote-jobs/writing/freelance-writer-1185979": {
+      "date": "2026-11-01"
+    },
+    "https://tutorialbar.com/course/ai-900-azure-ai-fundamentals-practice-exams-2026-6-sets": {
+      "date": "2026-11-01"
+    },
+    "https://tutorialbar.com/course/ai-agents-automate-everything-with-n8n-ai-automation": {
+      "date": "2026-11-01"
+    },
+    "https://tutorialbar.com/course/genetic-from-mendal-to-era-of-microchip-molecular-genetic": {
+      "date": "2026-11-01"
+    },
+    "https://tutorialbar.com/course/google-ai-leader-exam-prep-full-mock-exams-topic-quizzes": {
+      "date": "2026-11-01"
+    },
+    "https://tutorialbar.com/course/google-generative-ai-leader-exam-complete-preparation-guide": {
+      "date": "2026-11-01"
+    },
+    "https://tutorialbar.com/course/langsmith-for-ai-agents-evaluate-secure-and-ship": {
+      "date": "2026-11-01"
+    },
+    "https://tutorialbar.com/course/python-to-ai-mastery-the-only-course-youll-ever-need-2026": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com//ai-for-geospatial-analysis": {
+      "date": "2026-11-01",
+      "title": "[100% OFF] Harnessing AI and Machine Learning for Geospatial Analysis",
+      "type": "course",
+      "tags": [],
+      "company": "",
+      "source": "",
+      "salary": "",
+      "location": ""
+    },
+    "https://www.discudemy.com//ai-models-mastery-chatgpt-gemini-and-deepseek": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com//deepseek-ai-masterclass-ai-search-insights-productivity": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com//gemini-ai-complete-guide-to-googles-powerful-ai": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com//geospatial-ai-deep-learning": {
+      "date": "2026-11-01",
+      "title": "[100% OFF] Geospatial AI: Deep Learning for Satellite Imagery",
+      "type": "course",
+      "tags": [],
+      "company": "",
+      "source": "",
+      "salary": "",
+      "location": ""
+    },
+    "https://www.discudemy.com//machine-learning-ai-neural-networks-a-complete-course": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com//perplexity-ai-masterclass-ai-search-and-research": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com//python-for-ai": {
+      "date": "2026-11-01",
+      "title": "[100% OFF] Python for AI and Machine Learning: From Beginner to Pro",
+      "type": "course",
+      "tags": [],
+      "company": "",
+      "source": "",
+      "salary": "",
+      "location": ""
+    },
+    "https://www.discudemy.com/business/ab-100-microsoft-agentic-ai-business-solutions-architect-i": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com/business/data-analytics-for-project-management-c": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com/business/mastering-microsoft-copilot-studio-future-of-ai-agents": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com/business/project-management-interview-process-how-to-land-the-job": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com/cpp/cracking-cpp-interview": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com/development-tools/microsoft-power-automate-with-ai-builder": {
+      "date": "2026-11-01"
+    },
+    "https://www.freecodecamp.org/news/ai-search-visibility/": {
+      "date": "2026-11-01"
+    },
+    "https://www.freecodecamp.org/news/secure-your-ai-agents-free-model-context-protocol-mcp-security-course/": {
+      "date": "2026-11-01"
+    },
+    "https://www.reddit.com/r/udemyfreebies/comments/1lsee75/docker_kubernetes_and_azure_container_services/": {
+      "date": "2026-11-01"
+    },
+    "https://www.reddit.com/r/udemyfreebies/comments/1pjfdp9/ai_engineer_agentic_track_the_complete_agent_mcp/": {
+      "date": "2026-11-01"
+    },
+    "https://www.reddit.com/r/udemyfreebies/comments/1pwfqhp/tips_for_preparing_for_the_pspo_ii_certification/": {
+      "date": "2026-11-01"
+    },
+    "https://www.reddit.com/r/udemyfreebies/comments/1rr7f33/list_of_free_and_best_selling_discounted_courses/": {
+      "date": "2026-11-01"
+    },
+    "https://www.reddit.com/r/udemyfreebies/comments/zyv0zf/sharing_my_two_courses_for_free_spring_boot_and/": {
+      "date": "2026-11-01"
+    },
+    "https://www.discudemy.com/marketing/marketing-analytics-for-beginners": {
+      "date": "2026-11-01",
+      "title": "[Free] Marketing Analytics for Beginners",
+      "type": "course",
+      "company": "",
+      "location": "",
+      "salary": "",
+      "source": ""
+    },
+    "https://jobicy.com/jobs/158350-senior-contracts-manager-commercial-emea": {
+      "date": "2026-11-01",
+      "title": "Senior Contracts Manager, Commercial (EMEA) (GitLab)",
+      "type": "job",
+      "company": "GitLab",
+      "location": "Ireland,  UK",
+      "salary": "",
+      "source": "Jobicy"
+    },
+    "https://jobicy.com/jobs/158348-ai-trainers-network-farsi": {
+      "date": "2026-11-01",
+      "title": "AI Trainers Network - Farsi (Welo Global)",
+      "type": "job",
+      "company": "Welo Global",
+      "location": "Türkiye",
+      "salary": "",
+      "source": "Jobicy"
+    },
+    "https://www.arbeitnow.com/jobs/companies/ledgy/ai-systems-senior-software-engineer-357326": {
+      "date": "2026-11-01",
+      "title": "AI Systems - Senior Software Engineer (Ledgy)",
+      "type": "job",
+      "company": "Ledgy",
+      "location": "On-site",
+      "salary": "",
+      "source": "Arbeitnow"
+    },
+    "https://www.arbeitnow.com/jobs/companies/superchat/revenue-operations-engineer-ai-automation-berlin-berlin-413012": {
+      "date": "2026-11-01",
+      "title": "Revenue Operations Engineer | AI & Automation (m/f/d) (Superchat)",
+      "type": "job",
+      "company": "Superchat",
+      "location": "Berlin, Berlin",
+      "salary": "",
+      "source": "Arbeitnow"
+    },
+    "https://www.arbeitnow.com/jobs/companies/alixpartners/management-beraterin-ai-data-292918": {
+      "date": "2026-11-01",
+      "title": "Management Berater:in - AI & Data (m/w/d) (alixpartners)",
+      "type": "job",
+      "company": "alixpartners",
+      "location": "On-site",
+      "salary": "",
+      "source": "Arbeitnow"
+    },
+    "https://www.arbeitnow.com/jobs/companies/virtual7-gmbh/remote-ai-solution-architect-nurnberg-mittelfranken-430823": {
+      "date": "2026-11-01",
+      "title": "AI Solution Architect (m/w/d) (virtual7 GmbH)",
+      "type": "job",
+      "company": "virtual7 GmbH",
+      "location": "Remote / Homeoffice",
+      "salary": "",
+      "source": "Arbeitnow"
+    },
+    "https://www.arbeitnow.com/jobs/companies/cbs-corporate-business-solutions-gmbh/compliance-specialist-informationssicherheit-in-voll-oder-teilzeit-heidelberg-89426": {
+      "date": "2026-11-01",
+      "title": "Compliance Specialist - Informationssicherheit in Voll- oder Teilzeit (m/w/d) (cbs Corporate Business Solutions GmbH)",
+      "type": "job",
+      "company": "cbs Corporate Business Solutions GmbH",
+      "location": "Heidelberg, Baden-Württemberg, Deutschland",
+      "salary": "",
+      "source": "Arbeitnow"
+    },
+    "https://www.arbeitnow.com/jobs/companies/evolve-digital-gmbh/google-ads-manager-ai-first-performance-marketing-remote-59473": {
+      "date": "2026-11-01",
+      "title": "Google Ads Manager – AI-First Performance Marketing (m/w/d) · Remote (Evolve Digital GmbH)",
+      "type": "job",
+      "company": "Evolve Digital GmbH",
+      "location": "Remote / Homeoffice",
+      "salary": "",
+      "source": "Arbeitnow"
+    },
+    "https://www.arbeitnow.co.uk/jobs/companies/ledgy/ai-systems-senior-software-engineer-london-346109": {
+      "date": "2026-11-01",
+      "title": "AI Systems - Senior Software Engineer (Ledgy)",
+      "type": "job",
+      "company": "Ledgy",
+      "location": "London",
+      "salary": "",
+      "source": "Arbeitnow"
+    },
+    "https://www.discudemy.com/business/mastering-software-project-management-for-new-managers": {
+      "date": "2026-11-01",
+      "title": "[Free] Mastering Software Project Management for New Manager's",
+      "type": "course",
+      "company": "",
+      "location": "",
+      "salary": "",
+      "source": ""
+    },
+    "https://www.discudemy.com/personal-development/mastering-your-career-with-google-bard-your-ai-career-coach": {
+      "date": "2026-11-01",
+      "title": "[100% OFF] Mastering Your Career with Google Bard: Your AI Career Coach",
+      "type": "course",
+      "company": "",
+      "location": "",
+      "salary": "",
+      "source": ""
+    },
+    "https://www.arbeitnow.fr/jobs/companies/sfeir/forward-deployed-engineer-agentic-ai-paris-193607": {
+      "date": "2026-11-01",
+      "title": "Forward Deployed Engineer – Agentic AI (SFEIR)",
+      "type": "job",
+      "company": "SFEIR",
+      "location": "Paris",
+      "salary": "",
+      "source": "Arbeitnow"
+    },
+    "https://www.arbeitnow.fr/jobs/companies/sfeir/ai-software-engineer-b-bordeaux-333067": {
+      "date": "2026-11-01",
+      "title": "AI Software Engineer (F/H/NB) (SFEIR)",
+      "type": "job",
+      "company": "SFEIR",
+      "location": "Bordeaux",
+      "salary": "",
+      "source": "Arbeitnow"
+    },
+    "https://www.arbeitnow.fr/jobs/companies/sfeir/ai-software-engineer-b-toulouse-407066": {
+      "date": "2026-11-01",
+      "title": "AI Software Engineer (F/H/NB) (SFEIR)",
+      "type": "job",
+      "company": "SFEIR",
+      "location": "Toulouse",
+      "salary": "",
+      "source": "Arbeitnow"
+    },
+    "https://www.arbeitnow.fr/jobs/companies/vo2-group/vo2-force-developpeurse-ia-ai-engineer-paris-france-266086": {
+      "date": "2026-11-01",
+      "title": "[ VO2 FORCE ] - Développeur(se) IA / AI Engineer (VO2 Group)",
+      "type": "job",
+      "company": "VO2 Group",
+      "location": "Paris, France",
+      "salary": "",
+      "source": "Arbeitnow"
+    },
+    "https://www.arbeitnow.fr/jobs/companies/dilitrust/senior-software-engineer-ai-platform-fullstack-paris-la-defense-315136": {
+      "date": "2026-11-01",
+      "title": "Senior Software Engineer - AI Platform (Fullstack) (DiliTrust)",
+      "type": "job",
+      "company": "DiliTrust",
+      "location": "Paris - La Défense",
+      "salary": "",
+      "source": "Arbeitnow"
+    },
+    "https://www.arbeitnow.ch/jobs/companies/rotzinger-group/head-of-project-management-altendorf-276335": {
+      "date": "2026-11-01",
+      "title": "Head of Project Management (m/w/d) (Rotzinger Group)",
+      "type": "job",
+      "company": "Rotzinger Group",
+      "location": "Altendorf, Schwyz, Schweiz",
+      "salary": "",
+      "source": "Arbeitnow"
+    },
+    "https://www.arbeitnow.ch/jobs/companies/conipartner-ag/projektleiter-ib-risiken-tradingdesk-zurich-213458": {
+      "date": "2026-11-01",
+      "title": "Projektleiter IB / Risiken Tradingdesk (coni+partner AG)",
+      "type": "job",
+      "company": "coni+partner AG",
+      "location": "Zürich",
+      "salary": "",
+      "source": "Arbeitnow"
+    },
+    "https://www.arbeitnow.ch/jobs/companies/conipartner-ag/operational-risk-officer-geneva-391253": {
+      "date": "2026-11-01",
+      "title": "Operational Risk Officer (coni+partner AG)",
+      "type": "job",
+      "company": "coni+partner AG",
+      "location": "Geneva",
+      "salary": "",
+      "source": "Arbeitnow"
+    },
+    "https://www.discudemy.com/business/become-expert-in-claude-ai-2026": {
+      "date": "2026-11-02",
+      "title": "[Free] Become master in Claude AI [2026]",
+      "type": "course",
+      "company": "",
+      "location": "",
+      "salary": "",
+      "source": ""
+    },
+    "https://jobicy.com/jobs/158465-regulatory-legal-counsel-us-monitorships": {
+      "date": "2026-11-02",
+      "title": "Regulatory Legal Counsel - US Monitorships (Binance)",
+      "type": "job",
+      "company": "Binance",
+      "location": "Singapore,  UAE,  UK,  USA",
+      "salary": "",
+      "source": "Jobicy"
+    },
+    "https://jobicy.com/jobs/158463-product-counsel-equities-tokenized-securities": {
+      "date": "2026-11-02",
+      "title": "Product Counsel – Equities & Tokenized Securities (Binance)",
+      "type": "job",
+      "company": "Binance",
+      "location": "Hong Kong,  Singapore,  UAE",
+      "salary": "",
+      "source": "Jobicy"
+    },
+    "https://jobicy.com/jobs/158458-kyc-kyb-manager": {
+      "date": "2026-11-02",
+      "title": "KYC & KYB Manager (Binance)",
+      "type": "job",
+      "company": "Binance",
+      "location": "Singapore,  UAE,  UK",
+      "salary": "",
+      "source": "Jobicy"
+    },
+    "https://jobicy.com/jobs/158450-enterprise-wide-risk-assessment-ewra-analyst-1-year-contractor": {
+      "date": "2026-11-02",
+      "title": "Enterprise Wide Risk Assessment (EWRA) Analyst (1 year contractor) (Binance)",
+      "type": "job",
+      "company": "Binance",
+      "location": "UAE,  UK",
+      "salary": "",
+      "source": "Jobicy"
+    },
+    "https://jobicy.com/jobs/158442-senior-program-manager-privacy-compliance-data-governance": {
+      "date": "2026-11-02",
+      "title": "Senior Program Manager - Privacy Compliance & Data Governance (Qualtrics)",
+      "type": "job",
+      "company": "Qualtrics",
+      "location": "USA",
+      "salary": "",
+      "source": "Jobicy"
+    },
+    "https://jobicy.com/jobs/158427-compliance-product-manager": {
+      "date": "2026-11-02",
+      "title": "Compliance Product Manager (Binance)",
+      "type": "job",
+      "company": "Binance",
+      "location": "Singapore",
+      "salary": "",
+      "source": "Jobicy"
+    },
+    "https://www.arbeitnow.com/jobs/companies/capco/senior-consultant-meldewesen-regulatory-reporting-291143": {
+      "date": "2026-11-02",
+      "title": "(Senior) Consultant* - Meldewesen / Regulatory Reporting (capco)",
+      "type": "job",
+      "company": "capco",
+      "location": "On-site",
+      "salary": "",
+      "source": "Arbeitnow"
+    },
+    "https://www.arbeitnow.com/jobs/companies/capco/senior-consultant-meldewesen-regulatory-reporting-393717": {
+      "date": "2026-11-02",
+      "title": "(Senior) Consultant* - Meldewesen / Regulatory Reporting (capco)",
+      "type": "job",
+      "company": "capco",
+      "location": "On-site",
+      "salary": "",
+      "source": "Arbeitnow"
+    },
+    "https://www.arbeitnow.com/jobs/companies/capco/senior-consultant-meldewesen-regulatory-reporting-2001": {
+      "date": "2026-11-02",
+      "title": "(Senior) Consultant* - Meldewesen / Regulatory Reporting (capco)",
+      "type": "job",
+      "company": "capco",
+      "location": "On-site",
+      "salary": "",
+      "source": "Arbeitnow"
+    },
+    "https://www.discudemy.com/marketing/ai-blogging": {
+      "date": "2026-11-02",
+      "title": "[100% OFF] AI for Bloggers: SEO, Content Writing & Optimization",
+      "type": "course",
+      "company": "",
+      "location": "",
+      "salary": "",
+      "source": ""
+    },
+    "https://www.discudemy.com/development-tools/ai-chatbots": {
+      "date": "2026-11-02",
+      "title": "[100% OFF] Build, Train & Sell AI Chatbots [No-code x Chat GPT]",
+      "type": "course",
+      "company": "",
+      "location": "",
+      "salary": "",
+      "source": ""
+    },
+    "https://www.discudemy.com/personal-development/ai-productivity": {
+      "date": "2026-11-02",
+      "title": "[100% OFF] AI x ChatGPT for Productivity 101 [Masterclass]",
+      "type": "course",
+      "company": "",
+      "location": "",
+      "salary": "",
+      "source": ""
+    },
+    "https://www.discudemy.com/business/ai-cold-email": {
+      "date": "2026-11-02",
+      "title": "[100% OFF] Cold Email & Lead Generation using AI [Masterclass]",
+      "type": "course",
+      "company": "",
+      "location": "",
+      "salary": "",
+      "source": ""
+    },
+    "https://www.discudemy.com/development-tools/ai-saas-apps": {
+      "date": "2026-11-02",
+      "title": "[100% OFF] Building AI Saas Apps / AI Tools with [No Code] x ChatGPT",
+      "type": "course",
+      "company": "",
+      "location": "",
+      "salary": "",
+      "source": ""
+    },
+    "https://www.discudemy.com/marketing/ai-content-course": {
+      "date": "2026-11-02",
+      "title": "[100% OFF] Learn Content Writing using AI & Make Money Online",
+      "type": "course",
+      "company": "",
+      "location": "",
+      "salary": "",
+      "source": ""
+    },
+    "https://www.discudemy.com/marketing/ai-content-writing": {
+      "date": "2026-11-02",
+      "title": "[100% OFF] Learn Content Writing using AI & Start Freelancing",
+      "type": "course",
+      "company": "",
+      "location": "",
+      "salary": "",
+      "source": ""
+    },
+    "https://www.discudemy.com/graphic-design/ai-art-course": {
+      "date": "2026-11-02",
+      "title": "[100% OFF] Create and Sell Digital Art using AI [Passive Income]",
+      "type": "course",
+      "company": "",
+      "location": "",
+      "salary": "",
+      "source": ""
+    },
+    "https://www.arbeitnow.com/jobs/companies/assecor-gmbh/it-projektmanager-berlin-391077": {
+      "date": "2026-11-02",
+      "title": "IT-Projektmanager (m/w/d) (Assecor GmbH)",
+      "type": "job",
+      "company": "Assecor GmbH",
+      "location": "Berlin",
+      "salary": "",
+      "source": "Arbeitnow"
+    },
+    "https://www.arbeitnow.com/jobs/companies/assecor-gmbh/senior-projektleiter-berlin-20578": {
+      "date": "2026-11-02",
+      "title": "Senior Projektleiter (m/w/d) (Assecor GmbH)",
+      "type": "job",
+      "company": "Assecor GmbH",
+      "location": "Berlin",
+      "salary": "",
+      "source": "Arbeitnow"
     }
   }
 }
