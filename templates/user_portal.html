@@ -3,218 +3,146 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Member Hub & Opportunity Vault — Course & Job Hunter</title>
+  <title>Opportunity Vault — Member Hub</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              50: '#f0fdf4',
-              500: '#22c55e',
-              600: '#16a34a',
-              700: '#15803d',
-            }
-          }
-        }
-      }
-    }
-  </script>
   <style>
-    /* Custom scrollbars */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #090d16; }
-    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #334155; }
-    
-    .glow-card {
-      position: relative;
-    }
-    .glow-card::after {
-      content: '';
-      position: absolute;
-      inset: -1px;
-      border-radius: inherit;
-      background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(99, 102, 241, 0.15));
-      z-index: -1;
-      opacity: 0.6;
-    }
+    /* Clean custom scrollbar */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-emerald-500/30">
+<body class="bg-[#0b0f19] text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-emerald-500/20">
 
   <!-- ========================================================================= -->
-  <!-- Top Navigation Bar -->
+  <!-- Clean, Minimalist Header -->
   <!-- ========================================================================= -->
-  <header class="border-b border-slate-800/80 bg-slate-900/80 backdrop-blur sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+  <header class="border-b border-slate-800/80 bg-[#0e1322]/90 backdrop-blur sticky top-0 z-30">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
       
-      <!-- Brand & Hub Identity -->
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white font-bold text-lg">
-          🎓💎
-        </div>
-        <div>
-          <h1 class="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-2">
-            Opportunity Vault
-            <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">Member Hub</span>
-          </h1>
-          <p class="text-xs text-slate-400 hidden sm:block">Personalized courses, remote opportunities & career progression</p>
+      <!-- Brand Identity -->
+      <div class="flex items-center gap-2.5">
+        <span class="text-xl">🎓</span>
+        <div class="flex items-baseline gap-2">
+          <span class="font-bold text-sm sm:text-base text-white tracking-tight">Opportunity Vault</span>
+          <span class="text-xs text-slate-500 font-medium">Member Hub</span>
         </div>
       </div>
 
-      <!-- Right Controls: Subscriber Switcher & Admin Link -->
-      <div class="flex items-center gap-2 sm:gap-3">
-        <!-- Subscriber Switcher Dropdown -->
-        <div class="relative flex items-center">
-          <div class="flex items-center bg-slate-800/90 border border-slate-700/80 rounded-lg px-2.5 py-1.5 gap-2 shadow-sm">
-            <i class="fa-solid fa-circle-user text-emerald-400 text-sm"></i>
-            <select id="userSelector" onchange="onSelectUser(this.value)" class="bg-transparent text-xs sm:text-sm font-medium text-slate-200 focus:outline-none cursor-pointer pr-2">
-              <option value="" disabled selected>Loading members...</option>
-            </select>
-            <span id="activeBadge" class="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-              Active
-            </span>
-          </div>
+      <!-- Controls: Member Selector & Status -->
+      <div class="flex items-center gap-2">
+        <!-- Compact Member Selector -->
+        <div class="flex items-center bg-slate-800/70 border border-slate-700/60 rounded-lg px-2.5 py-1 text-xs">
+          <i class="fa-solid fa-user text-slate-400 mr-1.5 text-[11px]"></i>
+          <select id="userSelector" onchange="onSelectUser(this.value)" class="bg-transparent text-slate-200 font-medium focus:outline-none cursor-pointer pr-1">
+            <option value="" disabled selected>Loading...</option>
+          </select>
         </div>
 
-        <!-- Link to Admin Portal -->
-        <a href="/" class="text-xs px-2.5 sm:px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition flex items-center gap-1.5" title="Switch to Admin Center">
-          <i class="fa-solid fa-screwdriver-wrench text-slate-400"></i>
-          <span class="hidden sm:inline">Admin</span>
+        <!-- Active / Vacation Badge -->
+        <span id="activeBadge" class="hidden sm:inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          Active
+        </span>
+
+        <!-- Admin Shortcut -->
+        <a href="/" class="text-xs px-2.5 py-1 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition" title="Go to Admin Center">
+          <i class="fa-solid fa-gear"></i>
         </a>
       </div>
 
     </div>
 
-    <!-- Hub Tabs Navigation -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-2 border-t border-slate-800/50 overflow-x-auto">
-      <button onclick="switchTab('vault')" id="tab-vault" class="tab-btn px-4 py-2.5 text-xs sm:text-sm font-medium border-b-2 border-emerald-500 text-emerald-400 flex items-center gap-2 whitespace-nowrap">
-        <i class="fa-solid fa-vault"></i> Opportunity Vault (<span id="vaultCount">0</span>)
+    <!-- Minimalist Tabs Navigation -->
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 flex gap-6 border-t border-slate-800/40 text-xs sm:text-sm">
+      <button onclick="switchTab('vault')" id="tab-vault" class="tab-btn py-2.5 border-b-2 border-emerald-400 text-emerald-400 font-medium flex items-center gap-1.5 transition">
+        <span>Vault</span>
+        <span id="vaultCount" class="text-[11px] px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-400">0</span>
       </button>
-      <button onclick="switchTab('preferences')" id="tab-preferences" class="tab-btn px-4 py-2.5 text-xs sm:text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
-        <i class="fa-solid fa-sliders"></i> My Career Focus & Preferences
+      <button onclick="switchTab('preferences')" id="tab-preferences" class="tab-btn py-2.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-medium flex items-center gap-1.5 transition">
+        <span>Preferences & Keywords</span>
       </button>
-      <button onclick="switchTab('insights')" id="tab-insights" class="tab-btn px-4 py-2.5 text-xs sm:text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
-        <i class="fa-solid fa-chart-line"></i> Market Intelligence & Trends
+      <button onclick="switchTab('insights')" id="tab-insights" class="tab-btn py-2.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-medium flex items-center gap-1.5 transition">
+        <span>Market Trends</span>
       </button>
     </div>
   </header>
 
   <!-- ========================================================================= -->
-  <!-- Main Container -->
+  <!-- Main Content Container -->
   <!-- ========================================================================= -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full space-y-6">
 
-    <!-- Loading Skeleton Indicator -->
-    <div id="loadingState" class="p-8 text-center bg-slate-900/60 rounded-2xl border border-slate-800/80">
-      <i class="fa-solid fa-circle-notch fa-spin text-3xl text-emerald-400 mb-3"></i>
-      <p class="text-sm text-slate-300 font-medium">Unlocking your personalized opportunity vault...</p>
+    <!-- Loading State -->
+    <div id="loadingState" class="py-16 text-center">
+      <i class="fa-solid fa-circle-notch fa-spin text-2xl text-emerald-400 mb-2"></i>
+      <p class="text-xs text-slate-400">Loading your profile...</p>
     </div>
 
-    <!-- Main Member Profile & Stats Section (Hidden until loaded) -->
+    <!-- Loaded Container -->
     <div id="loadedState" class="hidden space-y-6">
 
       <!-- =================================================================== -->
-      <!-- Hero Gamification Section: Streak, Saved Value & Rank Progression -->
+      <!-- Clean, Minimalist Stats Bar (Single Row, No Clutter) -->
       <!-- =================================================================== -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-slate-900/50 border border-slate-800/80 rounded-xl p-3.5 sm:p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center sm:text-left">
         
-        <!-- 1. Daily Learning Streak -->
-        <div class="bg-gradient-to-br from-slate-900 to-slate-900/80 p-4 rounded-xl border border-slate-800 flex flex-col justify-between shadow-sm relative overflow-hidden">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-xs uppercase tracking-wider font-semibold text-amber-400 flex items-center gap-1.5">
-              <i class="fa-solid fa-fire animate-pulse text-amber-400"></i> Daily Streak
-            </span>
-            <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/20">Active Habit</span>
+        <!-- Streak -->
+        <div class="sm:border-r border-slate-800/80 sm:pr-4">
+          <div class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold flex items-center justify-center sm:justify-start gap-1">
+            <span>🔥</span> Streak
           </div>
-          <div>
-            <div class="flex items-baseline gap-2">
-              <span id="heroStreakNum" class="text-3xl font-extrabold text-white">0</span>
-              <span class="text-sm font-semibold text-slate-400">Days Active</span>
-            </div>
-            <p id="heroStreakText" class="text-xs text-slate-400 mt-1">Consistent daily hunter</p>
-          </div>
-          <div class="mt-3 pt-2.5 border-t border-slate-800/60 text-[11px] text-slate-400 flex items-center gap-1">
-            <i class="fa-solid fa-circle-check text-emerald-400"></i> Next delivery at 02:00 UTC
+          <div class="mt-1 flex items-baseline justify-center sm:justify-start gap-1">
+            <span id="heroStreakNum" class="text-xl font-bold text-white">0</span>
+            <span class="text-xs text-slate-400">days</span>
           </div>
         </div>
 
-        <!-- 2. Lifetime Money Saved Counter -->
-        <div class="bg-gradient-to-br from-slate-900 to-slate-900/80 p-4 rounded-xl border border-slate-800 flex flex-col justify-between shadow-sm relative overflow-hidden">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-xs uppercase tracking-wider font-semibold text-emerald-400 flex items-center gap-1.5">
-              <i class="fa-solid fa-hand-holding-dollar text-emerald-400"></i> Money Saved
-            </span>
-            <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-400/10 text-emerald-300 border border-emerald-400/20">100% Free</span>
+        <!-- Value Saved -->
+        <div class="sm:border-r border-slate-800/80 sm:px-4">
+          <div class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold flex items-center justify-center sm:justify-start gap-1">
+            <span>💰</span> Value Saved
           </div>
-          <div>
-            <div class="flex items-baseline gap-1">
-              <span class="text-xl font-bold text-emerald-400">$</span>
-              <span id="heroMoneySaved" class="text-3xl font-extrabold text-white">0</span>
-            </div>
-            <p class="text-xs text-slate-400 mt-1">Calculated at $20 / course</p>
-          </div>
-          <div class="mt-3 pt-2.5 border-t border-slate-800/60 text-[11px] text-slate-400 flex items-center gap-1">
-            <i class="fa-solid fa-certificate text-emerald-400"></i>
-            <span id="heroCoursesCount">0</span> certified courses unlocked
+          <div class="mt-1 flex items-baseline justify-center sm:justify-start gap-1">
+            <span class="text-sm font-semibold text-emerald-400">$</span>
+            <span id="heroMoneySaved" class="text-xl font-bold text-white">0</span>
           </div>
         </div>
 
-        <!-- 3. Hunter Rank & XP Progression -->
-        <div class="bg-gradient-to-br from-slate-900 to-slate-900/80 p-4 rounded-xl border border-slate-800 flex flex-col justify-between shadow-sm relative overflow-hidden">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-xs uppercase tracking-wider font-semibold text-indigo-400 flex items-center gap-1.5">
-              <span id="heroBadgeEmoji" class="text-base">🌱</span> Hunter Rank
-            </span>
-            <span id="heroLevelTag" class="text-[10px] px-2 py-0.5 rounded-full bg-indigo-400/10 text-indigo-300 border border-indigo-400/20">Level 1</span>
+        <!-- Hunter Rank -->
+        <div class="sm:border-r border-slate-800/80 sm:px-4">
+          <div class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold flex items-center justify-center sm:justify-start gap-1">
+            <span id="heroBadgeEmoji">🌱</span> Rank
           </div>
-          <div>
-            <h3 id="heroLevelTitle" class="text-base font-bold text-white truncate">Rookie Hunter</h3>
-            
-            <!-- XP Progress Bar -->
-            <div class="mt-2">
-              <div class="flex justify-between text-[11px] text-slate-400 mb-1">
-                <span id="heroXpText">XP Progress</span>
-                <span id="heroXpPercent">0%</span>
-              </div>
-              <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                <div id="heroXpBar" class="bg-gradient-to-r from-emerald-500 to-indigo-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
-              </div>
-            </div>
-          </div>
-          <div class="mt-3 pt-2.5 border-t border-slate-800/60 text-[11px] text-slate-400 truncate" id="heroNextRankText">
-            Items needed for next rank
+          <div class="mt-1">
+            <span id="heroLevelTitle" class="text-sm font-bold text-slate-200 block truncate">Rookie</span>
+            <span id="heroLevelTag" class="text-[10px] text-slate-400">Level 1</span>
           </div>
         </div>
 
-        <!-- 4. Total Vault Items -->
-        <div class="bg-gradient-to-br from-slate-900 to-slate-900/80 p-4 rounded-xl border border-slate-800 flex flex-col justify-between shadow-sm relative overflow-hidden">
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-xs uppercase tracking-wider font-semibold text-purple-400 flex items-center gap-1.5">
-              <i class="fa-solid fa-box-archive text-purple-400"></i> Total Vault
-            </span>
-            <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-400/10 text-purple-300 border border-purple-400/20">Delivered</span>
+        <!-- Total Items -->
+        <div class="sm:pl-4">
+          <div class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold flex items-center justify-center sm:justify-start gap-1">
+            <span>📦</span> Delivered
           </div>
-          <div>
-            <div class="flex items-baseline gap-2">
-              <span id="heroTotalItems" class="text-3xl font-extrabold text-white">0</span>
-              <span class="text-sm font-semibold text-slate-400">Opportunities</span>
-            </div>
-            <p class="text-xs text-slate-400 mt-1">
-              <span id="heroJobsCount" class="text-slate-200 font-medium">0</span> remote jobs discovered
-            </p>
-          </div>
-          <div class="mt-3 pt-2.5 border-t border-slate-800/60 text-[11px] text-slate-400 flex items-center gap-1">
-            <i class="fa-solid fa-bullseye text-purple-400"></i> Curated exclusively for you
+          <div class="mt-1 flex items-baseline justify-center sm:justify-start gap-1">
+            <span id="heroTotalItems" class="text-xl font-bold text-white">0</span>
+            <span class="text-xs text-slate-400">items</span>
           </div>
         </div>
 
+      </div>
+
+      <!-- Hidden compat elements for scripts -->
+      <div class="hidden">
+        <span id="heroCoursesCount">0</span>
+        <span id="heroJobsCount">0</span>
+        <span id="heroStreakText"></span>
+        <div id="heroXpBar"></div>
+        <span id="heroXpPercent"></span>
+        <span id="heroNextRankText"></span>
       </div>
 
       <!-- =================================================================== -->
@@ -222,263 +150,219 @@
       <!-- =================================================================== -->
       <section id="content-vault" class="space-y-4">
         
-        <!-- Search, Filter & View Controls -->
-        <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800/90 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        <!-- Clean Search & Filter Toolbar -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
           
-          <!-- Search input -->
+          <!-- Search Bar -->
           <div class="relative flex-1">
             <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
             <input 
               type="text" 
               id="vaultSearch" 
               oninput="filterVault()"
-              placeholder="Search your unlocked courses, remote roles, companies, skills..." 
-              class="w-full pl-9 pr-4 py-2 bg-slate-950/80 border border-slate-700/80 rounded-lg text-xs sm:text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition"
+              placeholder="Search by topic, job role, company..." 
+              class="w-full pl-8 pr-3 py-1.5 bg-slate-900/60 border border-slate-800 rounded-lg text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-slate-600 transition"
             >
           </div>
 
-          <!-- Filter Pills -->
-          <div class="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
-            <button onclick="setVaultFilter('all')" id="filter-all" class="filter-pill px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 whitespace-nowrap transition">
+          <!-- Clean Pill Filters -->
+          <div class="flex items-center gap-1.5 self-start sm:self-auto">
+            <button onclick="setVaultFilter('all')" id="filter-all" class="filter-pill px-2.5 py-1 rounded-md text-xs font-medium bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 transition">
               All (<span id="count-all">0</span>)
             </button>
-            <button onclick="setVaultFilter('course')" id="filter-course" class="filter-pill px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-400 border border-slate-700 hover:text-slate-200 whitespace-nowrap transition">
-              🎓 Free Courses (<span id="count-course">0</span>)
+            <button onclick="setVaultFilter('course')" id="filter-course" class="filter-pill px-2.5 py-1 rounded-md text-xs font-medium bg-slate-900/60 text-slate-400 border border-slate-800 hover:text-slate-200 transition">
+              Courses (<span id="count-course">0</span>)
             </button>
-            <button onclick="setVaultFilter('job')" id="filter-job" class="filter-pill px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-400 border border-slate-700 hover:text-slate-200 whitespace-nowrap transition">
-              💼 Remote Jobs (<span id="count-job">0</span>)
+            <button onclick="setVaultFilter('job')" id="filter-job" class="filter-pill px-2.5 py-1 rounded-md text-xs font-medium bg-slate-900/60 text-slate-400 border border-slate-800 hover:text-slate-200 transition">
+              Jobs (<span id="count-job">0</span>)
             </button>
           </div>
 
         </div>
 
-        <!-- Vault Items Grid -->
-        <div id="vaultGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <!-- Dynamically populated -->
+        <!-- Clean Opportunity Cards Grid -->
+        <div id="vaultGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <!-- Populated dynamically -->
         </div>
 
         <!-- Empty State -->
-        <div id="vaultEmpty" class="hidden p-12 text-center bg-slate-900/40 rounded-xl border border-slate-800/60">
-          <div class="w-14 h-14 rounded-full bg-slate-800/80 flex items-center justify-center mx-auto mb-3 text-slate-400 text-2xl">
-            <i class="fa-solid fa-box-open"></i>
-          </div>
-          <h3 class="text-base font-semibold text-slate-200 mb-1">No Opportunities Found</h3>
-          <p id="vaultEmptyMessage" class="text-xs text-slate-400 max-w-sm mx-auto mb-4">
-            No items match your active search filter or no history is recorded yet.
-          </p>
-          <button onclick="resetVaultSearch()" class="text-xs px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium transition">
-            Clear Filters
+        <div id="vaultEmpty" class="hidden py-12 text-center bg-slate-900/30 rounded-xl border border-slate-800/50">
+          <p class="text-sm text-slate-300 font-medium mb-1">No opportunities found</p>
+          <p class="text-xs text-slate-500 mb-3">Try clearing search query or changing filters.</p>
+          <button onclick="resetVaultSearch()" class="text-xs px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+            Reset filters
           </button>
         </div>
 
       </section>
 
       <!-- =================================================================== -->
-      <!-- TAB 2: MY CAREER FOCUS & PREFERENCES -->
+      <!-- TAB 2: PREFERENCES & KEYWORDS -->
       <!-- =================================================================== -->
-      <section id="content-preferences" class="hidden space-y-6">
+      <section id="content-preferences" class="hidden space-y-5">
         
-        <div class="bg-slate-900/90 rounded-2xl border border-slate-800 p-6 space-y-6">
-          
-          <!-- Header and Vacation Mode Banner -->
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-slate-800/80 gap-4">
-            <div>
-              <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                <i class="fa-solid fa-user-gear text-emerald-400"></i> Career Preferences & Automated Delivery
-              </h2>
-              <p class="text-xs text-slate-400 mt-0.5">
-                Configure your personalized search keywords, remote targets, and delivery settings
-              </p>
-            </div>
-
-            <!-- Vacation Mode Switch -->
-            <div class="flex items-center gap-3 bg-slate-800/80 px-4 py-2 rounded-xl border border-slate-700/80">
-              <div class="text-right">
-                <span class="text-xs font-semibold text-slate-200 block" id="vacationStatusText">Active Delivery</span>
-                <span class="text-[10px] text-slate-400" id="vacationSubText">Daily digests enabled</span>
-              </div>
-              <label class="relative inline-flex items-center cursor-pointer">
-                <input type="checkbox" id="prefActiveToggle" onchange="onVacationToggle(this.checked)" class="sr-only peer" checked>
-                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
-              </label>
-            </div>
+        <!-- Delivery Settings Row -->
+        <div class="bg-slate-900/50 border border-slate-800/80 rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h3 class="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
+              <span>✈️</span> Vacation Mode
+            </h3>
+            <p class="text-xs text-slate-400 mt-0.5" id="vacationSubText">
+              Temporarily pause daily digests while preserving your streak history.
+            </p>
           </div>
 
-          <!-- Preference Form Grid -->
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-            <!-- 1. Course Focus Keywords -->
-            <div class="space-y-3">
-              <div class="flex items-center justify-between">
-                <label class="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
-                  <i class="fa-solid fa-graduation-cap"></i> Free Course Focus Keywords
-                </label>
-                <span class="text-[11px] text-slate-400">Udemy, DiscUdemy, AnswersQ</span>
-              </div>
-              <p class="text-xs text-slate-400">
-                Courses matching these topics will be harvested and unlocked for you for free.
-              </p>
-              
-              <!-- Chips container -->
-              <div id="courseKeywordsContainer" class="flex flex-wrap gap-1.5 p-3 min-h-[90px] bg-slate-950/80 border border-slate-800 rounded-xl">
-                <!-- Dynamically populated chips -->
-              </div>
-
-              <!-- Add keyword input -->
-              <div class="flex gap-2">
-                <input 
-                  type="text" 
-                  id="newCourseKeyword" 
-                  placeholder="e.g. machine learning, python, excel"
-                  onkeydown="if(event.key==='Enter'){addKeyword('course');event.preventDefault();}"
-                  class="flex-1 px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
-                >
-                <button onclick="addKeyword('course')" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-medium text-emerald-400 border border-slate-700 rounded-lg transition">
-                  <i class="fa-solid fa-plus"></i> Add
-                </button>
-              </div>
-            </div>
-
-            <!-- 2. Remote Job Search Targets -->
-            <div class="space-y-3">
-              <div class="flex items-center justify-between">
-                <label class="text-xs font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
-                  <i class="fa-solid fa-briefcase"></i> Remote Job Search Targets
-                </label>
-                <span class="text-[11px] text-slate-400">Jobicy, Arbeitnow, Remotive</span>
-              </div>
-              <p class="text-xs text-slate-400">
-                Job roles matching these search queries will be scraped from top remote boards.
-              </p>
-              
-              <!-- Chips container -->
-              <div id="jobKeywordsContainer" class="flex flex-wrap gap-1.5 p-3 min-h-[90px] bg-slate-950/80 border border-slate-800 rounded-xl">
-                <!-- Dynamically populated chips -->
-              </div>
-
-              <!-- Add search target input -->
-              <div class="flex gap-2">
-                <input 
-                  type="text" 
-                  id="newJobKeyword" 
-                  placeholder="e.g. project manager, automation qa, python dev"
-                  onkeydown="if(event.key==='Enter'){addKeyword('job');event.preventDefault();}"
-                  class="flex-1 px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
-                >
-                <button onclick="addKeyword('job')" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-medium text-indigo-400 border border-slate-700 rounded-lg transition">
-                  <i class="fa-solid fa-plus"></i> Add
-                </button>
-              </div>
-            </div>
-
-            <!-- 3. Preferred Remote Locations -->
-            <div class="space-y-3">
-              <div class="flex items-center justify-between">
-                <label class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
-                  <i class="fa-solid fa-location-dot"></i> Preferred Remote Locations
-                </label>
-                <span class="text-[11px] text-slate-400">Filters jobs geographically</span>
-              </div>
-              <p class="text-xs text-slate-400">
-                Roles outside these regions will be filtered out. Leave "Worldwide" for everything.
-              </p>
-              
-              <!-- Chips container -->
-              <div id="locationKeywordsContainer" class="flex flex-wrap gap-1.5 p-3 min-h-[90px] bg-slate-950/80 border border-slate-800 rounded-xl">
-                <!-- Dynamically populated chips -->
-              </div>
-
-              <!-- Add location input -->
-              <div class="flex gap-2">
-                <input 
-                  type="text" 
-                  id="newLocationKeyword" 
-                  placeholder="e.g. Worldwide, India, Remote, USA"
-                  onkeydown="if(event.key==='Enter'){addKeyword('location');event.preventDefault();}"
-                  class="flex-1 px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-amber-500"
-                >
-                <button onclick="addKeyword('location')" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-medium text-amber-400 border border-slate-700 rounded-lg transition">
-                  <i class="fa-solid fa-plus"></i> Add
-                </button>
-              </div>
-            </div>
-
-            <!-- 4. Max Daily Items Capacity Slider -->
-            <div class="space-y-3">
-              <div class="flex items-center justify-between">
-                <label class="text-xs font-bold uppercase tracking-wider text-purple-400 flex items-center gap-1.5">
-                  <i class="fa-solid fa-gauge-high"></i> Daily Digest Capacity
-                </label>
-                <span id="sliderValueBadge" class="text-xs font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">10 items / day</span>
-              </div>
-              <p class="text-xs text-slate-400">
-                Maximum number of new high-match opportunities sent in each daily email digest.
-              </p>
-              
-              <div class="p-4 bg-slate-950/80 border border-slate-800 rounded-xl space-y-3">
-                <input 
-                  type="range" 
-                  id="prefMaxItemsSlider" 
-                  min="3" 
-                  max="30" 
-                  step="1" 
-                  value="10" 
-                  oninput="onSliderChange(this.value)"
-                  class="w-full accent-emerald-500 cursor-pointer"
-                >
-                <div class="flex justify-between text-[11px] text-slate-500 font-medium">
-                  <span>3 items (Bite-sized)</span>
-                  <span>15 items (Balanced)</span>
-                  <span>30 items (Comprehensive)</span>
-                </div>
-              </div>
-            </div>
-
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-medium text-emerald-400" id="vacationStatusText">Active</span>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="prefActiveToggle" onchange="onVacationToggle(this.checked)" class="sr-only peer" checked>
+              <div class="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+            </label>
           </div>
+        </div>
 
-          <!-- Bottom Action Buttons -->
-          <div class="pt-4 border-t border-slate-800/80 flex items-center justify-between">
-            <span class="text-xs text-slate-400" id="saveHintText">
-              Changes take effect immediately for the next daily hunt.
+        <!-- Daily Limit Setting -->
+        <div class="bg-slate-900/50 border border-slate-800/80 rounded-xl p-4 sm:p-5 space-y-2">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
+              <span>📊</span> Daily Digest Limit
+            </h3>
+            <span id="sliderValueBadge" class="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+              10 items / day
             </span>
-            <button 
-              id="savePreferencesBtn" 
-              onclick="savePreferences()" 
-              class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-semibold text-xs sm:text-sm shadow-lg shadow-emerald-500/20 transition flex items-center gap-2 cursor-pointer"
+          </div>
+          <p class="text-xs text-slate-400">
+            Target number of top matched items delivered in each daily digest email.
+          </p>
+          <input 
+            type="range" 
+            id="prefMaxItemsSlider" 
+            min="3" 
+            max="25" 
+            step="1" 
+            value="10" 
+            oninput="onSliderChange(this.value)"
+            class="w-full accent-emerald-500 cursor-pointer pt-1"
+          >
+        </div>
+
+        <!-- Keyword Targeting Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          <!-- 1. Course Topics -->
+          <div class="bg-slate-900/50 border border-slate-800/80 rounded-xl p-4 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-graduation-cap"></i> Free Course Topics
+              </h3>
+            </div>
+            
+            <!-- Tags Box -->
+            <div id="courseKeywordsContainer" class="flex flex-wrap gap-1.5 min-h-[60px] p-2 bg-slate-950/60 border border-slate-800/60 rounded-lg">
+              <!-- Dynamically populated -->
+            </div>
+
+            <!-- Add Input -->
+            <div class="flex gap-1.5">
+              <input 
+                type="text" 
+                id="newCourseKeyword" 
+                placeholder="Add course topic..."
+                onkeydown="if(event.key==='Enter'){addKeyword('course');event.preventDefault();}"
+                class="flex-1 px-2.5 py-1.5 bg-slate-950 border border-slate-700/60 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
+              >
+              <button onclick="addKeyword('course')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-medium text-emerald-400 rounded-lg transition">
+                Add
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. Job Search Targets -->
+          <div class="bg-slate-900/50 border border-slate-800/80 rounded-xl p-4 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-blue-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-briefcase"></i> Remote Job Roles
+              </h3>
+            </div>
+            
+            <!-- Tags Box -->
+            <div id="jobKeywordsContainer" class="flex flex-wrap gap-1.5 min-h-[60px] p-2 bg-slate-950/60 border border-slate-800/60 rounded-lg">
+              <!-- Dynamically populated -->
+            </div>
+
+            <!-- Add Input -->
+            <div class="flex gap-1.5">
+              <input 
+                type="text" 
+                id="newJobKeyword" 
+                placeholder="Add job title / role..."
+                onkeydown="if(event.key==='Enter'){addKeyword('job');event.preventDefault();}"
+                class="flex-1 px-2.5 py-1.5 bg-slate-950 border border-slate-700/60 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+              >
+              <button onclick="addKeyword('job')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-medium text-blue-400 rounded-lg transition">
+                Add
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 3. Preferred Locations -->
+        <div class="bg-slate-900/50 border border-slate-800/80 rounded-xl p-4 space-y-2.5">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+            <i class="fa-solid fa-location-dot"></i> Preferred Locations
+          </h3>
+          
+          <div id="locationKeywordsContainer" class="flex flex-wrap gap-1.5 min-h-[50px] p-2 bg-slate-950/60 border border-slate-800/60 rounded-lg">
+            <!-- Dynamically populated -->
+          </div>
+
+          <div class="flex gap-1.5 max-w-sm">
+            <input 
+              type="text" 
+              id="newLocationKeyword" 
+              placeholder="e.g. Worldwide, India, Remote"
+              onkeydown="if(event.key==='Enter'){addKeyword('location');event.preventDefault();}"
+              class="flex-1 px-2.5 py-1.5 bg-slate-950 border border-slate-700/60 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-amber-500"
             >
-              <i class="fa-solid fa-floppy-disk"></i>
-              <span>Save My Preferences</span>
+            <button onclick="addKeyword('location')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-medium text-amber-400 rounded-lg transition">
+              Add
             </button>
           </div>
+        </div>
 
+        <!-- Save Button -->
+        <div class="pt-2 flex items-center justify-end">
+          <button 
+            id="savePreferencesBtn" 
+            onclick="savePreferences()" 
+            class="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs sm:text-sm shadow transition flex items-center gap-2 cursor-pointer"
+          >
+            <i class="fa-solid fa-check"></i>
+            <span>Save Preferences</span>
+          </button>
         </div>
 
       </section>
 
       <!-- =================================================================== -->
-      <!-- TAB 3: MARKET INTELLIGENCE & INSIGHTS -->
+      <!-- TAB 3: MARKET INTELLIGENCE -->
       <!-- =================================================================== -->
-      <section id="content-insights" class="hidden space-y-4">
-        
-        <div class="bg-slate-900/90 rounded-2xl border border-slate-800 p-6 space-y-4">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-800/80 gap-2">
-            <div>
-              <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                <i class="fa-solid fa-chart-line text-emerald-400"></i> 7-Day Market Intelligence Report
-              </h2>
-              <p class="text-xs text-slate-400">Real-time keyword demand, remote salary pulses, and high-velocity hiring shifts</p>
-            </div>
-            <button onclick="loadWeeklyInsights()" class="text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition flex items-center gap-1.5 self-start sm:self-auto">
-              <i class="fa-solid fa-rotate text-emerald-400"></i> Refresh Pulse
+      <section id="content-insights" class="hidden space-y-3">
+        <div class="bg-slate-900/50 border border-slate-800/80 rounded-xl p-5 space-y-3">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800/80">
+            <h3 class="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
+              <span>📈</span> 7-Day Market Insights
+            </h3>
+            <button onclick="loadWeeklyInsights()" class="text-xs px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition flex items-center gap-1">
+              <i class="fa-solid fa-rotate text-[10px]"></i> Refresh
             </button>
           </div>
 
-          <!-- Insights Content Box -->
-          <div id="insightsBox" class="p-4 bg-slate-950 border border-slate-800 rounded-xl font-mono text-xs sm:text-sm text-slate-300 leading-relaxed whitespace-pre-wrap max-h-[500px] overflow-y-auto">
-            <i class="fa-solid fa-circle-notch fa-spin text-emerald-400"></i> Analyzing global market data...
+          <div id="insightsBox" class="p-3 bg-slate-950/80 border border-slate-800/60 rounded-lg font-mono text-xs text-slate-300 leading-relaxed whitespace-pre-wrap max-h-[450px] overflow-y-auto">
+            Loading market insights...
           </div>
         </div>
-
       </section>
 
     </div>
@@ -486,21 +370,17 @@
   </main>
 
   <!-- ========================================================================= -->
-  <!-- Floating Toast Notification -->
+  <!-- Toast Alert -->
   <!-- ========================================================================= -->
-  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
-    <div class="bg-slate-900 border border-emerald-500/40 text-slate-100 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3">
-      <div id="toastIcon" class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm font-bold">
-        <i class="fa-solid fa-check"></i>
-      </div>
-      <div>
-        <p id="toastMessage" class="text-xs sm:text-sm font-semibold">Notification</p>
-      </div>
+  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-16 opacity-0 transition-all duration-300 pointer-events-none">
+    <div class="bg-slate-900 border border-slate-700 text-slate-100 px-3.5 py-2 rounded-lg shadow-xl flex items-center gap-2.5 text-xs">
+      <span id="toastIcon" class="text-emerald-400">✓</span>
+      <span id="toastMessage">Saved successfully</span>
     </div>
   </div>
 
   <!-- ========================================================================= -->
-  <!-- Client JavaScript Logic -->
+  <!-- Client JavaScript -->
   <!-- ========================================================================= -->
   <script>
     let currentSubscribers = [];
@@ -508,17 +388,14 @@
     let currentUserData = null;
     let currentFilter = "all";
 
-    // Tag arrays for edit mode
     let userKeywords = [];
     let userJobSearches = [];
     let userLocations = [];
 
-    // Initialize application on page load
     document.addEventListener("DOMContentLoaded", async () => {
       await loadSubscribers();
     });
 
-    // 1. Fetch available subscribers for switcher
     async function loadSubscribers() {
       try {
         const res = await fetch("/api/portal/subscribers");
@@ -529,15 +406,13 @@
         selector.innerHTML = "";
 
         if (!subscribers || subscribers.length === 0) {
-          selector.innerHTML = '<option value="">No subscribers configured</option>';
+          selector.innerHTML = '<option value="">No subscribers</option>';
           return;
         }
 
-        // Check if email is in URL search param, else localStorage, else pick first subscriber
         const urlParams = new URLSearchParams(window.location.search);
         let initialEmail = urlParams.get("email") || localStorage.getItem("last_portal_user") || subscribers[0].email;
 
-        // Verify initialEmail exists in list, else default to first
         const exists = subscribers.find(s => s.email.toLowerCase() === initialEmail.toLowerCase());
         if (!exists) {
           initialEmail = subscribers[0].email;
@@ -546,7 +421,7 @@
         subscribers.forEach(sub => {
           const opt = document.createElement("option");
           opt.value = sub.email;
-          opt.textContent = `${sub.name || sub.email} (${sub.email})`;
+          opt.textContent = sub.name || sub.email;
           if (sub.email.toLowerCase() === initialEmail.toLowerCase()) {
             opt.selected = true;
           }
@@ -560,12 +435,10 @@
       }
     }
 
-    // 2. Switch selected user
     async function onSelectUser(email) {
       if (!email) return;
       localStorage.setItem("last_portal_user", email);
       
-      // Update browser URL without reloading
       const url = new URL(window.location);
       url.searchParams.set("email", email);
       window.history.replaceState({}, "", url);
@@ -573,7 +446,6 @@
       await loadUserProfile(email);
     }
 
-    // 3. Load full profile, gamified stats & opportunity vault for user
     async function loadUserProfile(email) {
       document.getElementById("loadingState").classList.remove("hidden");
       document.getElementById("loadedState").classList.add("hidden");
@@ -595,68 +467,42 @@
         document.getElementById("loadedState").classList.remove("hidden");
       } catch (err) {
         console.error("Failed to load user profile:", err);
-        showToast("Error loading user profile: " + err.message, "error");
+        showToast("Error: " + err.message, "error");
       }
     }
 
-    // 4. Render hero gamification stats and badge
     function renderUserProfile(data) {
       const stats = data.stats || {};
       const sub = data.subscriber || {};
 
-      // Active / Vacation badge
       const activeBadge = document.getElementById("activeBadge");
       if (sub.active) {
         activeBadge.textContent = "Active";
-        activeBadge.className = "hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+        activeBadge.className = "hidden sm:inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
       } else {
-        activeBadge.textContent = "🏖️ Vacation";
-        activeBadge.className = "hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30";
+        activeBadge.textContent = "Vacation";
+        activeBadge.className = "hidden sm:inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-amber-500/10 text-amber-300 border border-amber-500/20";
       }
 
-      // Hero Stat 1: Streak
       document.getElementById("heroStreakNum").textContent = stats.streak || 0;
-      document.getElementById("heroStreakText").textContent = (stats.streak > 1) 
-        ? `${stats.streak} days consecutive learning habit!` 
-        : "Start or maintain your daily momentum!";
-
-      // Hero Stat 2: Money Saved
       document.getElementById("heroMoneySaved").textContent = (stats.money_saved || 0).toLocaleString();
-      document.getElementById("heroCoursesCount").textContent = stats.total_courses || 0;
-
-      // Hero Stat 3: Rank & XP Progress
       document.getElementById("heroBadgeEmoji").textContent = stats.badge || "🌱";
       document.getElementById("heroLevelTag").textContent = `Level ${stats.level_num || 1}`;
-      document.getElementById("heroLevelTitle").textContent = stats.level_title || "Rookie Hunter";
-      
-      const xp = stats.xp || {};
-      const percent = xp.percent || 0;
-      document.getElementById("heroXpBar").style.width = `${percent}%`;
-      document.getElementById("heroXpPercent").textContent = `${percent}%`;
-      
-      if (xp.is_max) {
-        document.getElementById("heroNextRankText").textContent = "👑 Max Rank Master Career Strategist achieved!";
-      } else {
-        document.getElementById("heroNextRankText").textContent = `${xp.items_needed} more items to unlock ${xp.next_title}`;
-      }
-
-      // Hero Stat 4: Total Vault Count
+      document.getElementById("heroLevelTitle").textContent = stats.level_title || "Rookie";
       document.getElementById("heroTotalItems").textContent = (stats.total_items || 0).toLocaleString();
-      document.getElementById("heroJobsCount").textContent = stats.total_jobs || 0;
       document.getElementById("vaultCount").textContent = data.vault_count || 0;
     }
 
-    // 5. Render opportunity vault items with filtering & search
     function setVaultFilter(filter) {
       currentFilter = filter;
       document.querySelectorAll(".filter-pill").forEach(btn => {
-        btn.classList.remove("bg-emerald-500/20", "text-emerald-400", "border-emerald-500/40");
-        btn.classList.add("bg-slate-800", "text-slate-400", "border-slate-700");
+        btn.classList.remove("bg-emerald-500/15", "text-emerald-400", "border-emerald-500/30");
+        btn.classList.add("bg-slate-900/60", "text-slate-400", "border-slate-800");
       });
       const activeBtn = document.getElementById(`filter-${filter}`);
       if (activeBtn) {
-        activeBtn.classList.remove("bg-slate-800", "text-slate-400", "border-slate-700");
-        activeBtn.classList.add("bg-emerald-500/20", "text-emerald-400", "border-emerald-500/40");
+        activeBtn.classList.remove("bg-slate-900/60", "text-slate-400", "border-slate-800");
+        activeBtn.classList.add("bg-emerald-500/15", "text-emerald-400", "border-emerald-500/30");
       }
       filterVault();
     }
@@ -666,22 +512,16 @@
       const query = (document.getElementById("vaultSearch").value || "").trim().toLowerCase();
       const vault = currentUserData.vault;
 
-      // Update counters
-      const totalCount = vault.length;
-      const courseCount = vault.filter(i => i.type === "course").length;
-      const jobCount = vault.filter(i => i.type === "job").length;
+      document.getElementById("count-all").textContent = vault.length;
+      document.getElementById("count-course").textContent = vault.filter(i => i.type === "course").length;
+      document.getElementById("count-job").textContent = vault.filter(i => i.type === "job").length;
 
-      document.getElementById("count-all").textContent = totalCount;
-      document.getElementById("count-course").textContent = courseCount;
-      document.getElementById("count-job").textContent = jobCount;
-
-      // Filter by type and query
       const filtered = vault.filter(item => {
         if (currentFilter !== "all" && item.type !== currentFilter) {
           return false;
         }
         if (!query) return true;
-        const searchStr = `${item.title} ${item.domain} ${item.location || ""} ${item.salary || ""}`.toLowerCase();
+        const searchStr = `${item.title} ${item.domain} ${item.location || ""}`.toLowerCase();
         return searchStr.includes(query);
       });
 
@@ -702,62 +542,36 @@
       items.forEach(item => {
         const isCourse = item.type === "course";
         const card = document.createElement("div");
-        card.className = "bg-gradient-to-br from-slate-900 to-slate-900/90 rounded-xl border border-slate-800/80 p-4 flex flex-col justify-between hover:border-slate-700 transition hover:shadow-lg hover:shadow-slate-950/50 group";
+        card.className = "bg-slate-900/50 hover:bg-slate-900/80 rounded-xl border border-slate-800/80 p-3.5 flex flex-col justify-between transition group";
 
-        const badgeHtml = isCourse
-          ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-               <i class="fa-solid fa-graduation-cap"></i> Free Course
-             </span>`
-          : `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-indigo-500/15 text-indigo-400 border border-indigo-500/30">
-               <i class="fa-solid fa-briefcase"></i> Remote Job
-             </span>`;
+        const badge = isCourse
+          ? `<span class="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">Course</span>`
+          : `<span class="text-[10px] font-semibold text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded">Job</span>`;
 
-        const locationHtml = item.location
-          ? `<span class="inline-flex items-center gap-1 text-[11px] text-slate-400">
-               <i class="fa-solid fa-location-dot text-slate-500"></i> ${escapeHtml(item.location)}
-             </span>`
-          : "";
-
-        const salaryHtml = item.salary
-          ? `<span class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-400">
-               <i class="fa-solid fa-money-bill-wave text-emerald-500"></i> ${escapeHtml(item.salary)}
-             </span>`
-          : "";
+        const locationText = item.location ? `<span class="truncate max-w-[120px]">${escapeHtml(item.location)}</span>` : "";
 
         card.innerHTML = `
           <div>
-            <div class="flex items-center justify-between gap-2 mb-2">
-              ${badgeHtml}
-              <span class="text-[10px] text-slate-500 font-mono flex items-center gap-1">
-                <i class="fa-regular fa-calendar"></i> ${escapeHtml(item.date)}
-              </span>
+            <div class="flex items-center justify-between text-[11px] text-slate-500 mb-2">
+              ${badge}
+              <span>${escapeHtml(item.date)}</span>
             </div>
             
-            <h4 class="text-sm font-semibold text-slate-100 group-hover:text-white line-clamp-2 mb-2 leading-snug">
+            <h4 class="text-xs sm:text-sm font-medium text-slate-100 group-hover:text-white line-clamp-2 mb-2.5 leading-snug">
               ${escapeHtml(item.title)}
             </h4>
-            
-            <div class="flex flex-wrap items-center gap-2 mb-3">
-              <span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700/60 font-mono">
-                ${escapeHtml(item.domain)}
-              </span>
-              ${locationHtml}
-              ${salaryHtml}
-            </div>
           </div>
 
-          <div class="pt-3 border-t border-slate-800/60 flex items-center justify-between">
-            <span class="text-[11px] text-emerald-400 font-medium flex items-center gap-1">
-              <i class="fa-solid fa-shield-check"></i> Verified
-            </span>
+          <div class="pt-2.5 border-t border-slate-800/60 flex items-center justify-between text-[11px] text-slate-400">
+            <span class="truncate max-w-[130px] font-mono text-slate-500">${escapeHtml(item.domain)}</span>
             <a 
               href="${escapeHtml(item.url)}" 
               target="_blank" 
               rel="noopener noreferrer" 
-              class="text-xs px-3 py-1.5 rounded-lg ${isCourse ? 'bg-emerald-600/80 hover:bg-emerald-600' : 'bg-indigo-600/80 hover:bg-indigo-600'} text-white font-medium transition flex items-center gap-1.5 shadow-sm"
+              class="text-xs font-medium ${isCourse ? 'text-emerald-400 hover:text-emerald-300' : 'text-blue-400 hover:text-blue-300'} flex items-center gap-1"
             >
-              <span>${isCourse ? 'Claim Course' : 'Apply Role'}</span>
-              <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+              <span>View</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
             </a>
           </div>
         `;
@@ -771,21 +585,17 @@
       setVaultFilter("all");
     }
 
-    // 6. Preferences Tab Logic
     function renderPreferences(sub) {
       if (!sub) return;
       
-      // Vacation toggle
       const toggle = document.getElementById("prefActiveToggle");
       toggle.checked = Boolean(sub.active);
       onVacationToggle(toggle.checked);
 
-      // Max items slider
       const slider = document.getElementById("prefMaxItemsSlider");
       slider.value = sub.max_items || 10;
       onSliderChange(slider.value);
 
-      // Tags
       userKeywords = [...(sub.keywords || [])];
       userJobSearches = [...(sub.job_searches || [])];
       userLocations = [...(sub.preferred_locations || [])];
@@ -797,15 +607,12 @@
 
     function onVacationToggle(isActive) {
       const statusText = document.getElementById("vacationStatusText");
-      const subText = document.getElementById("vacationSubText");
       if (isActive) {
         statusText.textContent = "Active Delivery";
-        statusText.className = "text-xs font-semibold text-emerald-400 block";
-        subText.textContent = "Daily automated delivery at 02:00 UTC";
+        statusText.className = "text-xs font-medium text-emerald-400";
       } else {
-        statusText.textContent = "🏖️ Vacation Mode";
-        statusText.className = "text-xs font-semibold text-amber-400 block";
-        subText.textContent = "Paused — streak preserved";
+        statusText.textContent = "Vacation Mode";
+        statusText.className = "text-xs font-medium text-amber-400";
       }
     }
 
@@ -818,29 +625,29 @@
       if (category === "course") {
         container = document.getElementById("courseKeywordsContainer");
         items = userKeywords;
-        colorClass = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+        colorClass = "bg-emerald-500/10 text-emerald-300 border-emerald-500/20";
       } else if (category === "job") {
         container = document.getElementById("jobKeywordsContainer");
         items = userJobSearches;
-        colorClass = "bg-indigo-500/10 text-indigo-400 border-indigo-500/20";
+        colorClass = "bg-blue-500/10 text-blue-300 border-blue-500/20";
       } else {
         container = document.getElementById("locationKeywordsContainer");
         items = userLocations;
-        colorClass = "bg-amber-500/10 text-amber-400 border-amber-500/20";
+        colorClass = "bg-amber-500/10 text-amber-300 border-amber-500/20";
       }
 
       container.innerHTML = "";
       if (items.length === 0) {
-        container.innerHTML = '<span class="text-xs text-slate-500 italic p-1">No keywords added yet.</span>';
+        container.innerHTML = '<span class="text-xs text-slate-500 italic">None added</span>';
         return;
       }
 
       items.forEach((item, index) => {
         const chip = document.createElement("span");
-        chip.className = `inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border ${colorClass} transition hover:bg-slate-800`;
+        chip.className = `inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs border ${colorClass}`;
         chip.innerHTML = `
           <span>${escapeHtml(item)}</span>
-          <button type="button" onclick="removeKeyword('${category}', ${index})" class="text-slate-400 hover:text-rose-400 transition ml-0.5 focus:outline-none">
+          <button type="button" onclick="removeKeyword('${category}', ${index})" class="text-slate-400 hover:text-rose-400 ml-0.5">
             &times;
           </button>
         `;
@@ -865,7 +672,6 @@
       const val = (input.value || "").trim();
       if (!val) return;
 
-      // Check duplicates
       if (!targetArray.some(x => x.toLowerCase() === val.toLowerCase())) {
         targetArray.push(val);
         renderTags(category);
@@ -885,12 +691,11 @@
       renderTags(category);
     }
 
-    // 7. Save preferences to backend
     async function savePreferences() {
       const btn = document.getElementById("savePreferencesBtn");
       const originalHtml = btn.innerHTML;
       btn.disabled = true;
-      btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Saving...';
+      btn.innerHTML = 'Saving...';
 
       try {
         const payload = {
@@ -910,42 +715,38 @@
 
         const data = await res.json();
         if (!res.ok) {
-          throw new Error(data.error || "Failed to save preferences");
+          throw new Error(data.error || "Failed to save");
         }
 
-        showToast("✅ Preferences updated successfully!", "success");
-        // Reload profile in background to update header badges
+        showToast("Preferences saved!", "success");
         await loadUserProfile(currentEmail);
       } catch (err) {
-        console.error("Error saving preferences:", err);
-        showToast("Error saving preferences: " + err.message, "error");
+        showToast("Error: " + err.message, "error");
       } finally {
         btn.disabled = false;
         btn.innerHTML = originalHtml;
       }
     }
 
-    // 8. Weekly Insights Tab
     async function loadWeeklyInsights() {
       const box = document.getElementById("insightsBox");
-      box.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-emerald-400"></i> Generating fresh market intelligence...';
+      box.innerHTML = 'Loading insights...';
       try {
         const res = await fetch("/api/weekly-insights");
         const data = await res.json();
-        box.textContent = data.report || "No insights report generated.";
+        box.textContent = data.report || "No insights report.";
       } catch (err) {
-        box.textContent = "Error loading market intelligence: " + err.message;
+        box.textContent = "Error loading insights: " + err.message;
       }
     }
 
-    // Tab Navigation
     function switchTab(tabId) {
       document.querySelectorAll(".tab-btn").forEach(btn => {
-        btn.classList.remove("border-emerald-500", "text-emerald-400");
+        btn.classList.remove("border-emerald-400", "text-emerald-400");
         btn.classList.add("border-transparent", "text-slate-400");
       });
       document.getElementById(`tab-${tabId}`).classList.remove("border-transparent", "text-slate-400");
-      document.getElementById(`tab-${tabId}`).classList.add("border-emerald-500", "text-emerald-400");
+      document.getElementById(`tab-${tabId}`).classList.add("border-emerald-400", "text-emerald-400");
 
       document.getElementById("content-vault").classList.add("hidden");
       document.getElementById("content-preferences").classList.add("hidden");
@@ -958,25 +759,19 @@
       }
     }
 
-    // Toast Notification Utility
     function showToast(message, type = "success") {
       const toast = document.getElementById("toast");
       const icon = document.getElementById("toastIcon");
       const msg = document.getElementById("toastMessage");
 
       msg.textContent = message;
-      if (type === "success") {
-        icon.className = "w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm font-bold";
-        icon.innerHTML = '<i class="fa-solid fa-check"></i>';
-      } else {
-        icon.className = "w-7 h-7 rounded-lg bg-rose-500/20 text-rose-400 flex items-center justify-center text-sm font-bold";
-        icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
-      }
+      icon.textContent = type === "success" ? "✓" : "!";
+      icon.className = type === "success" ? "text-emerald-400" : "text-rose-400";
 
-      toast.classList.remove("translate-y-20", "opacity-0");
+      toast.classList.remove("translate-y-16", "opacity-0");
       setTimeout(() => {
-        toast.classList.add("translate-y-20", "opacity-0");
-      }, 3500);
+        toast.classList.add("translate-y-16", "opacity-0");
+      }, 2500);
     }
 
     function escapeHtml(str) {
