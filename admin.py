@@ -10,10 +10,13 @@ Runs a lightweight local web dashboard at http://localhost:8000 for:
 """
 
 import contextlib
+import hashlib
+import hmac
 import io
 import json
 import os
 import re
+import secrets
 import socket
 import sys
 import urllib.parse
@@ -32,6 +35,10 @@ import notifier
 # Ensure environment variables are loaded
 notifier.load_dotenv()
 ADMIN_PASSWORD = (os.environ.get("ADMIN_PASSWORD") or "hunter2026").strip()
+
+# Portal (member) auth — separate from admin auth
+PORTAL_SECRET_KEY = (os.environ.get("PORTAL_SECRET_KEY") or "hunter_portal_secret_2026").strip()
+_PORTAL_SESSIONS: Dict[str, str] = {}  # token → email
 
 app = fastapi.FastAPI(title="Course & Job Hunter Admin Portal")
 
@@ -80,6 +87,46 @@ def is_authenticated(request: fastapi.Request) -> bool:
     return False
 
 
+# ── Portal auth helpers ──────────────────────────────────────────────────────
+
+def _hash_password(password: str, salt: str = "") -> str:
+    """Return sha256:{hex} hash for a portal password."""
+    raw = (salt + password).encode("utf-8")
+    return "sha256:" + hashlib.sha256(raw).hexdigest()
+
+
+def _get_subscriber_password(sub: Dict[str, Any]) -> str:
+    """Return the stored hashed password, or the default hash."""
+    stored = sub.get("portal_password", "")
+    if stored and stored.startswith("sha256:"):
+        return stored
+    name = (sub.get("name") or sub.get("email", "user")).lower().split("@")[0]
+    # Default: hunter123
+    return _hash_password("hunter123")
+
+
+def _verify_password(sub: Dict[str, Any], raw_password: str) -> bool:
+    """Verify a plain-text password against the subscriber's stored hash."""
+    expected = _get_subscriber_password(sub)
+    candidate = _hash_password(raw_password)
+    return hmac.compare_digest(expected, candidate)
+
+
+def _create_portal_token(email: str) -> str:
+    """Generate a secure session token and store the email mapping."""
+    token = secrets.token_hex(32)
+    _PORTAL_SESSIONS[token] = email.strip().lower()
+    return token
+
+
+def _get_portal_email(request: fastapi.Request) -> Optional[str]:
+    """Extract the authenticated portal member's email from the cookie, or None."""
+    token = request.cookies.get("portal_token", "")
+    return _PORTAL_SESSIONS.get(token)
+
+
+# ── Admin auth middleware ─────────────────────────────────────────────────────
+
 @app.middleware("http")
 async def auth_middleware(request: fastapi.Request, call_next):
     """Enforce authentication for protected API endpoints."""
@@ -92,6 +139,9 @@ async def auth_middleware(request: fastapi.Request, call_next):
         "/api/auth/status",
         "/api/auth/logout",
         "/api/network-info",
+        "/api/portal/auth/login",
+        "/api/portal/auth/me",
+        "/api/portal/auth/logout",
     ]
     if path in public_paths or path.startswith("/api/portal/"):
         return await call_next(request)
@@ -778,6 +828,95 @@ async def update_portal_user(payload: Dict[str, Any]):
         "message": "Preferences saved successfully!",
         "subscriber": target_sub,
     })
+
+
+# ============================================================================
+# Portal Authentication Endpoints
+# ============================================================================
+
+@app.post("/api/portal/auth/login")
+async def portal_login(payload: Dict[str, Any], response: fastapi.Response):
+    """Member login — email + password → portal_token cookie."""
+    email = (payload.get("email") or "").strip().lower()
+    password = (payload.get("password") or "").strip()
+    if not email or not password:
+        return JSONResponse({"error": "Email and password are required"}, status_code=400)
+
+    if not os.path.exists(RECIPIENTS_FILE):
+        return JSONResponse({"error": "No subscribers found"}, status_code=404)
+    with open(RECIPIENTS_FILE, "r", encoding="utf-8") as f:
+        subscribers = json.load(f)
+
+    sub = next((s for s in subscribers if s.get("email", "").strip().lower() == email), None)
+    if not sub:
+        return JSONResponse({"error": "No account found for that email"}, status_code=401)
+
+    if not _verify_password(sub, password):
+        return JSONResponse({"error": "Incorrect password"}, status_code=401)
+
+    token = _create_portal_token(email)
+    name = sub.get("name") or email.split("@")[0].title()
+    resp = JSONResponse({"success": True, "name": name, "email": email})
+    resp.set_cookie("portal_token", token, httponly=True, samesite="lax", max_age=60 * 60 * 24 * 30)
+    return resp
+
+
+@app.get("/api/portal/auth/me")
+async def portal_me(request: fastapi.Request):
+    """Return current authenticated portal member info."""
+    email = _get_portal_email(request)
+    if not email:
+        return JSONResponse({"authenticated": False})
+    if not os.path.exists(RECIPIENTS_FILE):
+        return JSONResponse({"authenticated": False})
+    with open(RECIPIENTS_FILE, "r", encoding="utf-8") as f:
+        subscribers = json.load(f)
+    sub = next((s for s in subscribers if s.get("email", "").strip().lower() == email), None)
+    if not sub:
+        return JSONResponse({"authenticated": False})
+    name = sub.get("name") or email.split("@")[0].title()
+    return JSONResponse({"authenticated": True, "email": email, "name": name})
+
+
+@app.post("/api/portal/auth/logout")
+async def portal_logout(request: fastapi.Request, response: fastapi.Response):
+    """Invalidate portal session."""
+    token = request.cookies.get("portal_token", "")
+    _PORTAL_SESSIONS.pop(token, None)
+    resp = JSONResponse({"success": True})
+    resp.delete_cookie("portal_token")
+    return resp
+
+
+@app.post("/api/portal/auth/change-password")
+async def portal_change_password(request: fastapi.Request, payload: Dict[str, Any]):
+    """Allow authenticated member to change their own password."""
+    email = _get_portal_email(request)
+    if not email:
+        return JSONResponse({"error": "Not authenticated"}, status_code=401)
+
+    old_pw = (payload.get("old_password") or "").strip()
+    new_pw = (payload.get("new_password") or "").strip()
+    if not old_pw or not new_pw:
+        return JSONResponse({"error": "Both old and new passwords are required"}, status_code=400)
+    if len(new_pw) < 6:
+        return JSONResponse({"error": "New password must be at least 6 characters"}, status_code=400)
+
+    with open(RECIPIENTS_FILE, "r", encoding="utf-8") as f:
+        subscribers = json.load(f)
+    idx = next((i for i, s in enumerate(subscribers) if s.get("email", "").strip().lower() == email), None)
+    if idx is None:
+        return JSONResponse({"error": "Account not found"}, status_code=404)
+
+    if not _verify_password(subscribers[idx], old_pw):
+        return JSONResponse({"error": "Current password is incorrect"}, status_code=401)
+
+    subscribers[idx]["portal_password"] = _hash_password(new_pw)
+    with open(RECIPIENTS_FILE, "w", encoding="utf-8") as f:
+        json.dump(subscribers, f, indent=2, ensure_ascii=False)
+        f.write("\n")
+
+    return JSONResponse({"success": True, "message": "Password changed successfully!"})
 
 
 if __name__ == "__main__":

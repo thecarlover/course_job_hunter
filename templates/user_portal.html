@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Course & Job Hunter — Opportunity Vault & Member Hub</title>
+  <title>Course &amp; Job Hunter — Member Hub</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
@@ -13,225 +13,322 @@
 </head>
 <body class="bg-[#111216] text-[#e4e4e7] min-h-screen flex flex-col antialiased">
 
-  <!-- Top Simple Navigation -->
-  <header class="border-b border-[#23252d] bg-[#14161c]">
-    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-      
-      <div>
-        <a href="/portal" class="text-sm font-semibold text-white tracking-tight hover:text-slate-300 transition">
-          Course & Job Hunter
-        </a>
-        <p class="text-[11px] text-[#71717a]">Opportunity Vault & Member Hub</p>
+  <!-- ====================================================================== -->
+  <!-- LOGIN SCREEN (shown when not authenticated)                            -->
+  <!-- ====================================================================== -->
+  <div id="loginScreen" class="hidden flex-1 flex items-center justify-center px-4 py-16">
+    <div class="w-full max-w-sm space-y-6">
+
+      <div class="text-center space-y-1">
+        <h1 class="text-lg font-semibold text-white">Course &amp; Job Hunter</h1>
+        <p class="text-xs text-[#71717a]">Member Hub · Sign in to your account</p>
       </div>
 
-      <div class="flex items-center gap-3">
-        <!-- Minimal Member Selector -->
-        <div class="flex items-center gap-1.5 text-xs text-[#a1a1aa]">
-          <span>Member:</span>
-          <select id="userSelector" onchange="onSelectUser(this.value)" class="bg-[#1c1e26] border border-[#2e313d] text-white text-xs rounded px-2 py-1 focus:outline-none focus:border-slate-500 cursor-pointer">
-            <option value="" disabled selected>Loading...</option>
-          </select>
-        </div>
+      <div class="border border-[#22242e] rounded-lg bg-[#14161d] p-6 space-y-4">
 
-        <a href="/" class="text-xs text-[#71717a] hover:text-[#d4d4d8] transition px-1.5 py-1 rounded" title="Admin Control Center">
-          Admin
-        </a>
-      </div>
-
-    </div>
-  </header>
-
-  <!-- Main Content -->
-  <main class="max-w-4xl mx-auto px-4 py-6 flex-1 w-full space-y-5">
-
-    <!-- Loading -->
-    <div id="loadingState" class="py-16 text-center text-xs text-[#71717a]">
-      Loading items...
-    </div>
-
-    <!-- Main Container -->
-    <div id="loadedState" class="hidden space-y-5">
-
-      <!-- Member Header / Simple Status -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-[#23252d] gap-2">
-        <div class="flex items-baseline gap-2">
-          <h2 id="memberName" class="text-base font-semibold text-white">Member</h2>
-          <span id="memberEmail" class="text-xs text-[#71717a]"></span>
-          <span id="activeStatusPill" class="text-[10px] px-1.5 py-0.5 rounded font-medium bg-[#1a2e22] text-[#4ade80] border border-[#225533]">
-            Active
-          </span>
-        </div>
-
-        <!-- Navigation Tabs: Items vs Settings -->
-        <div class="flex items-center gap-1 text-xs">
-          <button onclick="switchView('items')" id="btn-view-items" class="px-3 py-1 rounded-md font-medium bg-[#232630] text-white transition">
-            Items (<span id="totalItemsCount">0</span>)
-          </button>
-          <button onclick="switchView('settings')" id="btn-view-settings" class="px-3 py-1 rounded-md font-medium text-[#a1a1aa] hover:text-white transition">
-            Settings
-          </button>
-        </div>
-      </div>
-
-      <!-- ================================================================= -->
-      <!-- VIEW 1: CLEAN OPPORTUNITY LIST -->
-      <!-- ================================================================= -->
-      <div id="view-items" class="space-y-3">
-        
-        <!-- Search & Filter Bar -->
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
-          <input 
-            type="text" 
-            id="searchInput" 
-            oninput="filterItems()" 
-            placeholder="Search delivered courses & jobs..." 
-            class="flex-1 bg-[#181a22] border border-[#262833] rounded-md px-3 py-1.5 text-xs text-white placeholder-[#71717a] focus:outline-none focus:border-slate-500"
+        <div class="space-y-1.5">
+          <label class="text-xs font-medium text-[#d4d4d8]">Email</label>
+          <input
+            id="loginEmail"
+            type="email"
+            autocomplete="email"
+            placeholder="you@example.com"
+            class="w-full bg-[#181a22] border border-[#262833] rounded-md px-3 py-2 text-xs text-white placeholder-[#71717a] focus:outline-none focus:border-slate-500"
           >
-
-          <div class="flex items-center gap-1 text-xs self-start sm:self-auto">
-            <button onclick="setTypeFilter('all')" id="filter-all" class="filter-btn px-2.5 py-1 rounded text-xs font-medium bg-[#232630] text-white transition">
-              All (<span id="count-all">0</span>)
-            </button>
-            <button onclick="setTypeFilter('course')" id="filter-course" class="filter-btn px-2.5 py-1 rounded text-xs font-medium text-[#a1a1aa] hover:text-white transition">
-              Courses (<span id="count-course">0</span>)
-            </button>
-            <button onclick="setTypeFilter('job')" id="filter-job" class="filter-btn px-2.5 py-1 rounded text-xs font-medium text-[#a1a1aa] hover:text-white transition">
-              Jobs (<span id="count-job">0</span>)
-            </button>
-          </div>
         </div>
 
-        <!-- List of Items -->
-        <div id="itemsContainer" class="divide-y divide-[#1e2029] border border-[#22242e] rounded-lg bg-[#14161d] overflow-hidden">
-          <!-- Dynamically populated rows -->
+        <div class="space-y-1.5">
+          <label class="text-xs font-medium text-[#d4d4d8]">Password</label>
+          <input
+            id="loginPassword"
+            type="password"
+            autocomplete="current-password"
+            placeholder="••••••••"
+            class="w-full bg-[#181a22] border border-[#262833] rounded-md px-3 py-2 text-xs text-white placeholder-[#71717a] focus:outline-none focus:border-slate-500"
+          >
+          <p class="text-[11px] text-[#52525b]">Default: hunter123</p>
         </div>
 
-        <!-- Empty State -->
-        <div id="emptyState" class="hidden py-12 text-center text-xs text-[#71717a] border border-[#22242e] rounded-lg bg-[#14161d]">
-          No matching items found.
-        </div>
+        <div id="loginError" class="hidden text-xs text-red-400 bg-[#2a1a1a] border border-[#4a2020] rounded-md px-3 py-2"></div>
 
-      </div>
-
-      <!-- ================================================================= -->
-      <!-- VIEW 2: SIMPLE SETTINGS (2 CLEAN CONFIGS ONLY) -->
-      <!-- ================================================================= -->
-      <div id="view-settings" class="hidden space-y-5">
-        
-        <div class="border border-[#22242e] rounded-lg bg-[#14161d] p-5 space-y-5">
-          
-          <!-- 1. Daily Email Delivery Status (Active vs Paused) -->
-          <div class="space-y-1.5">
-            <label class="text-xs font-semibold text-white block">Email Delivery</label>
-            <div class="flex items-center gap-2.5 pt-1">
-              <input type="checkbox" id="settingActive" class="w-4 h-4 rounded bg-[#1c1e26] border-[#2e313d] text-emerald-500 focus:ring-0 cursor-pointer">
-              <label for="settingActive" class="text-xs text-[#d4d4d8] cursor-pointer">
-                Receive daily morning email digest (~8:00 AM IST)
-              </label>
-            </div>
-            <p class="text-[11px] text-[#71717a] pt-0.5">Uncheck anytime to temporarily pause digests (e.g. while on vacation).</p>
-          </div>
-
-          <!-- 2. Simple Keywords & Topics -->
-          <div class="space-y-1.5 pt-3 border-t border-[#1e2029]">
-            <label class="text-xs font-semibold text-white block">Keywords & Topics</label>
-            <p class="text-[11px] text-[#71717a]">
-              Separate topics with commas. Matches free courses and remote job searches.
-            </p>
-            <textarea 
-              id="settingKeywords" 
-              rows="3" 
-              placeholder="e.g. python, project management, ui, ux, remote"
-              class="w-full bg-[#181a22] border border-[#262833] rounded-md p-2.5 text-xs text-white placeholder-[#71717a] focus:outline-none focus:border-slate-500 leading-relaxed font-mono"
-            ></textarea>
-          </div>
-
-          <!-- Save Button -->
-          <div class="pt-2 flex items-center justify-between border-t border-[#1e2029]">
-            <span id="saveNotice" class="text-xs text-emerald-400 hidden">Saved successfully.</span>
-            <button 
-              id="saveBtn" 
-              onclick="saveSimpleSettings()" 
-              class="px-4 py-1.5 rounded-md bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-medium transition cursor-pointer ml-auto"
-            >
-              Save Settings
-            </button>
-          </div>
-
-        </div>
+        <button
+          onclick="doLogin()"
+          id="loginBtn"
+          class="w-full py-2 rounded-md bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-medium transition"
+        >
+          Sign In
+        </button>
 
       </div>
 
     </div>
+  </div>
 
-  </main>
+  <!-- ====================================================================== -->
+  <!-- AUTHENTICATED PORTAL (shown after login)                               -->
+  <!-- ====================================================================== -->
+  <div id="portalScreen" class="hidden flex-col min-h-screen">
 
-  <footer class="py-4 border-t border-[#1e2029] text-center text-[11px] text-[#52525b]">
-    Course & Job Hunter · Personal digest archive
-  </footer>
+    <!-- Header -->
+    <header class="border-b border-[#23252d] bg-[#14161c]">
+      <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
 
-  <!-- Simple JavaScript Logic -->
+        <div>
+          <span class="text-sm font-semibold text-white tracking-tight">Course &amp; Job Hunter</span>
+          <p class="text-[11px] text-[#71717a]">Your Opportunity Vault</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <span id="headerName" class="text-xs text-[#a1a1aa]"></span>
+          <button onclick="doLogout()" class="text-xs text-[#71717a] hover:text-[#d4d4d8] transition px-1.5 py-1 rounded">
+            Sign Out
+          </button>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-4 py-6 flex-1 w-full space-y-5">
+
+      <!-- Loading -->
+      <div id="loadingState" class="py-16 text-center text-xs text-[#71717a]">
+        Loading your vault...
+      </div>
+
+      <!-- Main Container -->
+      <div id="loadedState" class="hidden space-y-5">
+
+        <!-- Member Header -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-[#23252d] gap-2">
+          <div class="flex items-baseline gap-2">
+            <h2 id="memberName" class="text-base font-semibold text-white">Member</h2>
+            <span id="memberEmail" class="text-xs text-[#71717a]"></span>
+            <span id="activeStatusPill" class="text-[10px] px-1.5 py-0.5 rounded font-medium bg-[#1a2e22] text-[#4ade80] border border-[#225533]">Active</span>
+          </div>
+
+          <!-- View Tabs -->
+          <div class="flex items-center gap-1 text-xs">
+            <button onclick="switchView('items')" id="btn-view-items" class="px-3 py-1 rounded-md font-medium bg-[#232630] text-white transition">
+              Items (<span id="totalItemsCount">0</span>)
+            </button>
+            <button onclick="switchView('settings')" id="btn-view-settings" class="px-3 py-1 rounded-md font-medium text-[#a1a1aa] hover:text-white transition">
+              Settings
+            </button>
+          </div>
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- VIEW 1: OPPORTUNITY LIST                                           -->
+        <!-- ================================================================= -->
+        <div id="view-items" class="space-y-3">
+
+          <!-- Search & Filter -->
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
+            <input
+              type="text"
+              id="searchInput"
+              oninput="filterItems()"
+              placeholder="Search delivered courses &amp; jobs..."
+              class="flex-1 bg-[#181a22] border border-[#262833] rounded-md px-3 py-1.5 text-xs text-white placeholder-[#71717a] focus:outline-none focus:border-slate-500"
+            >
+
+            <div class="flex items-center gap-1 text-xs self-start sm:self-auto">
+              <button onclick="setTypeFilter('all')" id="filter-all" class="filter-btn px-2.5 py-1 rounded text-xs font-medium bg-[#232630] text-white transition">
+                All (<span id="count-all">0</span>)
+              </button>
+              <button onclick="setTypeFilter('course')" id="filter-course" class="filter-btn px-2.5 py-1 rounded text-xs font-medium text-[#a1a1aa] hover:text-white transition">
+                Courses (<span id="count-course">0</span>)
+              </button>
+              <button onclick="setTypeFilter('job')" id="filter-job" class="filter-btn px-2.5 py-1 rounded text-xs font-medium text-[#a1a1aa] hover:text-white transition">
+                Jobs (<span id="count-job">0</span>)
+              </button>
+            </div>
+          </div>
+
+          <!-- Items List -->
+          <div id="itemsContainer" class="divide-y divide-[#1e2029] border border-[#22242e] rounded-lg bg-[#14161d] overflow-hidden"></div>
+
+          <!-- Empty State -->
+          <div id="emptyState" class="hidden py-12 text-center text-xs text-[#71717a] border border-[#22242e] rounded-lg bg-[#14161d]">
+            No matching items found.
+          </div>
+
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- VIEW 2: SETTINGS                                                   -->
+        <!-- ================================================================= -->
+        <div id="view-settings" class="hidden space-y-4">
+
+          <!-- Delivery & Keywords -->
+          <div class="border border-[#22242e] rounded-lg bg-[#14161d] p-5 space-y-5">
+
+            <div class="space-y-1.5">
+              <label class="text-xs font-semibold text-white block">Email Delivery</label>
+              <div class="flex items-center gap-2.5 pt-1">
+                <input type="checkbox" id="settingActive" class="w-4 h-4 rounded bg-[#1c1e26] border-[#2e313d] text-emerald-500 focus:ring-0 cursor-pointer">
+                <label for="settingActive" class="text-xs text-[#d4d4d8] cursor-pointer">
+                  Receive daily morning email digest (~8:00 AM IST)
+                </label>
+              </div>
+              <p class="text-[11px] text-[#71717a] pt-0.5">Uncheck to pause (e.g. while on vacation).</p>
+            </div>
+
+            <div class="space-y-1.5 pt-3 border-t border-[#1e2029]">
+              <label class="text-xs font-semibold text-white block">Keywords &amp; Topics</label>
+              <p class="text-[11px] text-[#71717a]">Separate topics with commas. Used to match courses &amp; job searches.</p>
+              <textarea
+                id="settingKeywords"
+                rows="3"
+                placeholder="e.g. python, project management, ui, ux, remote"
+                class="w-full bg-[#181a22] border border-[#262833] rounded-md p-2.5 text-xs text-white placeholder-[#71717a] focus:outline-none focus:border-slate-500 leading-relaxed font-mono"
+              ></textarea>
+            </div>
+
+            <div class="pt-2 flex items-center justify-between border-t border-[#1e2029]">
+              <span id="saveNotice" class="text-xs text-emerald-400 hidden">Saved.</span>
+              <button onclick="saveSimpleSettings()" id="saveBtn" class="px-4 py-1.5 rounded-md bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-medium transition ml-auto">
+                Save Settings
+              </button>
+            </div>
+
+          </div>
+
+          <!-- Change Password -->
+          <div class="border border-[#22242e] rounded-lg bg-[#14161d] p-5 space-y-4">
+            <h3 class="text-xs font-semibold text-white">Change Password</h3>
+
+            <div class="space-y-2">
+              <input
+                id="oldPw"
+                type="password"
+                placeholder="Current password"
+                class="w-full bg-[#181a22] border border-[#262833] rounded-md px-3 py-2 text-xs text-white placeholder-[#71717a] focus:outline-none focus:border-slate-500"
+              >
+              <input
+                id="newPw"
+                type="password"
+                placeholder="New password (min 6 chars)"
+                class="w-full bg-[#181a22] border border-[#262833] rounded-md px-3 py-2 text-xs text-white placeholder-[#71717a] focus:outline-none focus:border-slate-500"
+              >
+            </div>
+
+            <div id="pwMsg" class="hidden text-xs px-3 py-2 rounded-md border"></div>
+
+            <button onclick="changePassword()" id="pwBtn" class="px-4 py-1.5 rounded-md bg-[#232630] hover:bg-[#2a2d3a] text-white text-xs font-medium transition border border-[#2e313d]">
+              Update Password
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    </main>
+
+    <footer class="py-4 border-t border-[#1e2029] text-center text-[11px] text-[#52525b]">
+      Course &amp; Job Hunter · Personal digest archive
+    </footer>
+
+  </div>
+
+  <!-- Initial loading spinner (while checking /me) -->
+  <div id="initSpinner" class="flex-1 flex items-center justify-center">
+    <span class="text-xs text-[#71717a]">Loading...</span>
+  </div>
+
   <script>
-    let currentSubscribers = [];
     let currentEmail = "";
     let currentUserData = null;
     let currentTypeFilter = "all";
 
+    // ── Bootstrap ─────────────────────────────────────────────────────────────
     document.addEventListener("DOMContentLoaded", async () => {
-      await loadSubscribers();
+      try {
+        const res = await fetch("/api/portal/auth/me");
+        const data = await res.json();
+        if (data.authenticated) {
+          currentEmail = data.email;
+          document.getElementById("headerName").textContent = data.name || data.email;
+          showPortal();
+          await loadUserProfile(data.email);
+        } else {
+          showLogin();
+        }
+      } catch {
+        showLogin();
+      }
     });
 
-    async function loadSubscribers() {
+    function showLogin() {
+      document.getElementById("initSpinner").classList.add("hidden");
+      const ls = document.getElementById("loginScreen");
+      ls.classList.remove("hidden");
+      ls.classList.add("flex");
+    }
+
+    function showPortal() {
+      document.getElementById("initSpinner").classList.add("hidden");
+      const ps = document.getElementById("portalScreen");
+      ps.classList.remove("hidden");
+      ps.classList.add("flex");
+    }
+
+    // ── Login ─────────────────────────────────────────────────────────────────
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !document.getElementById("loginScreen").classList.contains("hidden")) {
+        doLogin();
+      }
+    });
+
+    async function doLogin() {
+      const email = document.getElementById("loginEmail").value.trim();
+      const password = document.getElementById("loginPassword").value;
+      const errEl = document.getElementById("loginError");
+      const btn = document.getElementById("loginBtn");
+
+      errEl.classList.add("hidden");
+      btn.disabled = true;
+      btn.textContent = "Signing in...";
+
       try {
-        const res = await fetch("/api/portal/subscribers");
-        const subscribers = await res.json();
-        currentSubscribers = subscribers;
-
-        const selector = document.getElementById("userSelector");
-        selector.innerHTML = "";
-
-        if (!subscribers || subscribers.length === 0) {
-          selector.innerHTML = '<option value="">No subscribers</option>';
+        const res = await fetch("/api/portal/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          errEl.textContent = data.error || "Login failed.";
+          errEl.classList.remove("hidden");
           return;
         }
-
-        const urlParams = new URLSearchParams(window.location.search);
-        let initialEmail = urlParams.get("email") || localStorage.getItem("last_portal_user") || subscribers[0].email;
-
-        const exists = subscribers.find(s => s.email.toLowerCase() === initialEmail.toLowerCase());
-        if (!exists) initialEmail = subscribers[0].email;
-
-        subscribers.forEach(sub => {
-          const opt = document.createElement("option");
-          opt.value = sub.email;
-          opt.textContent = sub.name || sub.email;
-          if (sub.email.toLowerCase() === initialEmail.toLowerCase()) {
-            opt.selected = true;
-          }
-          selector.appendChild(opt);
-        });
-
-        await loadUserProfile(initialEmail);
+        currentEmail = data.email;
+        document.getElementById("headerName").textContent = data.name || data.email;
+        document.getElementById("loginScreen").classList.add("hidden");
+        document.getElementById("loginScreen").classList.remove("flex");
+        showPortal();
+        await loadUserProfile(data.email);
       } catch (err) {
-        console.error("Failed to load subscribers:", err);
+        errEl.textContent = "Network error. Try again.";
+        errEl.classList.remove("hidden");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Sign In";
       }
     }
 
-    async function onSelectUser(email) {
-      if (!email) return;
-      localStorage.setItem("last_portal_user", email);
-      const url = new URL(window.location);
-      url.searchParams.set("email", email);
-      window.history.replaceState({}, "", url);
-      await loadUserProfile(email);
+    // ── Logout ────────────────────────────────────────────────────────────────
+    async function doLogout() {
+      await fetch("/api/portal/auth/logout", { method: "POST" });
+      location.reload();
     }
 
+    // ── Load Profile ──────────────────────────────────────────────────────────
     async function loadUserProfile(email) {
       document.getElementById("loadingState").classList.remove("hidden");
       document.getElementById("loadedState").classList.add("hidden");
-
       try {
-        currentEmail = email;
         const res = await fetch(`/api/portal/user?email=${encodeURIComponent(email)}`);
         if (!res.ok) throw new Error("Could not load user data");
         const data = await res.json();
@@ -244,7 +341,7 @@
         document.getElementById("loadingState").classList.add("hidden");
         document.getElementById("loadedState").classList.remove("hidden");
       } catch (err) {
-        console.error("Error loading user profile:", err);
+        console.error("Error loading profile:", err);
       }
     }
 
@@ -261,10 +358,10 @@
         pill.textContent = "Paused";
         pill.className = "text-[10px] px-1.5 py-0.5 rounded font-medium bg-[#2e261a] text-[#facc15] border border-[#554422]";
       }
-
       document.getElementById("totalItemsCount").textContent = (currentUserData.vault || []).length;
     }
 
+    // ── View switching ────────────────────────────────────────────────────────
     function switchView(view) {
       const btnItems = document.getElementById("btn-view-items");
       const btnSettings = document.getElementById("btn-view-settings");
@@ -284,15 +381,14 @@
       }
     }
 
+    // ── Filter + Render ───────────────────────────────────────────────────────
     function setTypeFilter(type) {
       currentTypeFilter = type;
       document.querySelectorAll(".filter-btn").forEach(btn => {
         btn.className = "filter-btn px-2.5 py-1 rounded text-xs font-medium text-[#a1a1aa] hover:text-white transition";
       });
       const activeBtn = document.getElementById(`filter-${type}`);
-      if (activeBtn) {
-        activeBtn.className = "filter-btn px-2.5 py-1 rounded text-xs font-medium bg-[#232630] text-white transition";
-      }
+      if (activeBtn) activeBtn.className = "filter-btn px-2.5 py-1 rounded text-xs font-medium bg-[#232630] text-white transition";
       filterItems();
     }
 
@@ -308,8 +404,7 @@
       const filtered = vault.filter(item => {
         if (currentTypeFilter !== "all" && item.type !== currentTypeFilter) return false;
         if (!query) return true;
-        const searchStr = `${item.title} ${item.domain} ${item.location || ""}`.toLowerCase();
-        return searchStr.includes(query);
+        return `${item.title} ${item.domain} ${item.location || ""}`.toLowerCase().includes(query);
       });
 
       renderItemsList(filtered);
@@ -331,8 +426,8 @@
         const row = document.createElement("div");
         row.className = "p-3 sm:p-3.5 hover:bg-[#181a22] transition flex flex-col sm:flex-row sm:items-center justify-between gap-2";
 
-        const badgeClass = isCourse 
-          ? "bg-[#18281e] text-[#4ade80] border-[#1e4028]" 
+        const badgeClass = isCourse
+          ? "bg-[#18281e] text-[#4ade80] border-[#1e4028]"
           : "bg-[#182236] text-[#60a5fa] border-[#1e3455]";
 
         const locationStr = item.location ? ` · ${escapeHtml(item.location)}` : "";
@@ -343,7 +438,7 @@
               ${escapeHtml(item.title)}
             </a>
             <div class="flex items-center gap-2 mt-1 text-[11px] text-[#71717a]">
-              <span class="px-1.5 py-0.2 rounded text-[10px] font-medium border ${badgeClass}">
+              <span class="px-1.5 py-0.5 rounded text-[10px] font-medium border ${badgeClass}">
                 ${isCourse ? "Course" : "Job"}
               </span>
               <span>${escapeHtml(item.domain)}</span>
@@ -351,7 +446,6 @@
               <span>· ${escapeHtml(item.date)}</span>
             </div>
           </div>
-
           <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer" class="text-xs text-[#a1a1aa] hover:text-white transition whitespace-nowrap self-start sm:self-auto">
             Open ↗
           </a>
@@ -361,11 +455,10 @@
       });
     }
 
+    // ── Settings ──────────────────────────────────────────────────────────────
     function renderSettings(sub) {
       if (!sub) return;
       document.getElementById("settingActive").checked = Boolean(sub.active);
-      
-      // Combine keywords and job_searches into simple comma-separated string
       const allKws = Array.from(new Set([...(sub.keywords || []), ...(sub.job_searches || [])]));
       document.getElementById("settingKeywords").value = allKws.join(", ");
       document.getElementById("saveNotice").classList.add("hidden");
@@ -382,24 +475,15 @@
         const kwList = rawKeywords.split(",").map(k => k.trim()).filter(Boolean);
         const isActive = document.getElementById("settingActive").checked;
 
-        const payload = {
-          email: currentEmail,
-          keywords: kwList,
-          job_searches: kwList,
-          active: isActive,
-        };
-
         const res = await fetch("/api/portal/user", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+          body: JSON.stringify({ email: currentEmail, keywords: kwList, job_searches: kwList, active: isActive }),
         });
-
-        if (!res.ok) throw new Error("Failed to save settings");
+        if (!res.ok) throw new Error("Failed to save");
 
         notice.classList.remove("hidden");
         setTimeout(() => notice.classList.add("hidden"), 3000);
-
         await loadUserProfile(currentEmail);
       } catch (err) {
         alert("Error saving settings: " + err.message);
@@ -409,6 +493,46 @@
       }
     }
 
+    // ── Change Password ───────────────────────────────────────────────────────
+    async function changePassword() {
+      const oldPw = document.getElementById("oldPw").value;
+      const newPw = document.getElementById("newPw").value;
+      const msgEl = document.getElementById("pwMsg");
+      const btn = document.getElementById("pwBtn");
+
+      msgEl.classList.add("hidden");
+      btn.disabled = true;
+      btn.textContent = "Updating...";
+
+      try {
+        const res = await fetch("/api/portal/auth/change-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ old_password: oldPw, new_password: newPw }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+          msgEl.textContent = "Password changed successfully!";
+          msgEl.className = "text-xs px-3 py-2 rounded-md border text-emerald-400 bg-[#1a2e22] border-[#225533]";
+          document.getElementById("oldPw").value = "";
+          document.getElementById("newPw").value = "";
+        } else {
+          msgEl.textContent = data.error || "Failed to change password.";
+          msgEl.className = "text-xs px-3 py-2 rounded-md border text-red-400 bg-[#2a1a1a] border-[#4a2020]";
+        }
+        msgEl.classList.remove("hidden");
+        setTimeout(() => msgEl.classList.add("hidden"), 4000);
+      } catch {
+        msgEl.textContent = "Network error.";
+        msgEl.className = "text-xs px-3 py-2 rounded-md border text-red-400 bg-[#2a1a1a] border-[#4a2020]";
+        msgEl.classList.remove("hidden");
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Update Password";
+      }
+    }
+
+    // ── Utils ─────────────────────────────────────────────────────────────────
     function escapeHtml(str) {
       if (!str) return "";
       return String(str)

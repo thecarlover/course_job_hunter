@@ -919,13 +919,250 @@ def fetch_arbeitnow_jobs(search_terms: List[str]) -> List[Dict[str, Any]]:
     return jobs_out
 
 
+def fetch_adzuna_india_jobs(search_terms: List[str]) -> List[Dict[str, Any]]:
+    """
+    Fetch jobs from Adzuna India via their public RSS feed (no API key needed).
+    Covers major Indian metro job listings across all industries.
+    """
+    jobs_out = []
+    headers = {"User-Agent": "CourseJobHunter/2.0"}
+
+    for term in search_terms:
+        clean_term = term.strip()
+        if not clean_term:
+            continue
+        # Adzuna India RSS – public, free, no auth required
+        rss_url = (
+            f"https://www.adzuna.in/search.rss"
+            f"?q={requests.utils.quote(clean_term)}&country=in&max_days_old=7"
+        )
+        print(f"  [Adzuna India] Searching: '{clean_term}'")
+        try:
+            response = requests.get(rss_url, headers=headers, timeout=12)
+            response.raise_for_status()
+            feed = feedparser.parse(response.content)
+            count = 0
+            for entry in feed.entries:
+                link = getattr(entry, "link", "").strip()
+                title = getattr(entry, "title", "").strip()
+                summary = getattr(entry, "summary", "")
+                if not link or not title:
+                    continue
+                # Extract company from title if pattern "Title - Company" or summary
+                company = ""
+                if " - " in title:
+                    parts = title.rsplit(" - ", 1)
+                    title = parts[0].strip()
+                    company = parts[1].strip()
+                display_title = f"{title} ({company})" if company else title
+                jobs_out.append({
+                    "type": "job",
+                    "source": "Adzuna India",
+                    "title": display_title,
+                    "company": company,
+                    "link": link,
+                    "salary": "",
+                    "location": "India",
+                    "job_type": "Full-time",
+                    "tags": [clean_term.lower()],
+                    "search_term": clean_term.lower(),
+                })
+                count += 1
+            print(f"  [Adzuna India] Harvested {count} job(s) for '{clean_term}'")
+        except Exception as e:
+            print(f"  [Warning] Adzuna India search failed for '{clean_term}': {e}")
+
+    return jobs_out
+
+
+def fetch_indeed_india_rss(search_terms: List[str]) -> List[Dict[str, Any]]:
+    """
+    Fetch jobs from Indeed India via their public RSS feed (no API key needed).
+    Great for Indian market across tech, management, and business roles.
+    """
+    jobs_out = []
+    headers = {"User-Agent": "CourseJobHunter/2.0"}
+
+    for term in search_terms:
+        clean_term = term.strip()
+        if not clean_term:
+            continue
+        rss_url = (
+            f"https://in.indeed.com/rss?q={requests.utils.quote(clean_term)}"
+            f"&l=India&fromage=7&sort=date"
+        )
+        print(f"  [Indeed India] Searching: '{clean_term}'")
+        try:
+            response = requests.get(rss_url, headers=headers, timeout=12)
+            response.raise_for_status()
+            feed = feedparser.parse(response.content)
+            count = 0
+            for entry in feed.entries:
+                link = getattr(entry, "link", "").strip()
+                title = getattr(entry, "title", "").strip()
+                if not link or not title:
+                    continue
+                company = ""
+                if " - " in title:
+                    parts = title.rsplit(" - ", 1)
+                    title = parts[0].strip()
+                    company = parts[1].strip()
+                display_title = f"{title} ({company})" if company else title
+                jobs_out.append({
+                    "type": "job",
+                    "source": "Indeed India",
+                    "title": display_title,
+                    "company": company,
+                    "link": link,
+                    "salary": "",
+                    "location": "India",
+                    "job_type": "Full-time",
+                    "tags": [clean_term.lower()],
+                    "search_term": clean_term.lower(),
+                })
+                count += 1
+            print(f"  [Indeed India] Harvested {count} job(s) for '{clean_term}'")
+        except Exception as e:
+            print(f"  [Warning] Indeed India search failed for '{clean_term}': {e}")
+
+    return jobs_out
+
+
+def fetch_linkedin_jobs_rss(search_terms: List[str]) -> List[Dict[str, Any]]:
+    """
+    Fetch LinkedIn Jobs via their public RSS/JSON feed (no authentication required).
+    Uses LinkedIn's public job search API endpoint for worldwide + India results.
+    """
+    jobs_out = []
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+        )
+    }
+
+    for term in search_terms:
+        clean_term = term.strip()
+        if not clean_term:
+            continue
+        # LinkedIn public job search endpoint (no key needed, rate-limited)
+        api_url = (
+            f"https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search"
+            f"?keywords={requests.utils.quote(clean_term)}&location=India"
+            f"&f_WT=2&start=0"  # f_WT=2 = Remote
+        )
+        print(f"  [LinkedIn] Searching remote/India jobs for: '{clean_term}'")
+        try:
+            response = requests.get(api_url, headers=headers, timeout=15)
+            if response.status_code not in (200, 201):
+                print(f"  [Warning] LinkedIn returned HTTP {response.status_code} for '{clean_term}'")
+                continue
+            # LinkedIn returns HTML cards, parse job IDs from href attributes
+            import re as _re
+            links_found = _re.findall(r'href="(https://www\.linkedin\.com/jobs/view/[^"]+)"', response.text)
+            titles_found = _re.findall(r'class="base-search-card__title"[^>]*>(.*?)</h3>', response.text, _re.DOTALL)
+            companies_found = _re.findall(r'class="base-search-card__subtitle"[^>]*>(.*?)</a>', response.text, _re.DOTALL)
+            locations_found = _re.findall(r'class="job-search-card__location"[^>]*>(.*?)</span>', response.text, _re.DOTALL)
+
+            count = 0
+            for i, link in enumerate(links_found[:10]):
+                link = link.split("?")[0].strip()
+                title = titles_found[i].strip() if i < len(titles_found) else clean_term
+                title = _re.sub(r'\s+', ' ', title).strip()
+                company = companies_found[i].strip() if i < len(companies_found) else ""
+                company = _re.sub(r'\s+', ' ', company).strip()
+                location = locations_found[i].strip() if i < len(locations_found) else "India"
+                location = _re.sub(r'\s+', ' ', location).strip()
+
+                if not link or not title:
+                    continue
+
+                display_title = f"{title} ({company})" if company else title
+                jobs_out.append({
+                    "type": "job",
+                    "source": "LinkedIn",
+                    "title": display_title,
+                    "company": company,
+                    "link": link,
+                    "salary": "",
+                    "location": location or "India / Remote",
+                    "job_type": "Remote",
+                    "tags": [clean_term.lower(), "linkedin"],
+                    "search_term": clean_term.lower(),
+                })
+                count += 1
+
+            print(f"  [LinkedIn] Harvested {count} job(s) for '{clean_term}'")
+        except Exception as e:
+            print(f"  [Warning] LinkedIn search failed for '{clean_term}': {e}")
+
+    return jobs_out
+
+
+def fetch_glassdoor_rss(search_terms: List[str]) -> List[Dict[str, Any]]:
+    """
+    Fetch jobs from Glassdoor via their RSS endpoint (no key required).
+    """
+    jobs_out = []
+    headers = {"User-Agent": "CourseJobHunter/2.0"}
+
+    for term in search_terms:
+        clean_term = term.strip()
+        if not clean_term:
+            continue
+        rss_url = (
+            f"https://www.glassdoor.co.in/Job/{requests.utils.quote(clean_term.replace(' ', '-'))}"
+            f"-jobs-SRCH_KO0,{len(clean_term)}.htm?format=rss"
+        )
+        print(f"  [Glassdoor India] Searching: '{clean_term}'")
+        try:
+            response = requests.get(rss_url, headers=headers, timeout=12)
+            response.raise_for_status()
+            feed = feedparser.parse(response.content)
+            count = 0
+            for entry in feed.entries:
+                link = getattr(entry, "link", "").strip()
+                title = getattr(entry, "title", "").strip()
+                if not link or not title:
+                    continue
+                company = ""
+                if " at " in title.lower():
+                    parts = title.rsplit(" at ", 1)
+                    title = parts[0].strip()
+                    company = parts[1].strip()
+                display_title = f"{title} ({company})" if company else title
+                jobs_out.append({
+                    "type": "job",
+                    "source": "Glassdoor",
+                    "title": display_title,
+                    "company": company,
+                    "link": link,
+                    "salary": "",
+                    "location": "India",
+                    "job_type": "Full-time",
+                    "tags": [clean_term.lower()],
+                    "search_term": clean_term.lower(),
+                })
+                count += 1
+            print(f"  [Glassdoor India] Harvested {count} job(s) for '{clean_term}'")
+        except Exception as e:
+            print(f"  [Warning] Glassdoor search failed for '{clean_term}': {e}")
+
+    return jobs_out
+
+
 def fetch_raw_jobs(search_terms: List[str], sources: List[str] = None) -> List[Dict[str, Any]]:
     """
-    Fetch jobs across multiple free job boards: Remotive, Jobicy, and Arbeitnow.
+    Fetch jobs across multiple free job boards:
+    Global: Remotive, Jobicy, Arbeitnow
+    India: Adzuna India, Indeed India, LinkedIn, Glassdoor India
     Handles per-source timeouts gracefully and deduplicates across boards.
     """
     if sources is None:
-        sources = getattr(config, "JOB_SOURCES", ["remotive", "jobicy", "arbeitnow"])
+        sources = getattr(config, "JOB_SOURCES", [
+            "remotive", "jobicy", "arbeitnow",
+            "adzuna_india", "indeed_india", "linkedin", "glassdoor",
+        ])
 
     all_jobs = []
     seen_links = set()
@@ -939,6 +1176,14 @@ def fetch_raw_jobs(search_terms: List[str], sources: List[str] = None) -> List[D
             jobs = fetch_jobicy_jobs(search_terms)
         elif src_name == "arbeitnow":
             jobs = fetch_arbeitnow_jobs(search_terms)
+        elif src_name == "adzuna_india":
+            jobs = fetch_adzuna_india_jobs(search_terms)
+        elif src_name == "indeed_india":
+            jobs = fetch_indeed_india_rss(search_terms)
+        elif src_name == "linkedin":
+            jobs = fetch_linkedin_jobs_rss(search_terms)
+        elif src_name == "glassdoor":
+            jobs = fetch_glassdoor_rss(search_terms)
         else:
             print(f"  [Warning] Unknown job source '{src}'. Skipping.")
 

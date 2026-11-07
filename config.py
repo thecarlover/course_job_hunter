@@ -7,16 +7,40 @@ Customize your sources, keywords, limits, and notification channel here.
 # RSS feeds for free courses and certifications
 # Includes Reddit plus dedicated free course platforms and learning hubs
 COURSE_FEEDS = [
-    # Reddit Udemy Freebies
+    # ── 100% Free Udemy Coupon Sites ──────────────────────────────────────────
+    # Reddit Udemy Freebies (community-shared 100% coupons)
     "https://www.reddit.com/r/udemyfreebies/.rss",
     # TutorialBar (Daily 100% OFF coupons for Udemy, tech, business & management)
     "https://tutorialbar.com/feed/",
     # Discudemy (Curated 100% free courses across programming, AI, IT, Excel, etc.)
     "https://www.discudemy.com/feed",
-    # freeCodeCamp (Top-tier free programming, Python, AI, security & DevOps tutorials)
+    # CourseTegg (100% OFF Udemy coupons – UI/UX, Marketing, Python, Excel)
+    "https://coursetegg.com/feed/",
+    # Online Courses Hub (Daily free coupon digest)
+    "https://onlinecourseshub.com/feed/",
+    # LearnViral (Curated free Udemy deals, good India coverage)
+    "https://learnviral.com/feed/",
+
+    # ── NPTEL / Swayam (India – Free Government Certifications) ───────────────
+    # NPTEL courses are 100% free, gov-backed, with certificate exams
+    # (RSS via Swayam portal – refresh feed)
+    "https://swayam.gov.in/feeds/courses.xml",
+
+    # ── GitHub / Open Learning Platforms ─────────────────────────────────────
+    # freeCodeCamp (Top-tier free programming, Python, AI, security & DevOps)
     "https://www.freecodecamp.org/news/rss/",
     # AnswersQ (Free certificates, Coursera/Google courses & tech roadmaps)
     "https://answersq.com/feed/",
+    # Coursera Free Courses RSS (via CourseBuffet aggregator)
+    "https://www.coursebuffet.com/rss/free",
+    # GeeksForGeeks (Technical articles, free certifications & practice)
+    "https://www.geeksforgeeks.org/feed/",
+
+    # ── Google / Microsoft / Cloud Free Certifications ────────────────────────
+    # Cloudskillsboost (Google Cloud free tiers – aggregated via blog)
+    "https://cloudblog.withgoogle.com/topics/training-certifications/rss/",
+    # Microsoft Learn Blog (free paths and certificates)
+    "https://techcommunity.microsoft.com/plugins/custom/microsoft/o365/custom-blog-rss?tid=&board=MicrosoftLearnBlog&limit=20",
 ]
 
 # Remote job search terms for Remotive API (https://remotive.com/api/remote-jobs)
