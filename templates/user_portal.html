@@ -6,542 +6,748 @@
   <title>Course &amp; Job Hunter — Member Hub</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
+    * { box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-thumb { background: #2e313d; border-radius: 4px; }
+
+    /* Tab underline animation */
+    .tab-indicator {
+      transition: left 0.2s ease, width 0.2s ease;
+    }
+
+    /* Card hover lift */
+    .item-card {
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+    .item-card:hover {
+      background: #1c1f2b;
+      transform: translateY(-1px);
+    }
+
+    /* Fade in */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in { animation: fadeUp 0.25s ease both; }
+
+    /* Search clear btn */
+    .search-clear { cursor: pointer; }
+
+    /* Pill badge */
+    .badge-course { background:#18281e; color:#4ade80; border-color:#1e4028; }
+    .badge-job    { background:#182236; color:#60a5fa; border-color:#1e3455; }
+
+    /* Skeleton pulse */
+    @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:.8} }
+    .skeleton { animation: pulse 1.4s ease-in-out infinite; background:#1e2029; border-radius:6px; }
   </style>
 </head>
-<body class="bg-[#111216] text-[#e4e4e7] min-h-screen flex flex-col antialiased">
+<body class="bg-[#0f1014] text-[#e4e4e7] min-h-screen flex flex-col antialiased">
 
-  <!-- ====================================================================== -->
-  <!-- LOGIN SCREEN (shown when not authenticated)                            -->
-  <!-- ====================================================================== -->
-  <div id="loginScreen" class="hidden flex-1 flex items-center justify-center px-4 py-16">
-    <div class="w-full max-w-sm space-y-6">
+<!-- Opportunity Vault & Member Hub -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!--  LOGIN SCREEN                                                          -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div id="loginScreen" class="hidden flex-1 items-center justify-center px-4 py-16 min-h-screen">
+  <div class="w-full max-w-sm space-y-6">
+    <div class="text-center space-y-1">
+      <div class="text-2xl mb-3">🎯</div>
+      <h1 class="text-lg font-semibold text-white">Course &amp; Job Hunter</h1>
+      <p class="text-xs text-[#71717a]">Your personal opportunity archive</p>
+    </div>
 
-      <div class="text-center space-y-1">
-        <h1 class="text-lg font-semibold text-white">Course &amp; Job Hunter</h1>
-        <p class="text-xs text-[#71717a]">Member Hub · Sign in to your account</p>
+    <div class="border border-[#22242e] rounded-xl bg-[#13151c] p-6 space-y-4 shadow-xl">
+      <div class="space-y-1.5">
+        <label class="text-xs font-medium text-[#a1a1aa]">Email</label>
+        <input id="loginEmail" type="email" autocomplete="email" placeholder="you@example.com"
+          class="w-full bg-[#1a1c24] border border-[#262833] rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#52525b] focus:outline-none focus:border-[#3b82f6] transition">
+      </div>
+      <div class="space-y-1.5">
+        <label class="text-xs font-medium text-[#a1a1aa]">Password</label>
+        <input id="loginPassword" type="password" autocomplete="current-password" placeholder="••••••••"
+          class="w-full bg-[#1a1c24] border border-[#262833] rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#52525b] focus:outline-none focus:border-[#3b82f6] transition">
+        <p class="text-[11px] text-[#52525b]">Default: <code class="font-mono bg-[#1a1c24] px-1 py-0.5 rounded">hunter123</code></p>
       </div>
 
-      <div class="border border-[#22242e] rounded-lg bg-[#14161d] p-6 space-y-4">
+      <div id="loginError" class="hidden text-xs text-red-400 bg-[#2a1414] border border-[#4a2020] rounded-lg px-3 py-2"></div>
 
-        <div class="space-y-1.5">
-          <label class="text-xs font-medium text-[#d4d4d8]">Email</label>
-          <input
-            id="loginEmail"
-            type="email"
-            autocomplete="email"
-            placeholder="you@example.com"
-            class="w-full bg-[#181a22] border border-[#262833] rounded-md px-3 py-2 text-xs text-white placeholder-[#71717a] focus:outline-none focus:border-slate-500"
-          >
-        </div>
-
-        <div class="space-y-1.5">
-          <label class="text-xs font-medium text-[#d4d4d8]">Password</label>
-          <input
-            id="loginPassword"
-            type="password"
-            autocomplete="current-password"
-            placeholder="••••••••"
-            class="w-full bg-[#181a22] border border-[#262833] rounded-md px-3 py-2 text-xs text-white placeholder-[#71717a] focus:outline-none focus:border-slate-500"
-          >
-          <p class="text-[11px] text-[#52525b]">Default: hunter123</p>
-        </div>
-
-        <div id="loginError" class="hidden text-xs text-red-400 bg-[#2a1a1a] border border-[#4a2020] rounded-md px-3 py-2"></div>
-
-        <button
-          onclick="doLogin()"
-          id="loginBtn"
-          class="w-full py-2 rounded-md bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-medium transition"
-        >
-          Sign In
-        </button>
-
-      </div>
-
+      <button onclick="doLogin()" id="loginBtn"
+        class="w-full py-2.5 rounded-lg bg-[#2563eb] hover:bg-[#1d4ed8] active:bg-[#1e40af] text-white text-sm font-medium transition-all">
+        Sign In →
+      </button>
     </div>
   </div>
+</div>
 
-  <!-- ====================================================================== -->
-  <!-- AUTHENTICATED PORTAL (shown after login)                               -->
-  <!-- ====================================================================== -->
-  <div id="portalScreen" class="hidden flex-col min-h-screen">
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!--  PORTAL (authenticated)                                                -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div id="portalScreen" class="hidden flex-col min-h-screen">
 
-    <!-- Header -->
-    <header class="border-b border-[#23252d] bg-[#14161c]">
-      <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
+  <header class="border-b border-[#1e2029] bg-[#0f1014] sticky top-0 z-30">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <span class="text-base">🎯</span>
         <div>
-          <span class="text-sm font-semibold text-white tracking-tight">Course &amp; Job Hunter</span>
-          <p class="text-[11px] text-[#71717a]">Your Opportunity Vault</p>
+          <span class="text-sm font-semibold text-white">Course &amp; Job Hunter</span>
+          <p class="text-[11px] text-[#52525b] leading-none mt-0.5">Member Hub</p>
         </div>
+      </div>
 
-        <div class="flex items-center gap-3">
-          <span id="headerName" class="text-xs text-[#a1a1aa]"></span>
-          <button onclick="doLogout()" class="text-xs text-[#71717a] hover:text-[#d4d4d8] transition px-1.5 py-1 rounded">
-            Sign Out
+      <div class="flex items-center gap-3">
+        <!-- Active status pill -->
+        <span id="headerActivePill" class="hidden text-[10px] px-2 py-0.5 rounded-full font-medium"></span>
+        <!-- Member name -->
+        <span id="headerName" class="text-xs text-[#71717a] hidden sm:inline"></span>
+        <!-- Settings toggle -->
+        <button onclick="toggleSettings()" id="settingsToggleBtn" title="Settings"
+          class="text-[#52525b] hover:text-white transition p-1.5 rounded-lg hover:bg-[#1a1c24]">
+          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </button>
+        <button onclick="doLogout()" class="text-xs text-[#52525b] hover:text-white transition">Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Main ───────────────────────────────────────────────────────────── -->
+  <main class="max-w-5xl mx-auto px-4 py-5 flex-1 w-full space-y-4">
+
+    <!-- Loading skeletons -->
+    <div id="loadingState" class="space-y-3 py-4">
+      <div class="skeleton h-9 w-48 rounded-lg"></div>
+      <div class="skeleton h-10 w-full rounded-lg"></div>
+      <div class="space-y-2">
+        <div class="skeleton h-16 w-full rounded-xl"></div>
+        <div class="skeleton h-16 w-full rounded-xl"></div>
+        <div class="skeleton h-16 w-full rounded-xl"></div>
+      </div>
+    </div>
+
+    <!-- ── Content (once loaded) ────────────────────────────────────────── -->
+    <div id="loadedState" class="hidden space-y-4">
+
+      <!-- Member greeting -->
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 id="greetingText" class="text-base font-semibold text-white">Hello!</h2>
+          <p id="greetingSubtext" class="text-xs text-[#71717a] mt-0.5"></p>
+        </div>
+        <!-- Stats chips -->
+        <div class="hidden sm:flex items-center gap-2 text-xs">
+          <div class="flex items-center gap-1.5 bg-[#13151c] border border-[#1e2029] rounded-lg px-3 py-1.5">
+            <span class="text-[#4ade80]">📚</span>
+            <span id="statCourses" class="font-semibold text-white">0</span>
+            <span class="text-[#52525b]">courses</span>
+          </div>
+          <div class="flex items-center gap-1.5 bg-[#13151c] border border-[#1e2029] rounded-lg px-3 py-1.5">
+            <span class="text-[#60a5fa]">💼</span>
+            <span id="statJobs" class="font-semibold text-white">0</span>
+            <span class="text-[#52525b]">jobs</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Main Tab Bar ──────────────────────────────────────────────── -->
+      <div class="relative">
+        <!-- Tab buttons -->
+        <div class="flex items-center gap-0 border-b border-[#1e2029]" id="mainTabBar">
+          <button onclick="switchMainTab('courses')" id="tab-courses"
+            class="main-tab px-4 py-2.5 text-sm font-medium text-white border-b-2 border-[#3b82f6] transition-colors -mb-px flex items-center gap-2">
+            <span>📚</span> Courses
+            <span id="tab-courses-count" class="text-xs bg-[#1a2e22] text-[#4ade80] px-1.5 py-0.5 rounded-full font-semibold">0</span>
           </button>
+          <button onclick="switchMainTab('jobs')" id="tab-jobs"
+            class="main-tab px-4 py-2.5 text-sm font-medium text-[#71717a] border-b-2 border-transparent transition-colors -mb-px flex items-center gap-2 hover:text-[#a1a1aa]">
+            <span>💼</span> Jobs
+            <span id="tab-jobs-count" class="text-xs bg-[#182236] text-[#60a5fa] px-1.5 py-0.5 rounded-full font-semibold">0</span>
+          </button>
+          <!-- push settings tab to right -->
+          <div class="flex-1"></div>
+        </div>
+      </div>
+
+      <!-- ── Search bar (shared) ───────────────────────────────────────── -->
+      <div class="relative">
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-[#52525b]" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input type="text" id="searchInput" oninput="onSearch()" placeholder="Search…"
+          class="w-full bg-[#13151c] border border-[#1e2029] rounded-lg pl-9 pr-8 py-2 text-xs text-white placeholder-[#52525b] focus:outline-none focus:border-[#3b82f6] transition">
+        <button id="searchClear" onclick="clearSearch()" class="search-clear hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-[#52525b] hover:text-white">
+          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- ── COURSES TAB ───────────────────────────────────────────────── -->
+      <div id="tabpanel-courses" class="space-y-2 fade-in">
+
+        <!-- Sort / filter row -->
+        <div class="flex items-center justify-between text-xs text-[#71717a]">
+          <span id="courses-label">Showing all courses</span>
+          <div class="flex items-center gap-1">
+            <span>Sort:</span>
+            <select id="courseSort" onchange="renderCourses()" class="bg-[#13151c] border border-[#1e2029] text-[#a1a1aa] rounded px-1.5 py-1 text-xs focus:outline-none focus:border-[#3b82f6] cursor-pointer">
+              <option value="date">Newest</option>
+              <option value="title">A → Z</option>
+              <option value="domain">Source</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Cards container -->
+        <div id="coursesContainer" class="space-y-2"></div>
+        <div id="coursesEmpty" class="hidden py-14 text-center text-xs text-[#52525b]">
+          <div class="text-3xl mb-3">📚</div>
+          No courses yet — your daily digest will fill this up!
         </div>
 
       </div>
-    </header>
 
-    <!-- Main Content -->
-    <main class="max-w-4xl mx-auto px-4 py-6 flex-1 w-full space-y-5">
+      <!-- ── JOBS TAB ──────────────────────────────────────────────────── -->
+      <div id="tabpanel-jobs" class="hidden space-y-2 fade-in">
 
-      <!-- Loading -->
-      <div id="loadingState" class="py-16 text-center text-xs text-[#71717a]">
-        Loading your vault...
-      </div>
-
-      <!-- Main Container -->
-      <div id="loadedState" class="hidden space-y-5">
-
-        <!-- Member Header -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-[#23252d] gap-2">
-          <div class="flex items-baseline gap-2">
-            <h2 id="memberName" class="text-base font-semibold text-white">Member</h2>
-            <span id="memberEmail" class="text-xs text-[#71717a]"></span>
-            <span id="activeStatusPill" class="text-[10px] px-1.5 py-0.5 rounded font-medium bg-[#1a2e22] text-[#4ade80] border border-[#225533]">Active</span>
-          </div>
-
-          <!-- View Tabs -->
-          <div class="flex items-center gap-1 text-xs">
-            <button onclick="switchView('items')" id="btn-view-items" class="px-3 py-1 rounded-md font-medium bg-[#232630] text-white transition">
-              Items (<span id="totalItemsCount">0</span>)
-            </button>
-            <button onclick="switchView('settings')" id="btn-view-settings" class="px-3 py-1 rounded-md font-medium text-[#a1a1aa] hover:text-white transition">
-              Settings
-            </button>
+        <!-- Filter row -->
+        <div class="flex items-center justify-between gap-2 text-xs flex-wrap">
+          <span id="jobs-label" class="text-[#71717a]">Showing all jobs</span>
+          <div class="flex items-center gap-1.5">
+            <!-- Location quick-filter chips -->
+            <div id="locationChips" class="flex items-center gap-1 flex-wrap"></div>
+            <select id="jobSort" onchange="renderJobs()" class="bg-[#13151c] border border-[#1e2029] text-[#a1a1aa] rounded px-1.5 py-1 text-xs focus:outline-none focus:border-[#3b82f6] cursor-pointer ml-1">
+              <option value="date">Newest</option>
+              <option value="title">A → Z</option>
+              <option value="source">Source</option>
+            </select>
           </div>
         </div>
 
-        <!-- ================================================================= -->
-        <!-- VIEW 1: OPPORTUNITY LIST                                           -->
-        <!-- ================================================================= -->
-        <div id="view-items" class="space-y-3">
+        <!-- Job source filter pills -->
+        <div id="sourceChips" class="flex items-center gap-1.5 flex-wrap"></div>
 
-          <!-- Search & Filter -->
-          <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
-            <input
-              type="text"
-              id="searchInput"
-              oninput="filterItems()"
-              placeholder="Search delivered courses &amp; jobs..."
-              class="flex-1 bg-[#181a22] border border-[#262833] rounded-md px-3 py-1.5 text-xs text-white placeholder-[#71717a] focus:outline-none focus:border-slate-500"
-            >
-
-            <div class="flex items-center gap-1 text-xs self-start sm:self-auto">
-              <button onclick="setTypeFilter('all')" id="filter-all" class="filter-btn px-2.5 py-1 rounded text-xs font-medium bg-[#232630] text-white transition">
-                All (<span id="count-all">0</span>)
-              </button>
-              <button onclick="setTypeFilter('course')" id="filter-course" class="filter-btn px-2.5 py-1 rounded text-xs font-medium text-[#a1a1aa] hover:text-white transition">
-                Courses (<span id="count-course">0</span>)
-              </button>
-              <button onclick="setTypeFilter('job')" id="filter-job" class="filter-btn px-2.5 py-1 rounded text-xs font-medium text-[#a1a1aa] hover:text-white transition">
-                Jobs (<span id="count-job">0</span>)
-              </button>
-            </div>
-          </div>
-
-          <!-- Items List -->
-          <div id="itemsContainer" class="divide-y divide-[#1e2029] border border-[#22242e] rounded-lg bg-[#14161d] overflow-hidden"></div>
-
-          <!-- Empty State -->
-          <div id="emptyState" class="hidden py-12 text-center text-xs text-[#71717a] border border-[#22242e] rounded-lg bg-[#14161d]">
-            No matching items found.
-          </div>
-
-        </div>
-
-        <!-- ================================================================= -->
-        <!-- VIEW 2: SETTINGS                                                   -->
-        <!-- ================================================================= -->
-        <div id="view-settings" class="hidden space-y-4">
-
-          <!-- Delivery & Keywords -->
-          <div class="border border-[#22242e] rounded-lg bg-[#14161d] p-5 space-y-5">
-
-            <div class="space-y-1.5">
-              <label class="text-xs font-semibold text-white block">Email Delivery</label>
-              <div class="flex items-center gap-2.5 pt-1">
-                <input type="checkbox" id="settingActive" class="w-4 h-4 rounded bg-[#1c1e26] border-[#2e313d] text-emerald-500 focus:ring-0 cursor-pointer">
-                <label for="settingActive" class="text-xs text-[#d4d4d8] cursor-pointer">
-                  Receive daily morning email digest (~8:00 AM IST)
-                </label>
-              </div>
-              <p class="text-[11px] text-[#71717a] pt-0.5">Uncheck to pause (e.g. while on vacation).</p>
-            </div>
-
-            <div class="space-y-1.5 pt-3 border-t border-[#1e2029]">
-              <label class="text-xs font-semibold text-white block">Keywords &amp; Topics</label>
-              <p class="text-[11px] text-[#71717a]">Separate topics with commas. Used to match courses &amp; job searches.</p>
-              <textarea
-                id="settingKeywords"
-                rows="3"
-                placeholder="e.g. python, project management, ui, ux, remote"
-                class="w-full bg-[#181a22] border border-[#262833] rounded-md p-2.5 text-xs text-white placeholder-[#71717a] focus:outline-none focus:border-slate-500 leading-relaxed font-mono"
-              ></textarea>
-            </div>
-
-            <div class="pt-2 flex items-center justify-between border-t border-[#1e2029]">
-              <span id="saveNotice" class="text-xs text-emerald-400 hidden">Saved.</span>
-              <button onclick="saveSimpleSettings()" id="saveBtn" class="px-4 py-1.5 rounded-md bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-medium transition ml-auto">
-                Save Settings
-              </button>
-            </div>
-
-          </div>
-
-          <!-- Change Password -->
-          <div class="border border-[#22242e] rounded-lg bg-[#14161d] p-5 space-y-4">
-            <h3 class="text-xs font-semibold text-white">Change Password</h3>
-
-            <div class="space-y-2">
-              <input
-                id="oldPw"
-                type="password"
-                placeholder="Current password"
-                class="w-full bg-[#181a22] border border-[#262833] rounded-md px-3 py-2 text-xs text-white placeholder-[#71717a] focus:outline-none focus:border-slate-500"
-              >
-              <input
-                id="newPw"
-                type="password"
-                placeholder="New password (min 6 chars)"
-                class="w-full bg-[#181a22] border border-[#262833] rounded-md px-3 py-2 text-xs text-white placeholder-[#71717a] focus:outline-none focus:border-slate-500"
-              >
-            </div>
-
-            <div id="pwMsg" class="hidden text-xs px-3 py-2 rounded-md border"></div>
-
-            <button onclick="changePassword()" id="pwBtn" class="px-4 py-1.5 rounded-md bg-[#232630] hover:bg-[#2a2d3a] text-white text-xs font-medium transition border border-[#2e313d]">
-              Update Password
-            </button>
-          </div>
-
+        <!-- Cards container -->
+        <div id="jobsContainer" class="space-y-2"></div>
+        <div id="jobsEmpty" class="hidden py-14 text-center text-xs text-[#52525b]">
+          <div class="text-3xl mb-3">💼</div>
+          No jobs yet — check back after the next digest run!
         </div>
 
       </div>
-    </main>
 
-    <footer class="py-4 border-t border-[#1e2029] text-center text-[11px] text-[#52525b]">
-      Course &amp; Job Hunter · Personal digest archive
-    </footer>
+    </div><!-- /loadedState -->
 
+  </main>
+
+  <footer class="py-4 border-t border-[#1a1c24] text-center text-[11px] text-[#3f3f46]">
+    Course &amp; Job Hunter · Personal digest archive
+  </footer>
+
+</div><!-- /portalScreen -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!--  SETTINGS DRAWER (slides over)                                         -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div id="settingsOverlay" onclick="closeSettings()" class="hidden fixed inset-0 bg-black/50 z-40 backdrop-blur-sm"></div>
+<aside id="settingsDrawer"
+  class="fixed top-0 right-0 h-full w-80 max-w-full bg-[#13151c] border-l border-[#1e2029] z-50 shadow-2xl flex flex-col
+         translate-x-full transition-transform duration-300 ease-out">
+
+  <div class="flex items-center justify-between px-5 py-4 border-b border-[#1e2029]">
+    <span class="text-sm font-semibold text-white">Settings</span>
+    <button onclick="closeSettings()" class="text-[#52525b] hover:text-white transition">
+      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
   </div>
 
-  <!-- Initial loading spinner (while checking /me) -->
-  <div id="initSpinner" class="flex-1 flex items-center justify-center">
-    <span class="text-xs text-[#71717a]">Loading...</span>
+  <div class="flex-1 overflow-y-auto px-5 py-4 space-y-5">
+
+    <!-- Email delivery -->
+    <div class="space-y-2">
+      <label class="text-xs font-semibold text-white block">Email Delivery</label>
+      <label class="flex items-center gap-3 cursor-pointer">
+        <div class="relative">
+          <input type="checkbox" id="settingActive" class="sr-only peer">
+          <div class="w-9 h-5 bg-[#2e313d] rounded-full peer peer-checked:bg-[#2563eb] transition-colors"></div>
+          <div class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4 shadow"></div>
+        </div>
+        <span class="text-xs text-[#d4d4d8]">Daily digest (~8 AM IST)</span>
+      </label>
+      <p class="text-[11px] text-[#52525b]">Toggle off to pause while on vacation.</p>
+    </div>
+
+    <!-- Keywords -->
+    <div class="space-y-2">
+      <label class="text-xs font-semibold text-white block">Keywords &amp; Topics</label>
+      <p class="text-[11px] text-[#52525b]">Comma-separated. Used to match free courses &amp; job searches.</p>
+      <textarea id="settingKeywords" rows="4" placeholder="python, ui/ux, remote, project management…"
+        class="w-full bg-[#1a1c24] border border-[#262833] rounded-lg p-2.5 text-xs text-white placeholder-[#52525b] focus:outline-none focus:border-[#3b82f6] transition leading-relaxed font-mono resize-none"></textarea>
+    </div>
+
+    <!-- Save prefs -->
+    <div class="flex items-center justify-between pt-1">
+      <span id="saveNotice" class="text-xs text-emerald-400 opacity-0 transition-opacity">Saved!</span>
+      <button onclick="saveSimpleSettings()" id="saveBtn"
+        class="px-4 py-2 rounded-lg bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-medium transition">
+        Save
+      </button>
+    </div>
+
+    <div class="border-t border-[#1e2029]"></div>
+
+    <!-- Change Password -->
+    <div class="space-y-3">
+      <label class="text-xs font-semibold text-white block">Change Password</label>
+      <input id="oldPw" type="password" placeholder="Current password"
+        class="w-full bg-[#1a1c24] border border-[#262833] rounded-lg px-3 py-2 text-xs text-white placeholder-[#52525b] focus:outline-none focus:border-[#3b82f6] transition">
+      <input id="newPw" type="password" placeholder="New password (min 6 chars)"
+        class="w-full bg-[#1a1c24] border border-[#262833] rounded-lg px-3 py-2 text-xs text-white placeholder-[#52525b] focus:outline-none focus:border-[#3b82f6] transition">
+      <div id="pwMsg" class="hidden text-xs px-3 py-2 rounded-lg border"></div>
+      <button onclick="changePassword()" id="pwBtn"
+        class="w-full py-2 rounded-lg bg-[#1a1c24] hover:bg-[#22242e] border border-[#2e313d] text-white text-xs font-medium transition">
+        Update Password
+      </button>
+    </div>
+
   </div>
+</aside>
 
-  <script>
-    let currentEmail = "";
-    let currentUserData = null;
-    let currentTypeFilter = "all";
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!--  INIT SPINNER                                                          -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<div id="initSpinner" class="flex flex-1 items-center justify-center min-h-screen">
+  <div class="text-center space-y-2">
+    <div class="text-2xl">🎯</div>
+    <p class="text-xs text-[#52525b]">Loading…</p>
+  </div>
+</div>
 
-    // ── Bootstrap ─────────────────────────────────────────────────────────────
-    document.addEventListener("DOMContentLoaded", async () => {
-      try {
-        const res = await fetch("/api/portal/auth/me");
-        const data = await res.json();
-        if (data.authenticated) {
-          currentEmail = data.email;
-          document.getElementById("headerName").textContent = data.name || data.email;
-          showPortal();
-          await loadUserProfile(data.email);
-        } else {
-          showLogin();
-        }
-      } catch {
-        showLogin();
-      }
-    });
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!--  JAVASCRIPT                                                            -->
+<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<script>
+  let currentEmail = "";
+  let currentUserData = null;
+  let currentMainTab = "courses";
+  let courseQuery = "";
+  let jobQuery = "";
+  let activeJobSource = "all";
 
-    function showLogin() {
-      document.getElementById("initSpinner").classList.add("hidden");
-      const ls = document.getElementById("loginScreen");
-      ls.classList.remove("hidden");
-      ls.classList.add("flex");
-    }
-
-    function showPortal() {
-      document.getElementById("initSpinner").classList.add("hidden");
-      const ps = document.getElementById("portalScreen");
-      ps.classList.remove("hidden");
-      ps.classList.add("flex");
-    }
-
-    // ── Login ─────────────────────────────────────────────────────────────────
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && !document.getElementById("loginScreen").classList.contains("hidden")) {
-        doLogin();
-      }
-    });
-
-    async function doLogin() {
-      const email = document.getElementById("loginEmail").value.trim();
-      const password = document.getElementById("loginPassword").value;
-      const errEl = document.getElementById("loginError");
-      const btn = document.getElementById("loginBtn");
-
-      errEl.classList.add("hidden");
-      btn.disabled = true;
-      btn.textContent = "Signing in...";
-
-      try {
-        const res = await fetch("/api/portal/auth/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          errEl.textContent = data.error || "Login failed.";
-          errEl.classList.remove("hidden");
-          return;
-        }
+  // ── Bootstrap ─────────────────────────────────────────────────────────
+  document.addEventListener("DOMContentLoaded", async () => {
+    try {
+      const res = await fetch("/api/portal/auth/me");
+      const data = await res.json();
+      if (data.authenticated) {
         currentEmail = data.email;
         document.getElementById("headerName").textContent = data.name || data.email;
-        document.getElementById("loginScreen").classList.add("hidden");
-        document.getElementById("loginScreen").classList.remove("flex");
+        document.getElementById("headerName").classList.remove("hidden");
         showPortal();
         await loadUserProfile(data.email);
-      } catch (err) {
-        errEl.textContent = "Network error. Try again.";
-        errEl.classList.remove("hidden");
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "Sign In";
-      }
-    }
-
-    // ── Logout ────────────────────────────────────────────────────────────────
-    async function doLogout() {
-      await fetch("/api/portal/auth/logout", { method: "POST" });
-      location.reload();
-    }
-
-    // ── Load Profile ──────────────────────────────────────────────────────────
-    async function loadUserProfile(email) {
-      document.getElementById("loadingState").classList.remove("hidden");
-      document.getElementById("loadedState").classList.add("hidden");
-      try {
-        const res = await fetch(`/api/portal/user?email=${encodeURIComponent(email)}`);
-        if (!res.ok) throw new Error("Could not load user data");
-        const data = await res.json();
-        currentUserData = data;
-
-        renderUserHeader(data.subscriber);
-        renderSettings(data.subscriber);
-        filterItems();
-
-        document.getElementById("loadingState").classList.add("hidden");
-        document.getElementById("loadedState").classList.remove("hidden");
-      } catch (err) {
-        console.error("Error loading profile:", err);
-      }
-    }
-
-    function renderUserHeader(sub) {
-      if (!sub) return;
-      document.getElementById("memberName").textContent = sub.name || "Member";
-      document.getElementById("memberEmail").textContent = `(${sub.email})`;
-
-      const pill = document.getElementById("activeStatusPill");
-      if (sub.active) {
-        pill.textContent = "Active";
-        pill.className = "text-[10px] px-1.5 py-0.5 rounded font-medium bg-[#1a2e22] text-[#4ade80] border border-[#225533]";
       } else {
-        pill.textContent = "Paused";
-        pill.className = "text-[10px] px-1.5 py-0.5 rounded font-medium bg-[#2e261a] text-[#facc15] border border-[#554422]";
+        showLogin();
       }
-      document.getElementById("totalItemsCount").textContent = (currentUserData.vault || []).length;
+    } catch { showLogin(); }
+  });
+
+  function showLogin() {
+    document.getElementById("initSpinner").classList.add("hidden");
+    const el = document.getElementById("loginScreen");
+    el.classList.remove("hidden");
+    el.classList.add("flex");
+  }
+
+  function showPortal() {
+    document.getElementById("initSpinner").classList.add("hidden");
+    const el = document.getElementById("portalScreen");
+    el.classList.remove("hidden");
+    el.classList.add("flex");
+  }
+
+  // ── Login ──────────────────────────────────────────────────────────────
+  document.addEventListener("keydown", e => {
+    if (e.key === "Enter" && !document.getElementById("loginScreen").classList.contains("hidden")) doLogin();
+  });
+
+  async function doLogin() {
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
+    const errEl = document.getElementById("loginError");
+    const btn = document.getElementById("loginBtn");
+
+    errEl.classList.add("hidden");
+    btn.disabled = true;
+    btn.textContent = "Signing in…";
+
+    try {
+      const res = await fetch("/api/portal/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) { errEl.textContent = data.error || "Login failed."; errEl.classList.remove("hidden"); return; }
+      currentEmail = data.email;
+      document.getElementById("headerName").textContent = data.name || data.email;
+      document.getElementById("headerName").classList.remove("hidden");
+      document.getElementById("loginScreen").classList.add("hidden");
+      document.getElementById("loginScreen").classList.remove("flex");
+      showPortal();
+      await loadUserProfile(data.email);
+    } catch {
+      errEl.textContent = "Network error. Try again.";
+      errEl.classList.remove("hidden");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Sign In →";
+    }
+  }
+
+  // ── Logout ─────────────────────────────────────────────────────────────
+  async function doLogout() {
+    await fetch("/api/portal/auth/logout", { method: "POST" });
+    location.reload();
+  }
+
+  // ── Load profile ───────────────────────────────────────────────────────
+  async function loadUserProfile(email) {
+    document.getElementById("loadingState").classList.remove("hidden");
+    document.getElementById("loadedState").classList.add("hidden");
+
+    try {
+      const res = await fetch(`/api/portal/user?email=${encodeURIComponent(email)}`);
+      if (!res.ok) throw new Error("Could not load profile");
+      const data = await res.json();
+      currentUserData = data;
+
+      renderGreeting(data.subscriber);
+      renderSettings(data.subscriber);
+      buildTabs(data.vault || []);
+
+      document.getElementById("loadingState").classList.add("hidden");
+      document.getElementById("loadedState").classList.remove("hidden");
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // ── Greeting ───────────────────────────────────────────────────────────
+  function renderGreeting(sub) {
+    if (!sub) return;
+    const hour = new Date().getHours();
+    const greet = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+    document.getElementById("greetingText").textContent = `${greet}, ${sub.name || "Hunter"} 👋`;
+    const activeTxt = sub.active ? "Daily digest active" : "Digest paused";
+    document.getElementById("greetingSubtext").textContent = activeTxt;
+
+    const pill = document.getElementById("headerActivePill");
+    pill.classList.remove("hidden");
+    if (sub.active) {
+      pill.textContent = "● Active";
+      pill.className = "text-[10px] px-2 py-0.5 rounded-full font-medium bg-[#1a2e22] text-[#4ade80] border border-[#1e4028]";
+    } else {
+      pill.textContent = "● Paused";
+      pill.className = "text-[10px] px-2 py-0.5 rounded-full font-medium bg-[#2e261a] text-[#facc15] border border-[#4a3800]";
+    }
+  }
+
+  // ── Build tabs ─────────────────────────────────────────────────────────
+  function buildTabs(vault) {
+    const courses = vault.filter(i => i.type === "course");
+    const jobs    = vault.filter(i => i.type === "job");
+
+    document.getElementById("statCourses").textContent = courses.length;
+    document.getElementById("statJobs").textContent    = jobs.length;
+    document.getElementById("tab-courses-count").textContent = courses.length;
+    document.getElementById("tab-jobs-count").textContent    = jobs.length;
+
+    // Build source chips for jobs
+    const sources = [...new Set(jobs.map(j => j.domain).filter(Boolean))];
+    const chipsEl = document.getElementById("sourceChips");
+    chipsEl.innerHTML = "";
+    if (sources.length > 1) {
+      ["all", ...sources].forEach(src => {
+        const btn = document.createElement("button");
+        btn.dataset.src = src;
+        btn.textContent = src === "all" ? "All sources" : src;
+        btn.onclick = () => { activeJobSource = src; renderJobs(); updateSourceChips(); };
+        btn.className = src === "all"
+          ? "source-chip text-[10px] px-2.5 py-1 rounded-full bg-[#182236] text-[#60a5fa] border border-[#1e3455] font-medium transition"
+          : "source-chip text-[10px] px-2.5 py-1 rounded-full bg-[#1a1c24] text-[#71717a] border border-[#262833] hover:text-[#a1a1aa] transition";
+        chipsEl.appendChild(btn);
+      });
     }
 
-    // ── View switching ────────────────────────────────────────────────────────
-    function switchView(view) {
-      const btnItems = document.getElementById("btn-view-items");
-      const btnSettings = document.getElementById("btn-view-settings");
-      const viewItems = document.getElementById("view-items");
-      const viewSettings = document.getElementById("view-settings");
+    renderCourses();
+    renderJobs();
+    switchMainTab(currentMainTab);
+  }
 
-      if (view === "items") {
-        btnItems.className = "px-3 py-1 rounded-md font-medium bg-[#232630] text-white transition";
-        btnSettings.className = "px-3 py-1 rounded-md font-medium text-[#a1a1aa] hover:text-white transition";
-        viewItems.classList.remove("hidden");
-        viewSettings.classList.add("hidden");
+  // ── Switch main tab ────────────────────────────────────────────────────
+  function switchMainTab(tab) {
+    currentMainTab = tab;
+    const tabs = ["courses", "jobs"];
+    tabs.forEach(t => {
+      const btn = document.getElementById(`tab-${t}`);
+      const panel = document.getElementById(`tabpanel-${t}`);
+      if (t === tab) {
+        btn.className = "main-tab px-4 py-2.5 text-sm font-medium text-white border-b-2 border-[#3b82f6] -mb-px flex items-center gap-2 transition-colors";
+        panel.classList.remove("hidden");
+        panel.classList.add("fade-in");
       } else {
-        btnSettings.className = "px-3 py-1 rounded-md font-medium bg-[#232630] text-white transition";
-        btnItems.className = "px-3 py-1 rounded-md font-medium text-[#a1a1aa] hover:text-white transition";
-        viewSettings.classList.remove("hidden");
-        viewItems.classList.add("hidden");
+        btn.className = "main-tab px-4 py-2.5 text-sm font-medium text-[#71717a] border-b-2 border-transparent -mb-px flex items-center gap-2 hover:text-[#a1a1aa] transition-colors";
+        panel.classList.add("hidden");
+        panel.classList.remove("fade-in");
       }
-    }
+    });
+    // Update search placeholder
+    document.getElementById("searchInput").placeholder = tab === "courses" ? "Search courses…" : "Search jobs…";
+    document.getElementById("searchInput").value = tab === "courses" ? courseQuery : jobQuery;
+    updateSearchClear();
+  }
 
-    // ── Filter + Render ───────────────────────────────────────────────────────
-    function setTypeFilter(type) {
-      currentTypeFilter = type;
-      document.querySelectorAll(".filter-btn").forEach(btn => {
-        btn.className = "filter-btn px-2.5 py-1 rounded text-xs font-medium text-[#a1a1aa] hover:text-white transition";
-      });
-      const activeBtn = document.getElementById(`filter-${type}`);
-      if (activeBtn) activeBtn.className = "filter-btn px-2.5 py-1 rounded text-xs font-medium bg-[#232630] text-white transition";
-      filterItems();
-    }
+  // ── Search ─────────────────────────────────────────────────────────────
+  function onSearch() {
+    const q = document.getElementById("searchInput").value.trim().toLowerCase();
+    if (currentMainTab === "courses") { courseQuery = q; renderCourses(); }
+    else                              { jobQuery = q;    renderJobs();    }
+    updateSearchClear();
+  }
 
-    function filterItems() {
-      if (!currentUserData || !currentUserData.vault) return;
-      const query = (document.getElementById("searchInput").value || "").trim().toLowerCase();
-      const vault = currentUserData.vault;
+  function clearSearch() {
+    document.getElementById("searchInput").value = "";
+    if (currentMainTab === "courses") { courseQuery = ""; renderCourses(); }
+    else                              { jobQuery = "";    renderJobs();    }
+    updateSearchClear();
+  }
 
-      document.getElementById("count-all").textContent = vault.length;
-      document.getElementById("count-course").textContent = vault.filter(i => i.type === "course").length;
-      document.getElementById("count-job").textContent = vault.filter(i => i.type === "job").length;
+  function updateSearchClear() {
+    const val = document.getElementById("searchInput").value;
+    document.getElementById("searchClear").classList.toggle("hidden", !val);
+  }
 
-      const filtered = vault.filter(item => {
-        if (currentTypeFilter !== "all" && item.type !== currentTypeFilter) return false;
-        if (!query) return true;
-        return `${item.title} ${item.domain} ${item.location || ""}`.toLowerCase().includes(query);
-      });
+  // ── Render Courses ─────────────────────────────────────────────────────
+  function renderCourses() {
+    if (!currentUserData) return;
+    const sortBy = document.getElementById("courseSort").value;
+    let items = (currentUserData.vault || []).filter(i => i.type === "course");
 
-      renderItemsList(filtered);
-    }
+    if (courseQuery) items = items.filter(i => searchMatch(i, courseQuery));
 
-    function renderItemsList(items) {
-      const container = document.getElementById("itemsContainer");
-      const empty = document.getElementById("emptyState");
-      container.innerHTML = "";
+    items = sortItems(items, sortBy);
 
-      if (!items || items.length === 0) {
-        empty.classList.remove("hidden");
-        return;
-      }
-      empty.classList.add("hidden");
+    const container = document.getElementById("coursesContainer");
+    const empty     = document.getElementById("coursesEmpty");
+    const label     = document.getElementById("courses-label");
 
-      items.forEach(item => {
-        const isCourse = item.type === "course";
-        const row = document.createElement("div");
-        row.className = "p-3 sm:p-3.5 hover:bg-[#181a22] transition flex flex-col sm:flex-row sm:items-center justify-between gap-2";
+    label.textContent = courseQuery
+      ? `${items.length} result${items.length !== 1 ? "s" : ""} for "${courseQuery}"`
+      : `${items.length} course${items.length !== 1 ? "s" : ""} delivered`;
 
-        const badgeClass = isCourse
-          ? "bg-[#18281e] text-[#4ade80] border-[#1e4028]"
-          : "bg-[#182236] text-[#60a5fa] border-[#1e3455]";
+    container.innerHTML = "";
+    if (!items.length) { empty.classList.remove("hidden"); return; }
+    empty.classList.add("hidden");
 
-        const locationStr = item.location ? ` · ${escapeHtml(item.location)}` : "";
+    items.forEach((item, i) => {
+      container.appendChild(makeCourseCard(item, i));
+    });
+  }
 
-        row.innerHTML = `
-          <div class="min-w-0 flex-1 pr-2">
-            <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer" class="text-xs sm:text-sm font-medium text-slate-100 hover:text-blue-400 transition block truncate leading-snug">
-              ${escapeHtml(item.title)}
-            </a>
-            <div class="flex items-center gap-2 mt-1 text-[11px] text-[#71717a]">
-              <span class="px-1.5 py-0.5 rounded text-[10px] font-medium border ${badgeClass}">
-                ${isCourse ? "Course" : "Job"}
-              </span>
-              <span>${escapeHtml(item.domain)}</span>
-              <span>${locationStr}</span>
-              <span>· ${escapeHtml(item.date)}</span>
-            </div>
+  function makeCourseCard(item, idx) {
+    const card = document.createElement("a");
+    card.href = item.url;
+    card.target = "_blank";
+    card.rel = "noopener noreferrer";
+    card.className = "item-card block border border-[#1e2029] rounded-xl bg-[#13151c] p-3.5 group";
+    card.style.animationDelay = `${idx * 30}ms`;
+    card.classList.add("fade-in");
+
+    card.innerHTML = `
+      <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded border badge-course">Free</span>
+            <span class="text-[11px] text-[#52525b]">${esc(item.domain)}</span>
           </div>
-          <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer" class="text-xs text-[#a1a1aa] hover:text-white transition whitespace-nowrap self-start sm:self-auto">
-            Open ↗
-          </a>
-        `;
+          <p class="text-sm font-medium text-[#e4e4e7] group-hover:text-white truncate leading-snug transition">${esc(item.title)}</p>
+          <p class="text-[11px] text-[#52525b] mt-1">${esc(item.date)}</p>
+        </div>
+        <span class="text-[#3b82f6] opacity-0 group-hover:opacity-100 transition text-sm mt-0.5 flex-shrink-0">↗</span>
+      </div>
+    `;
+    return card;
+  }
 
-        container.appendChild(row);
+  // ── Render Jobs ────────────────────────────────────────────────────────
+  function renderJobs() {
+    if (!currentUserData) return;
+    const sortBy = document.getElementById("jobSort").value;
+    let items = (currentUserData.vault || []).filter(i => i.type === "job");
+
+    if (activeJobSource !== "all") items = items.filter(i => i.domain === activeJobSource);
+    if (jobQuery) items = items.filter(i => searchMatch(i, jobQuery));
+
+    items = sortItems(items, sortBy);
+
+    const container = document.getElementById("jobsContainer");
+    const empty     = document.getElementById("jobsEmpty");
+    const label     = document.getElementById("jobs-label");
+
+    label.textContent = jobQuery
+      ? `${items.length} result${items.length !== 1 ? "s" : ""} for "${jobQuery}"`
+      : `${items.length} job${items.length !== 1 ? "s" : ""} delivered`;
+
+    container.innerHTML = "";
+    if (!items.length) { empty.classList.remove("hidden"); return; }
+    empty.classList.add("hidden");
+
+    items.forEach((item, i) => {
+      container.appendChild(makeJobCard(item, i));
+    });
+
+    updateSourceChips();
+  }
+
+  function makeJobCard(item, idx) {
+    const card = document.createElement("a");
+    card.href = item.url;
+    card.target = "_blank";
+    card.rel = "noopener noreferrer";
+    card.className = "item-card block border border-[#1e2029] rounded-xl bg-[#13151c] p-3.5 group";
+    card.style.animationDelay = `${idx * 30}ms`;
+    card.classList.add("fade-in");
+
+    const loc = item.location ? `<span class="inline-flex items-center gap-1"><svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${esc(item.location)}</span>` : "";
+    const sal = item.salary ? `<span>💰 ${esc(item.salary)}</span>` : "";
+
+    card.innerHTML = `
+      <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-2 mb-1 flex-wrap">
+            <span class="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded border badge-job">Remote</span>
+            <span class="text-[11px] text-[#52525b]">${esc(item.domain)}</span>
+          </div>
+          <p class="text-sm font-medium text-[#e4e4e7] group-hover:text-white truncate leading-snug transition">${esc(item.title)}</p>
+          <div class="flex items-center gap-3 mt-1.5 text-[11px] text-[#52525b] flex-wrap">
+            ${loc}${sal}
+            <span>· ${esc(item.date)}</span>
+          </div>
+        </div>
+        <span class="text-[#3b82f6] opacity-0 group-hover:opacity-100 transition text-sm mt-0.5 flex-shrink-0">↗</span>
+      </div>
+    `;
+    return card;
+  }
+
+  function updateSourceChips() {
+    document.querySelectorAll(".source-chip").forEach(btn => {
+      const active = btn.dataset.src === activeJobSource;
+      btn.className = active
+        ? "source-chip text-[10px] px-2.5 py-1 rounded-full bg-[#182236] text-[#60a5fa] border border-[#1e3455] font-medium transition"
+        : "source-chip text-[10px] px-2.5 py-1 rounded-full bg-[#1a1c24] text-[#71717a] border border-[#262833] hover:text-[#a1a1aa] transition";
+    });
+  }
+
+  // ── Settings drawer ────────────────────────────────────────────────────
+  function toggleSettings() {
+    const drawer = document.getElementById("settingsDrawer");
+    const overlay = document.getElementById("settingsOverlay");
+    const isOpen = !drawer.classList.contains("translate-x-full");
+    if (isOpen) closeSettings();
+    else {
+      drawer.classList.remove("translate-x-full");
+      overlay.classList.remove("hidden");
+    }
+  }
+
+  function closeSettings() {
+    document.getElementById("settingsDrawer").classList.add("translate-x-full");
+    document.getElementById("settingsOverlay").classList.add("hidden");
+  }
+
+  function renderSettings(sub) {
+    if (!sub) return;
+    document.getElementById("settingActive").checked = Boolean(sub.active);
+    const all = Array.from(new Set([...(sub.keywords || []), ...(sub.job_searches || [])]));
+    document.getElementById("settingKeywords").value = all.join(", ");
+    document.getElementById("saveNotice").style.opacity = "0";
+  }
+
+  async function saveSimpleSettings() {
+    const btn    = document.getElementById("saveBtn");
+    const notice = document.getElementById("saveNotice");
+    btn.disabled = true;
+    btn.textContent = "Saving…";
+    try {
+      const kw = document.getElementById("settingKeywords").value.split(",").map(k => k.trim()).filter(Boolean);
+      const active = document.getElementById("settingActive").checked;
+      const res = await fetch("/api/portal/user", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: currentEmail, keywords: kw, job_searches: kw, active }),
       });
-    }
+      if (!res.ok) throw new Error("Failed");
+      notice.style.opacity = "1";
+      setTimeout(() => notice.style.opacity = "0", 3000);
+      await loadUserProfile(currentEmail);
+    } catch (err) { alert("Error: " + err.message); }
+    finally { btn.disabled = false; btn.textContent = "Save"; }
+  }
 
-    // ── Settings ──────────────────────────────────────────────────────────────
-    function renderSettings(sub) {
-      if (!sub) return;
-      document.getElementById("settingActive").checked = Boolean(sub.active);
-      const allKws = Array.from(new Set([...(sub.keywords || []), ...(sub.job_searches || [])]));
-      document.getElementById("settingKeywords").value = allKws.join(", ");
-      document.getElementById("saveNotice").classList.add("hidden");
-    }
-
-    async function saveSimpleSettings() {
-      const btn = document.getElementById("saveBtn");
-      const notice = document.getElementById("saveNotice");
-      btn.disabled = true;
-      btn.textContent = "Saving...";
-
-      try {
-        const rawKeywords = document.getElementById("settingKeywords").value;
-        const kwList = rawKeywords.split(",").map(k => k.trim()).filter(Boolean);
-        const isActive = document.getElementById("settingActive").checked;
-
-        const res = await fetch("/api/portal/user", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: currentEmail, keywords: kwList, job_searches: kwList, active: isActive }),
-        });
-        if (!res.ok) throw new Error("Failed to save");
-
-        notice.classList.remove("hidden");
-        setTimeout(() => notice.classList.add("hidden"), 3000);
-        await loadUserProfile(currentEmail);
-      } catch (err) {
-        alert("Error saving settings: " + err.message);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "Save Settings";
+  async function changePassword() {
+    const oldPw = document.getElementById("oldPw").value;
+    const newPw = document.getElementById("newPw").value;
+    const msgEl = document.getElementById("pwMsg");
+    const btn   = document.getElementById("pwBtn");
+    btn.disabled = true; btn.textContent = "Updating…";
+    try {
+      const res = await fetch("/api/portal/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ old_password: oldPw, new_password: newPw }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        msgEl.textContent = "Password changed!";
+        msgEl.className = "text-xs px-3 py-2 rounded-lg border text-emerald-400 bg-[#1a2e22] border-[#1e4028]";
+        document.getElementById("oldPw").value = "";
+        document.getElementById("newPw").value = "";
+      } else {
+        msgEl.textContent = data.error || "Failed.";
+        msgEl.className = "text-xs px-3 py-2 rounded-lg border text-red-400 bg-[#2a1414] border-[#4a2020]";
       }
-    }
+      msgEl.classList.remove("hidden");
+      setTimeout(() => msgEl.classList.add("hidden"), 4000);
+    } catch {
+      msgEl.textContent = "Network error.";
+      msgEl.className = "text-xs px-3 py-2 rounded-lg border text-red-400 bg-[#2a1414] border-[#4a2020]";
+      msgEl.classList.remove("hidden");
+    } finally { btn.disabled = false; btn.textContent = "Update Password"; }
+  }
 
-    // ── Change Password ───────────────────────────────────────────────────────
-    async function changePassword() {
-      const oldPw = document.getElementById("oldPw").value;
-      const newPw = document.getElementById("newPw").value;
-      const msgEl = document.getElementById("pwMsg");
-      const btn = document.getElementById("pwBtn");
+  // ── Helpers ────────────────────────────────────────────────────────────
+  function searchMatch(item, q) {
+    return `${item.title} ${item.domain} ${item.location || ""} ${item.salary || ""}`.toLowerCase().includes(q);
+  }
 
-      msgEl.classList.add("hidden");
-      btn.disabled = true;
-      btn.textContent = "Updating...";
+  function sortItems(items, by) {
+    return [...items].sort((a, b) => {
+      if (by === "title")  return (a.title  || "").localeCompare(b.title  || "");
+      if (by === "domain") return (a.domain || "").localeCompare(b.domain || "");
+      if (by === "source") return (a.domain || "").localeCompare(b.domain || "");
+      // date (default newest first)
+      return String(b.date || "").localeCompare(String(a.date || ""));
+    });
+  }
 
-      try {
-        const res = await fetch("/api/portal/auth/change-password", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ old_password: oldPw, new_password: newPw }),
-        });
-        const data = await res.json();
-        if (res.ok) {
-          msgEl.textContent = "Password changed successfully!";
-          msgEl.className = "text-xs px-3 py-2 rounded-md border text-emerald-400 bg-[#1a2e22] border-[#225533]";
-          document.getElementById("oldPw").value = "";
-          document.getElementById("newPw").value = "";
-        } else {
-          msgEl.textContent = data.error || "Failed to change password.";
-          msgEl.className = "text-xs px-3 py-2 rounded-md border text-red-400 bg-[#2a1a1a] border-[#4a2020]";
-        }
-        msgEl.classList.remove("hidden");
-        setTimeout(() => msgEl.classList.add("hidden"), 4000);
-      } catch {
-        msgEl.textContent = "Network error.";
-        msgEl.className = "text-xs px-3 py-2 rounded-md border text-red-400 bg-[#2a1a1a] border-[#4a2020]";
-        msgEl.classList.remove("hidden");
-      } finally {
-        btn.disabled = false;
-        btn.textContent = "Update Password";
-      }
-    }
-
-    // ── Utils ─────────────────────────────────────────────────────────────────
-    function escapeHtml(str) {
-      if (!str) return "";
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-    }
-  </script>
+  function esc(str) {
+    if (!str) return "";
+    return String(str)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+  }
+</script>
 </body>
 </html>
