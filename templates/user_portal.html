@@ -1,396 +1,181 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Opportunity Vault — Member Hub</title>
-  <!-- Tailwind CSS CDN -->
+  <title>Course & Job Hunter — Opportunity Vault & Member Hub</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
-    /* Clean custom scrollbar */
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 3px; }
   </style>
 </head>
-<body class="bg-[#0b0f19] text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-emerald-500/20">
+<body class="bg-[#111216] text-[#e4e4e7] min-h-screen flex flex-col antialiased">
 
-  <!-- ========================================================================= -->
-  <!-- Clean, Minimalist Header -->
-  <!-- ========================================================================= -->
-  <header class="border-b border-slate-800/80 bg-[#0e1322]/90 backdrop-blur sticky top-0 z-30">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
+  <!-- Top Simple Navigation -->
+  <header class="border-b border-[#23252d] bg-[#14161c]">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
       
-      <!-- Brand Identity -->
-      <div class="flex items-center gap-2.5">
-        <span class="text-xl">🎓</span>
-        <div class="flex items-baseline gap-2">
-          <span class="font-bold text-sm sm:text-base text-white tracking-tight">Opportunity Vault</span>
-          <span class="text-xs text-slate-500 font-medium">Member Hub</span>
-        </div>
+      <div>
+        <a href="/portal" class="text-sm font-semibold text-white tracking-tight hover:text-slate-300 transition">
+          Course & Job Hunter
+        </a>
+        <p class="text-[11px] text-[#71717a]">Opportunity Vault & Member Hub</p>
       </div>
 
-      <!-- Controls: Member Selector & Status -->
-      <div class="flex items-center gap-2">
-        <!-- Compact Member Selector -->
-        <div class="flex items-center bg-slate-800/70 border border-slate-700/60 rounded-lg px-2.5 py-1 text-xs">
-          <i class="fa-solid fa-user text-slate-400 mr-1.5 text-[11px]"></i>
-          <select id="userSelector" onchange="onSelectUser(this.value)" class="bg-transparent text-slate-200 font-medium focus:outline-none cursor-pointer pr-1">
+      <div class="flex items-center gap-3">
+        <!-- Minimal Member Selector -->
+        <div class="flex items-center gap-1.5 text-xs text-[#a1a1aa]">
+          <span>Member:</span>
+          <select id="userSelector" onchange="onSelectUser(this.value)" class="bg-[#1c1e26] border border-[#2e313d] text-white text-xs rounded px-2 py-1 focus:outline-none focus:border-slate-500 cursor-pointer">
             <option value="" disabled selected>Loading...</option>
           </select>
         </div>
 
-        <!-- Active / Vacation Badge -->
-        <span id="activeBadge" class="hidden sm:inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-          Active
-        </span>
-
-        <!-- Admin Shortcut -->
-        <a href="/" class="text-xs px-2.5 py-1 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition" title="Go to Admin Center">
-          <i class="fa-solid fa-gear"></i>
+        <a href="/" class="text-xs text-[#71717a] hover:text-[#d4d4d8] transition px-1.5 py-1 rounded" title="Admin Control Center">
+          Admin
         </a>
       </div>
 
     </div>
-
-    <!-- Minimalist Tabs Navigation -->
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 flex gap-6 border-t border-slate-800/40 text-xs sm:text-sm">
-      <button onclick="switchTab('vault')" id="tab-vault" class="tab-btn py-2.5 border-b-2 border-emerald-400 text-emerald-400 font-medium flex items-center gap-1.5 transition">
-        <span>Vault</span>
-        <span id="vaultCount" class="text-[11px] px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-400">0</span>
-      </button>
-      <button onclick="switchTab('preferences')" id="tab-preferences" class="tab-btn py-2.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-medium flex items-center gap-1.5 transition">
-        <span>Preferences & Keywords</span>
-      </button>
-      <button onclick="switchTab('insights')" id="tab-insights" class="tab-btn py-2.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-medium flex items-center gap-1.5 transition">
-        <span>Market Trends</span>
-      </button>
-    </div>
   </header>
 
-  <!-- ========================================================================= -->
-  <!-- Main Content Container -->
-  <!-- ========================================================================= -->
-  <main class="max-w-5xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full space-y-6">
+  <!-- Main Content -->
+  <main class="max-w-4xl mx-auto px-4 py-6 flex-1 w-full space-y-5">
 
-    <!-- Loading State -->
-    <div id="loadingState" class="py-16 text-center">
-      <i class="fa-solid fa-circle-notch fa-spin text-2xl text-emerald-400 mb-2"></i>
-      <p class="text-xs text-slate-400">Loading your profile...</p>
+    <!-- Loading -->
+    <div id="loadingState" class="py-16 text-center text-xs text-[#71717a]">
+      Loading items...
     </div>
 
-    <!-- Loaded Container -->
-    <div id="loadedState" class="hidden space-y-6">
+    <!-- Main Container -->
+    <div id="loadedState" class="hidden space-y-5">
 
-      <!-- =================================================================== -->
-      <!-- Clean, Minimalist Stats Bar (Single Row, No Clutter) -->
-      <!-- =================================================================== -->
-      <div class="bg-slate-900/50 border border-slate-800/80 rounded-xl p-3.5 sm:p-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center sm:text-left">
-        
-        <!-- Streak -->
-        <div class="sm:border-r border-slate-800/80 sm:pr-4">
-          <div class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold flex items-center justify-center sm:justify-start gap-1">
-            <span>🔥</span> Streak
-          </div>
-          <div class="mt-1 flex items-baseline justify-center sm:justify-start gap-1">
-            <span id="heroStreakNum" class="text-xl font-bold text-white">0</span>
-            <span class="text-xs text-slate-400">days</span>
-          </div>
+      <!-- Member Header / Simple Status -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-[#23252d] gap-2">
+        <div class="flex items-baseline gap-2">
+          <h2 id="memberName" class="text-base font-semibold text-white">Member</h2>
+          <span id="memberEmail" class="text-xs text-[#71717a]"></span>
+          <span id="activeStatusPill" class="text-[10px] px-1.5 py-0.5 rounded font-medium bg-[#1a2e22] text-[#4ade80] border border-[#225533]">
+            Active
+          </span>
         </div>
 
-        <!-- Value Saved -->
-        <div class="sm:border-r border-slate-800/80 sm:px-4">
-          <div class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold flex items-center justify-center sm:justify-start gap-1">
-            <span>💰</span> Value Saved
-          </div>
-          <div class="mt-1 flex items-baseline justify-center sm:justify-start gap-1">
-            <span class="text-sm font-semibold text-emerald-400">$</span>
-            <span id="heroMoneySaved" class="text-xl font-bold text-white">0</span>
-          </div>
+        <!-- Navigation Tabs: Items vs Settings -->
+        <div class="flex items-center gap-1 text-xs">
+          <button onclick="switchView('items')" id="btn-view-items" class="px-3 py-1 rounded-md font-medium bg-[#232630] text-white transition">
+            Items (<span id="totalItemsCount">0</span>)
+          </button>
+          <button onclick="switchView('settings')" id="btn-view-settings" class="px-3 py-1 rounded-md font-medium text-[#a1a1aa] hover:text-white transition">
+            Settings
+          </button>
         </div>
-
-        <!-- Hunter Rank -->
-        <div class="sm:border-r border-slate-800/80 sm:px-4">
-          <div class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold flex items-center justify-center sm:justify-start gap-1">
-            <span id="heroBadgeEmoji">🌱</span> Rank
-          </div>
-          <div class="mt-1">
-            <span id="heroLevelTitle" class="text-sm font-bold text-slate-200 block truncate">Rookie</span>
-            <span id="heroLevelTag" class="text-[10px] text-slate-400">Level 1</span>
-          </div>
-        </div>
-
-        <!-- Total Items -->
-        <div class="sm:pl-4">
-          <div class="text-[11px] uppercase tracking-wider text-slate-500 font-semibold flex items-center justify-center sm:justify-start gap-1">
-            <span>📦</span> Delivered
-          </div>
-          <div class="mt-1 flex items-baseline justify-center sm:justify-start gap-1">
-            <span id="heroTotalItems" class="text-xl font-bold text-white">0</span>
-            <span class="text-xs text-slate-400">items</span>
-          </div>
-        </div>
-
       </div>
 
-      <!-- Hidden compat elements for scripts -->
-      <div class="hidden">
-        <span id="heroCoursesCount">0</span>
-        <span id="heroJobsCount">0</span>
-        <span id="heroStreakText"></span>
-        <div id="heroXpBar"></div>
-        <span id="heroXpPercent"></span>
-        <span id="heroNextRankText"></span>
-      </div>
-
-      <!-- =================================================================== -->
-      <!-- TAB 1: OPPORTUNITY VAULT -->
-      <!-- =================================================================== -->
-      <section id="content-vault" class="space-y-4">
+      <!-- ================================================================= -->
+      <!-- VIEW 1: CLEAN OPPORTUNITY LIST -->
+      <!-- ================================================================= -->
+      <div id="view-items" class="space-y-3">
         
-        <!-- Clean Search & Filter Toolbar -->
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
-          
-          <!-- Search Bar -->
-          <div class="relative flex-1">
-            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
-            <input 
-              type="text" 
-              id="vaultSearch" 
-              oninput="filterVault()"
-              placeholder="Search by topic, job role, company..." 
-              class="w-full pl-8 pr-3 py-1.5 bg-slate-900/60 border border-slate-800 rounded-lg text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-slate-600 transition"
-            >
-          </div>
+        <!-- Search & Filter Bar -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
+          <input 
+            type="text" 
+            id="searchInput" 
+            oninput="filterItems()" 
+            placeholder="Search delivered courses & jobs..." 
+            class="flex-1 bg-[#181a22] border border-[#262833] rounded-md px-3 py-1.5 text-xs text-white placeholder-[#71717a] focus:outline-none focus:border-slate-500"
+          >
 
-          <!-- Clean Pill Filters -->
-          <div class="flex items-center gap-1.5 self-start sm:self-auto">
-            <button onclick="setVaultFilter('all')" id="filter-all" class="filter-pill px-2.5 py-1 rounded-md text-xs font-medium bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 transition">
+          <div class="flex items-center gap-1 text-xs self-start sm:self-auto">
+            <button onclick="setTypeFilter('all')" id="filter-all" class="filter-btn px-2.5 py-1 rounded text-xs font-medium bg-[#232630] text-white transition">
               All (<span id="count-all">0</span>)
             </button>
-            <button onclick="setVaultFilter('course')" id="filter-course" class="filter-pill px-2.5 py-1 rounded-md text-xs font-medium bg-slate-900/60 text-slate-400 border border-slate-800 hover:text-slate-200 transition">
+            <button onclick="setTypeFilter('course')" id="filter-course" class="filter-btn px-2.5 py-1 rounded text-xs font-medium text-[#a1a1aa] hover:text-white transition">
               Courses (<span id="count-course">0</span>)
             </button>
-            <button onclick="setVaultFilter('job')" id="filter-job" class="filter-pill px-2.5 py-1 rounded-md text-xs font-medium bg-slate-900/60 text-slate-400 border border-slate-800 hover:text-slate-200 transition">
+            <button onclick="setTypeFilter('job')" id="filter-job" class="filter-btn px-2.5 py-1 rounded text-xs font-medium text-[#a1a1aa] hover:text-white transition">
               Jobs (<span id="count-job">0</span>)
             </button>
           </div>
-
         </div>
 
-        <!-- Clean Opportunity Cards Grid -->
-        <div id="vaultGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          <!-- Populated dynamically -->
+        <!-- List of Items -->
+        <div id="itemsContainer" class="divide-y divide-[#1e2029] border border-[#22242e] rounded-lg bg-[#14161d] overflow-hidden">
+          <!-- Dynamically populated rows -->
         </div>
 
         <!-- Empty State -->
-        <div id="vaultEmpty" class="hidden py-12 text-center bg-slate-900/30 rounded-xl border border-slate-800/50">
-          <p class="text-sm text-slate-300 font-medium mb-1">No opportunities found</p>
-          <p class="text-xs text-slate-500 mb-3">Try clearing search query or changing filters.</p>
-          <button onclick="resetVaultSearch()" class="text-xs px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
-            Reset filters
-          </button>
+        <div id="emptyState" class="hidden py-12 text-center text-xs text-[#71717a] border border-[#22242e] rounded-lg bg-[#14161d]">
+          No matching items found.
         </div>
 
-      </section>
+      </div>
 
-      <!-- =================================================================== -->
-      <!-- TAB 2: PREFERENCES & KEYWORDS -->
-      <!-- =================================================================== -->
-      <section id="content-preferences" class="hidden space-y-5">
+      <!-- ================================================================= -->
+      <!-- VIEW 2: SIMPLE SETTINGS (2 CLEAN CONFIGS ONLY) -->
+      <!-- ================================================================= -->
+      <div id="view-settings" class="hidden space-y-5">
         
-        <!-- Delivery Settings Row -->
-        <div class="bg-slate-900/50 border border-slate-800/80 rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h3 class="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
-              <span>✈️</span> Vacation Mode
-            </h3>
-            <p class="text-xs text-slate-400 mt-0.5" id="vacationSubText">
-              Temporarily pause daily digests while preserving your streak history.
-            </p>
-          </div>
-
-          <div class="flex items-center gap-3">
-            <span class="text-xs font-medium text-emerald-400" id="vacationStatusText">Active</span>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" id="prefActiveToggle" onchange="onVacationToggle(this.checked)" class="sr-only peer" checked>
-              <div class="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
-            </label>
-          </div>
-        </div>
-
-        <!-- Daily Limit Setting -->
-        <div class="bg-slate-900/50 border border-slate-800/80 rounded-xl p-4 sm:p-5 space-y-2">
-          <div class="flex items-center justify-between">
-            <h3 class="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
-              <span>📊</span> Daily Digest Limit
-            </h3>
-            <span id="sliderValueBadge" class="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-              10 items / day
-            </span>
-          </div>
-          <p class="text-xs text-slate-400">
-            Target number of top matched items delivered in each daily digest email.
-          </p>
-          <input 
-            type="range" 
-            id="prefMaxItemsSlider" 
-            min="3" 
-            max="25" 
-            step="1" 
-            value="10" 
-            oninput="onSliderChange(this.value)"
-            class="w-full accent-emerald-500 cursor-pointer pt-1"
-          >
-        </div>
-
-        <!-- Keyword Targeting Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-          <!-- 1. Course Topics -->
-          <div class="bg-slate-900/50 border border-slate-800/80 rounded-xl p-4 space-y-2.5">
-            <div class="flex items-center justify-between">
-              <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
-                <i class="fa-solid fa-graduation-cap"></i> Free Course Topics
-              </h3>
-            </div>
-            
-            <!-- Tags Box -->
-            <div id="courseKeywordsContainer" class="flex flex-wrap gap-1.5 min-h-[60px] p-2 bg-slate-950/60 border border-slate-800/60 rounded-lg">
-              <!-- Dynamically populated -->
-            </div>
-
-            <!-- Add Input -->
-            <div class="flex gap-1.5">
-              <input 
-                type="text" 
-                id="newCourseKeyword" 
-                placeholder="Add course topic..."
-                onkeydown="if(event.key==='Enter'){addKeyword('course');event.preventDefault();}"
-                class="flex-1 px-2.5 py-1.5 bg-slate-950 border border-slate-700/60 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
-              >
-              <button onclick="addKeyword('course')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-medium text-emerald-400 rounded-lg transition">
-                Add
-              </button>
-            </div>
-          </div>
-
-          <!-- 2. Job Search Targets -->
-          <div class="bg-slate-900/50 border border-slate-800/80 rounded-xl p-4 space-y-2.5">
-            <div class="flex items-center justify-between">
-              <h3 class="text-xs font-bold uppercase tracking-wider text-blue-400 flex items-center gap-1.5">
-                <i class="fa-solid fa-briefcase"></i> Remote Job Roles
-              </h3>
-            </div>
-            
-            <!-- Tags Box -->
-            <div id="jobKeywordsContainer" class="flex flex-wrap gap-1.5 min-h-[60px] p-2 bg-slate-950/60 border border-slate-800/60 rounded-lg">
-              <!-- Dynamically populated -->
-            </div>
-
-            <!-- Add Input -->
-            <div class="flex gap-1.5">
-              <input 
-                type="text" 
-                id="newJobKeyword" 
-                placeholder="Add job title / role..."
-                onkeydown="if(event.key==='Enter'){addKeyword('job');event.preventDefault();}"
-                class="flex-1 px-2.5 py-1.5 bg-slate-950 border border-slate-700/60 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-blue-500"
-              >
-              <button onclick="addKeyword('job')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-medium text-blue-400 rounded-lg transition">
-                Add
-              </button>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- 3. Preferred Locations -->
-        <div class="bg-slate-900/50 border border-slate-800/80 rounded-xl p-4 space-y-2.5">
-          <h3 class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
-            <i class="fa-solid fa-location-dot"></i> Preferred Locations
-          </h3>
+        <div class="border border-[#22242e] rounded-lg bg-[#14161d] p-5 space-y-5">
           
-          <div id="locationKeywordsContainer" class="flex flex-wrap gap-1.5 min-h-[50px] p-2 bg-slate-950/60 border border-slate-800/60 rounded-lg">
-            <!-- Dynamically populated -->
+          <!-- 1. Daily Email Delivery Status (Active vs Paused) -->
+          <div class="space-y-1.5">
+            <label class="text-xs font-semibold text-white block">Email Delivery</label>
+            <div class="flex items-center gap-2.5 pt-1">
+              <input type="checkbox" id="settingActive" class="w-4 h-4 rounded bg-[#1c1e26] border-[#2e313d] text-emerald-500 focus:ring-0 cursor-pointer">
+              <label for="settingActive" class="text-xs text-[#d4d4d8] cursor-pointer">
+                Receive daily morning email digest (~8:00 AM IST)
+              </label>
+            </div>
+            <p class="text-[11px] text-[#71717a] pt-0.5">Uncheck anytime to temporarily pause digests (e.g. while on vacation).</p>
           </div>
 
-          <div class="flex gap-1.5 max-w-sm">
-            <input 
-              type="text" 
-              id="newLocationKeyword" 
-              placeholder="e.g. Worldwide, India, Remote"
-              onkeydown="if(event.key==='Enter'){addKeyword('location');event.preventDefault();}"
-              class="flex-1 px-2.5 py-1.5 bg-slate-950 border border-slate-700/60 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-amber-500"
+          <!-- 2. Simple Keywords & Topics -->
+          <div class="space-y-1.5 pt-3 border-t border-[#1e2029]">
+            <label class="text-xs font-semibold text-white block">Keywords & Topics</label>
+            <p class="text-[11px] text-[#71717a]">
+              Separate topics with commas. Matches free courses and remote job searches.
+            </p>
+            <textarea 
+              id="settingKeywords" 
+              rows="3" 
+              placeholder="e.g. python, project management, ui, ux, remote"
+              class="w-full bg-[#181a22] border border-[#262833] rounded-md p-2.5 text-xs text-white placeholder-[#71717a] focus:outline-none focus:border-slate-500 leading-relaxed font-mono"
+            ></textarea>
+          </div>
+
+          <!-- Save Button -->
+          <div class="pt-2 flex items-center justify-between border-t border-[#1e2029]">
+            <span id="saveNotice" class="text-xs text-emerald-400 hidden">Saved successfully.</span>
+            <button 
+              id="saveBtn" 
+              onclick="saveSimpleSettings()" 
+              class="px-4 py-1.5 rounded-md bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-medium transition cursor-pointer ml-auto"
             >
-            <button onclick="addKeyword('location')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-medium text-amber-400 rounded-lg transition">
-              Add
-            </button>
-          </div>
-        </div>
-
-        <!-- Save Button -->
-        <div class="pt-2 flex items-center justify-end">
-          <button 
-            id="savePreferencesBtn" 
-            onclick="savePreferences()" 
-            class="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs sm:text-sm shadow transition flex items-center gap-2 cursor-pointer"
-          >
-            <i class="fa-solid fa-check"></i>
-            <span>Save Preferences</span>
-          </button>
-        </div>
-
-      </section>
-
-      <!-- =================================================================== -->
-      <!-- TAB 3: MARKET INTELLIGENCE -->
-      <!-- =================================================================== -->
-      <section id="content-insights" class="hidden space-y-3">
-        <div class="bg-slate-900/50 border border-slate-800/80 rounded-xl p-5 space-y-3">
-          <div class="flex items-center justify-between pb-3 border-b border-slate-800/80">
-            <h3 class="text-sm font-semibold text-slate-200 flex items-center gap-1.5">
-              <span>📈</span> 7-Day Market Insights
-            </h3>
-            <button onclick="loadWeeklyInsights()" class="text-xs px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition flex items-center gap-1">
-              <i class="fa-solid fa-rotate text-[10px]"></i> Refresh
+              Save Settings
             </button>
           </div>
 
-          <div id="insightsBox" class="p-3 bg-slate-950/80 border border-slate-800/60 rounded-lg font-mono text-xs text-slate-300 leading-relaxed whitespace-pre-wrap max-h-[450px] overflow-y-auto">
-            Loading market insights...
-          </div>
         </div>
-      </section>
+
+      </div>
 
     </div>
 
   </main>
 
-  <!-- ========================================================================= -->
-  <!-- Toast Alert -->
-  <!-- ========================================================================= -->
-  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-16 opacity-0 transition-all duration-300 pointer-events-none">
-    <div class="bg-slate-900 border border-slate-700 text-slate-100 px-3.5 py-2 rounded-lg shadow-xl flex items-center gap-2.5 text-xs">
-      <span id="toastIcon" class="text-emerald-400">✓</span>
-      <span id="toastMessage">Saved successfully</span>
-    </div>
-  </div>
+  <footer class="py-4 border-t border-[#1e2029] text-center text-[11px] text-[#52525b]">
+    Course & Job Hunter · Personal digest archive
+  </footer>
 
-  <!-- ========================================================================= -->
-  <!-- Client JavaScript -->
-  <!-- ========================================================================= -->
+  <!-- Simple JavaScript Logic -->
   <script>
     let currentSubscribers = [];
     let currentEmail = "";
     let currentUserData = null;
-    let currentFilter = "all";
-
-    let userKeywords = [];
-    let userJobSearches = [];
-    let userLocations = [];
+    let currentTypeFilter = "all";
 
     document.addEventListener("DOMContentLoaded", async () => {
       await loadSubscribers();
@@ -414,9 +199,7 @@
         let initialEmail = urlParams.get("email") || localStorage.getItem("last_portal_user") || subscribers[0].email;
 
         const exists = subscribers.find(s => s.email.toLowerCase() === initialEmail.toLowerCase());
-        if (!exists) {
-          initialEmail = subscribers[0].email;
-        }
+        if (!exists) initialEmail = subscribers[0].email;
 
         subscribers.forEach(sub => {
           const opt = document.createElement("option");
@@ -431,18 +214,15 @@
         await loadUserProfile(initialEmail);
       } catch (err) {
         console.error("Failed to load subscribers:", err);
-        showToast("Failed to load subscriber list", "error");
       }
     }
 
     async function onSelectUser(email) {
       if (!email) return;
       localStorage.setItem("last_portal_user", email);
-      
       const url = new URL(window.location);
       url.searchParams.set("email", email);
       window.history.replaceState({}, "", url);
-
       await loadUserProfile(email);
     }
 
@@ -453,63 +233,72 @@
       try {
         currentEmail = email;
         const res = await fetch(`/api/portal/user?email=${encodeURIComponent(email)}`);
-        if (!res.ok) {
-          throw new Error(`HTTP error ${res.status}`);
-        }
+        if (!res.ok) throw new Error("Could not load user data");
         const data = await res.json();
         currentUserData = data;
 
-        renderUserProfile(data);
-        renderPreferences(data.subscriber);
-        filterVault();
+        renderUserHeader(data.subscriber);
+        renderSettings(data.subscriber);
+        filterItems();
 
         document.getElementById("loadingState").classList.add("hidden");
         document.getElementById("loadedState").classList.remove("hidden");
       } catch (err) {
-        console.error("Failed to load user profile:", err);
-        showToast("Error: " + err.message, "error");
+        console.error("Error loading user profile:", err);
       }
     }
 
-    function renderUserProfile(data) {
-      const stats = data.stats || {};
-      const sub = data.subscriber || {};
+    function renderUserHeader(sub) {
+      if (!sub) return;
+      document.getElementById("memberName").textContent = sub.name || "Member";
+      document.getElementById("memberEmail").textContent = `(${sub.email})`;
 
-      const activeBadge = document.getElementById("activeBadge");
+      const pill = document.getElementById("activeStatusPill");
       if (sub.active) {
-        activeBadge.textContent = "Active";
-        activeBadge.className = "hidden sm:inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+        pill.textContent = "Active";
+        pill.className = "text-[10px] px-1.5 py-0.5 rounded font-medium bg-[#1a2e22] text-[#4ade80] border border-[#225533]";
       } else {
-        activeBadge.textContent = "Vacation";
-        activeBadge.className = "hidden sm:inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-amber-500/10 text-amber-300 border border-amber-500/20";
+        pill.textContent = "Paused";
+        pill.className = "text-[10px] px-1.5 py-0.5 rounded font-medium bg-[#2e261a] text-[#facc15] border border-[#554422]";
       }
 
-      document.getElementById("heroStreakNum").textContent = stats.streak || 0;
-      document.getElementById("heroMoneySaved").textContent = (stats.money_saved || 0).toLocaleString();
-      document.getElementById("heroBadgeEmoji").textContent = stats.badge || "🌱";
-      document.getElementById("heroLevelTag").textContent = `Level ${stats.level_num || 1}`;
-      document.getElementById("heroLevelTitle").textContent = stats.level_title || "Rookie";
-      document.getElementById("heroTotalItems").textContent = (stats.total_items || 0).toLocaleString();
-      document.getElementById("vaultCount").textContent = data.vault_count || 0;
+      document.getElementById("totalItemsCount").textContent = (currentUserData.vault || []).length;
     }
 
-    function setVaultFilter(filter) {
-      currentFilter = filter;
-      document.querySelectorAll(".filter-pill").forEach(btn => {
-        btn.classList.remove("bg-emerald-500/15", "text-emerald-400", "border-emerald-500/30");
-        btn.classList.add("bg-slate-900/60", "text-slate-400", "border-slate-800");
+    function switchView(view) {
+      const btnItems = document.getElementById("btn-view-items");
+      const btnSettings = document.getElementById("btn-view-settings");
+      const viewItems = document.getElementById("view-items");
+      const viewSettings = document.getElementById("view-settings");
+
+      if (view === "items") {
+        btnItems.className = "px-3 py-1 rounded-md font-medium bg-[#232630] text-white transition";
+        btnSettings.className = "px-3 py-1 rounded-md font-medium text-[#a1a1aa] hover:text-white transition";
+        viewItems.classList.remove("hidden");
+        viewSettings.classList.add("hidden");
+      } else {
+        btnSettings.className = "px-3 py-1 rounded-md font-medium bg-[#232630] text-white transition";
+        btnItems.className = "px-3 py-1 rounded-md font-medium text-[#a1a1aa] hover:text-white transition";
+        viewSettings.classList.remove("hidden");
+        viewItems.classList.add("hidden");
+      }
+    }
+
+    function setTypeFilter(type) {
+      currentTypeFilter = type;
+      document.querySelectorAll(".filter-btn").forEach(btn => {
+        btn.className = "filter-btn px-2.5 py-1 rounded text-xs font-medium text-[#a1a1aa] hover:text-white transition";
       });
-      const activeBtn = document.getElementById(`filter-${filter}`);
+      const activeBtn = document.getElementById(`filter-${type}`);
       if (activeBtn) {
-        activeBtn.classList.remove("bg-slate-900/60", "text-slate-400", "border-slate-800");
-        activeBtn.classList.add("bg-emerald-500/15", "text-emerald-400", "border-emerald-500/30");
+        activeBtn.className = "filter-btn px-2.5 py-1 rounded text-xs font-medium bg-[#232630] text-white transition";
       }
-      filterVault();
+      filterItems();
     }
 
-    function filterVault() {
+    function filterItems() {
       if (!currentUserData || !currentUserData.vault) return;
-      const query = (document.getElementById("vaultSearch").value || "").trim().toLowerCase();
+      const query = (document.getElementById("searchInput").value || "").trim().toLowerCase();
       const vault = currentUserData.vault;
 
       document.getElementById("count-all").textContent = vault.length;
@@ -517,21 +306,19 @@
       document.getElementById("count-job").textContent = vault.filter(i => i.type === "job").length;
 
       const filtered = vault.filter(item => {
-        if (currentFilter !== "all" && item.type !== currentFilter) {
-          return false;
-        }
+        if (currentTypeFilter !== "all" && item.type !== currentTypeFilter) return false;
         if (!query) return true;
         const searchStr = `${item.title} ${item.domain} ${item.location || ""}`.toLowerCase();
         return searchStr.includes(query);
       });
 
-      renderVaultGrid(filtered);
+      renderItemsList(filtered);
     }
 
-    function renderVaultGrid(items) {
-      const grid = document.getElementById("vaultGrid");
-      const empty = document.getElementById("vaultEmpty");
-      grid.innerHTML = "";
+    function renderItemsList(items) {
+      const container = document.getElementById("itemsContainer");
+      const empty = document.getElementById("emptyState");
+      container.innerHTML = "";
 
       if (!items || items.length === 0) {
         empty.classList.remove("hidden");
@@ -541,170 +328,65 @@
 
       items.forEach(item => {
         const isCourse = item.type === "course";
-        const card = document.createElement("div");
-        card.className = "bg-slate-900/50 hover:bg-slate-900/80 rounded-xl border border-slate-800/80 p-3.5 flex flex-col justify-between transition group";
+        const row = document.createElement("div");
+        row.className = "p-3 sm:p-3.5 hover:bg-[#181a22] transition flex flex-col sm:flex-row sm:items-center justify-between gap-2";
 
-        const badge = isCourse
-          ? `<span class="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">Course</span>`
-          : `<span class="text-[10px] font-semibold text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded">Job</span>`;
+        const badgeClass = isCourse 
+          ? "bg-[#18281e] text-[#4ade80] border-[#1e4028]" 
+          : "bg-[#182236] text-[#60a5fa] border-[#1e3455]";
 
-        const locationText = item.location ? `<span class="truncate max-w-[120px]">${escapeHtml(item.location)}</span>` : "";
+        const locationStr = item.location ? ` · ${escapeHtml(item.location)}` : "";
 
-        card.innerHTML = `
-          <div>
-            <div class="flex items-center justify-between text-[11px] text-slate-500 mb-2">
-              ${badge}
-              <span>${escapeHtml(item.date)}</span>
-            </div>
-            
-            <h4 class="text-xs sm:text-sm font-medium text-slate-100 group-hover:text-white line-clamp-2 mb-2.5 leading-snug">
+        row.innerHTML = `
+          <div class="min-w-0 flex-1 pr-2">
+            <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer" class="text-xs sm:text-sm font-medium text-slate-100 hover:text-blue-400 transition block truncate leading-snug">
               ${escapeHtml(item.title)}
-            </h4>
-          </div>
-
-          <div class="pt-2.5 border-t border-slate-800/60 flex items-center justify-between text-[11px] text-slate-400">
-            <span class="truncate max-w-[130px] font-mono text-slate-500">${escapeHtml(item.domain)}</span>
-            <a 
-              href="${escapeHtml(item.url)}" 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              class="text-xs font-medium ${isCourse ? 'text-emerald-400 hover:text-emerald-300' : 'text-blue-400 hover:text-blue-300'} flex items-center gap-1"
-            >
-              <span>View</span>
-              <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
             </a>
+            <div class="flex items-center gap-2 mt-1 text-[11px] text-[#71717a]">
+              <span class="px-1.5 py-0.2 rounded text-[10px] font-medium border ${badgeClass}">
+                ${isCourse ? "Course" : "Job"}
+              </span>
+              <span>${escapeHtml(item.domain)}</span>
+              <span>${locationStr}</span>
+              <span>· ${escapeHtml(item.date)}</span>
+            </div>
           </div>
+
+          <a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer" class="text-xs text-[#a1a1aa] hover:text-white transition whitespace-nowrap self-start sm:self-auto">
+            Open ↗
+          </a>
         `;
 
-        grid.appendChild(card);
+        container.appendChild(row);
       });
     }
 
-    function resetVaultSearch() {
-      document.getElementById("vaultSearch").value = "";
-      setVaultFilter("all");
-    }
-
-    function renderPreferences(sub) {
+    function renderSettings(sub) {
       if (!sub) return;
+      document.getElementById("settingActive").checked = Boolean(sub.active);
       
-      const toggle = document.getElementById("prefActiveToggle");
-      toggle.checked = Boolean(sub.active);
-      onVacationToggle(toggle.checked);
-
-      const slider = document.getElementById("prefMaxItemsSlider");
-      slider.value = sub.max_items || 10;
-      onSliderChange(slider.value);
-
-      userKeywords = [...(sub.keywords || [])];
-      userJobSearches = [...(sub.job_searches || [])];
-      userLocations = [...(sub.preferred_locations || [])];
-
-      renderTags("course");
-      renderTags("job");
-      renderTags("location");
+      // Combine keywords and job_searches into simple comma-separated string
+      const allKws = Array.from(new Set([...(sub.keywords || []), ...(sub.job_searches || [])]));
+      document.getElementById("settingKeywords").value = allKws.join(", ");
+      document.getElementById("saveNotice").classList.add("hidden");
     }
 
-    function onVacationToggle(isActive) {
-      const statusText = document.getElementById("vacationStatusText");
-      if (isActive) {
-        statusText.textContent = "Active Delivery";
-        statusText.className = "text-xs font-medium text-emerald-400";
-      } else {
-        statusText.textContent = "Vacation Mode";
-        statusText.className = "text-xs font-medium text-amber-400";
-      }
-    }
-
-    function onSliderChange(val) {
-      document.getElementById("sliderValueBadge").textContent = `${val} items / day`;
-    }
-
-    function renderTags(category) {
-      let container, items, colorClass;
-      if (category === "course") {
-        container = document.getElementById("courseKeywordsContainer");
-        items = userKeywords;
-        colorClass = "bg-emerald-500/10 text-emerald-300 border-emerald-500/20";
-      } else if (category === "job") {
-        container = document.getElementById("jobKeywordsContainer");
-        items = userJobSearches;
-        colorClass = "bg-blue-500/10 text-blue-300 border-blue-500/20";
-      } else {
-        container = document.getElementById("locationKeywordsContainer");
-        items = userLocations;
-        colorClass = "bg-amber-500/10 text-amber-300 border-amber-500/20";
-      }
-
-      container.innerHTML = "";
-      if (items.length === 0) {
-        container.innerHTML = '<span class="text-xs text-slate-500 italic">None added</span>';
-        return;
-      }
-
-      items.forEach((item, index) => {
-        const chip = document.createElement("span");
-        chip.className = `inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs border ${colorClass}`;
-        chip.innerHTML = `
-          <span>${escapeHtml(item)}</span>
-          <button type="button" onclick="removeKeyword('${category}', ${index})" class="text-slate-400 hover:text-rose-400 ml-0.5">
-            &times;
-          </button>
-        `;
-        container.appendChild(chip);
-      });
-    }
-
-    function addKeyword(category) {
-      let inputId, targetArray;
-      if (category === "course") {
-        inputId = "newCourseKeyword";
-        targetArray = userKeywords;
-      } else if (category === "job") {
-        inputId = "newJobKeyword";
-        targetArray = userJobSearches;
-      } else {
-        inputId = "newLocationKeyword";
-        targetArray = userLocations;
-      }
-
-      const input = document.getElementById(inputId);
-      const val = (input.value || "").trim();
-      if (!val) return;
-
-      if (!targetArray.some(x => x.toLowerCase() === val.toLowerCase())) {
-        targetArray.push(val);
-        renderTags(category);
-      }
-      input.value = "";
-      input.focus();
-    }
-
-    function removeKeyword(category, index) {
-      if (category === "course") {
-        userKeywords.splice(index, 1);
-      } else if (category === "job") {
-        userJobSearches.splice(index, 1);
-      } else {
-        userLocations.splice(index, 1);
-      }
-      renderTags(category);
-    }
-
-    async function savePreferences() {
-      const btn = document.getElementById("savePreferencesBtn");
-      const originalHtml = btn.innerHTML;
+    async function saveSimpleSettings() {
+      const btn = document.getElementById("saveBtn");
+      const notice = document.getElementById("saveNotice");
       btn.disabled = true;
-      btn.innerHTML = 'Saving...';
+      btn.textContent = "Saving...";
 
       try {
+        const rawKeywords = document.getElementById("settingKeywords").value;
+        const kwList = rawKeywords.split(",").map(k => k.trim()).filter(Boolean);
+        const isActive = document.getElementById("settingActive").checked;
+
         const payload = {
           email: currentEmail,
-          keywords: userKeywords,
-          job_searches: userJobSearches,
-          preferred_locations: userLocations,
-          max_items: parseInt(document.getElementById("prefMaxItemsSlider").value, 10),
-          active: document.getElementById("prefActiveToggle").checked,
+          keywords: kwList,
+          job_searches: kwList,
+          active: isActive,
         };
 
         const res = await fetch("/api/portal/user", {
@@ -713,65 +395,18 @@
           body: JSON.stringify(payload),
         });
 
-        const data = await res.json();
-        if (!res.ok) {
-          throw new Error(data.error || "Failed to save");
-        }
+        if (!res.ok) throw new Error("Failed to save settings");
 
-        showToast("Preferences saved!", "success");
+        notice.classList.remove("hidden");
+        setTimeout(() => notice.classList.add("hidden"), 3000);
+
         await loadUserProfile(currentEmail);
       } catch (err) {
-        showToast("Error: " + err.message, "error");
+        alert("Error saving settings: " + err.message);
       } finally {
         btn.disabled = false;
-        btn.innerHTML = originalHtml;
+        btn.textContent = "Save Settings";
       }
-    }
-
-    async function loadWeeklyInsights() {
-      const box = document.getElementById("insightsBox");
-      box.innerHTML = 'Loading insights...';
-      try {
-        const res = await fetch("/api/weekly-insights");
-        const data = await res.json();
-        box.textContent = data.report || "No insights report.";
-      } catch (err) {
-        box.textContent = "Error loading insights: " + err.message;
-      }
-    }
-
-    function switchTab(tabId) {
-      document.querySelectorAll(".tab-btn").forEach(btn => {
-        btn.classList.remove("border-emerald-400", "text-emerald-400");
-        btn.classList.add("border-transparent", "text-slate-400");
-      });
-      document.getElementById(`tab-${tabId}`).classList.remove("border-transparent", "text-slate-400");
-      document.getElementById(`tab-${tabId}`).classList.add("border-emerald-400", "text-emerald-400");
-
-      document.getElementById("content-vault").classList.add("hidden");
-      document.getElementById("content-preferences").classList.add("hidden");
-      document.getElementById("content-insights").classList.add("hidden");
-
-      document.getElementById(`content-${tabId}`).classList.remove("hidden");
-
-      if (tabId === "insights") {
-        loadWeeklyInsights();
-      }
-    }
-
-    function showToast(message, type = "success") {
-      const toast = document.getElementById("toast");
-      const icon = document.getElementById("toastIcon");
-      const msg = document.getElementById("toastMessage");
-
-      msg.textContent = message;
-      icon.textContent = type === "success" ? "✓" : "!";
-      icon.className = type === "success" ? "text-emerald-400" : "text-rose-400";
-
-      toast.classList.remove("translate-y-16", "opacity-0");
-      setTimeout(() => {
-        toast.classList.add("translate-y-16", "opacity-0");
-      }, 2500);
     }
 
     function escapeHtml(str) {
