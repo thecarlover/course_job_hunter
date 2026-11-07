@@ -561,7 +561,7 @@ def test_db_supabase_mock(monkeypatch):
     mock_post_resp = MagicMock()
     mock_post_resp.status_code = 201
 
-    with patch("requests.post", return_value=mock_post_resp) as mock_post:
+    with patch("requests.post", return_value=mock_post_resp) as mock_post, patch("db._fallback_save_items"):
         success = db.record_seen_batch({"alex@example.com": [{"link": "https://remotive.com/new-job", "title": "New"}]})
         assert success is True
         mock_post.assert_called_once()
@@ -773,6 +773,58 @@ def test_calculate_hunter_stats_and_banner():
     assert "🔥 Day 3 Streak" in banner
     assert "Level 1: Rookie Hunter" in banner
     assert "$75 saved across 3 free certified courses!" in banner
+
+
+def test_user_portal_endpoints():
+    """Test user self-service portal (/portal) and portal APIs."""
+    from fastapi.testclient import TestClient
+    from admin import app, derive_vault_title, classify_vault_item
+    import json
+
+    client = TestClient(app)
+
+    # 1. Public user portal page serves 200 without admin password
+    res = client.get("/portal")
+    assert res.status_code == 200
+    assert "Opportunity Vault" in res.text
+    assert "Member Hub" in res.text
+
+    # 2. Public subscribers list for profile switcher serves 200
+    res = client.get("/api/portal/subscribers")
+    assert res.status_code == 200
+    subscribers = res.json()
+    assert isinstance(subscribers, list)
+    assert len(subscribers) >= 1
+    assert any(s.get("email") == "ojasvimittalofficial@gmail.com" for s in subscribers)
+
+    # 3. GET /api/portal/user for subscriber
+    res = client.get("/api/portal/user?email=ojasvimittalofficial@gmail.com")
+    assert res.status_code == 200
+    data = res.json()
+    assert "subscriber" in data
+    assert "stats" in data
+    assert "vault" in data
+    assert data["subscriber"]["email"] == "ojasvimittalofficial@gmail.com"
+    assert data["stats"]["level_num"] >= 1
+    assert data["vault_count"] >= 1
+    assert "title" in data["vault"][0]
+    assert "type" in data["vault"][0]
+
+    # 4. GET /api/portal/user validation errors
+    res_empty = client.get("/api/portal/user?email=")
+    assert res_empty.status_code == 400
+
+    res_missing = client.get("/api/portal/user?email=nonexistent999@example.com")
+    assert res_missing.status_code == 404
+
+    # 5. Helpers: derive_vault_title & classify_vault_item
+    assert derive_vault_title("https://answersq.com/ai-automation-specialist-roadmap/") == "AI Automation Specialist Roadmap"
+    assert derive_vault_title("https://jobicy.com/jobs/158348-ai-trainers-network-farsi") == "AI Trainers Network Farsi"
+    assert derive_vault_title("https://example.com/foo", {"title": "Custom Title"}) == "Custom Title"
+
+    assert classify_vault_item("https://answersq.com/ai-course") == "course"
+    assert classify_vault_item("https://jobicy.com/jobs/dev") == "job"
+
 
 
 

@@ -13,8 +13,10 @@ import contextlib
 import io
 import json
 import os
+import re
 import socket
 import sys
+import urllib.parse
 from typing import Any, Dict, List, Optional
 
 import fastapi
@@ -84,13 +86,14 @@ async def auth_middleware(request: fastapi.Request, call_next):
     path = request.url.path
     public_paths = [
         "/",
+        "/portal",
         "/favicon.ico",
         "/api/auth/login",
         "/api/auth/status",
         "/api/auth/logout",
         "/api/network-info",
     ]
-    if path in public_paths:
+    if path in public_paths or path.startswith("/api/portal/"):
         return await call_next(request)
 
     if path.startswith("/api/"):
@@ -540,6 +543,241 @@ async def get_weekly_insights_preview():
     seen_dict = main.load_seen_dict()
     report = main.generate_weekly_insights(seen_dict, days=7)
     return JSONResponse({"report": report})
+
+
+# ============================================================================
+# Self-Service Member Portal & Opportunity Vault APIs
+# ============================================================================
+
+COURSE_DOMAINS = (
+    "answersq.com",
+    "tutorialbar.com",
+    "discudemy.com",
+    "freecodecamp.org",
+    "udemyfreebies",
+    "udemy.com",
+    "coursera.org",
+    "edx.org",
+)
+
+
+def classify_vault_item(url: str, meta: Optional[Dict[str, Any]] = None) -> str:
+    """Determine whether an opportunity is a free course or a remote job."""
+    if isinstance(meta, dict) and meta.get("type") in ("course", "job"):
+        return meta["type"]
+    url_lower = (url or "").lower()
+    if any(cd in url_lower for cd in COURSE_DOMAINS):
+        return "course"
+    return "job"
+
+
+def derive_vault_title(url: str, meta: Optional[Dict[str, Any]] = None) -> str:
+    """Return a clean, human-readable title for vault items."""
+    if isinstance(meta, dict) and meta.get("title"):
+        return str(meta["title"]).strip()
+    try:
+        parsed = urllib.parse.urlparse(url)
+        path = parsed.path.strip("/")
+        if not path:
+            return parsed.netloc
+        parts = [p for p in path.split("/") if p]
+        slug = parts[-1] if parts else parsed.netloc
+        slug = slug.split("?")[0].split("#")[0]
+        slug = re.sub(r"^\d+[-_]?", "", slug)
+        slug = re.sub(r"[-_]\d+$", "", slug)
+        words = [w for w in re.split(r"[-_]+", slug) if w]
+        title = " ".join(words).title()
+        acronyms = {
+            r"\bAi\b": "AI",
+            r"\bQa\b": "QA",
+            r"\bUi\b": "UI",
+            r"\bUx\b": "UX",
+            r"\bApi\b": "API",
+            r"\bMl\b": "ML",
+            r"\bEmea\b": "EMEA",
+            r"\bB2b\b": "B2B",
+            r"\bBis\b": "BIS",
+            r"\bMba\b": "MBA",
+        }
+        for pat, rep in acronyms.items():
+            title = re.sub(pat, rep, title)
+        return title or parsed.netloc
+    except Exception:
+        return url
+
+
+def calculate_xp_progress(total_items: int, level_num: int) -> Dict[str, Any]:
+    """Calculate progress percentage and items required for next tier."""
+    tiers = {
+        1: (0, 10, "Level 2: Opportunity Scout"),
+        2: (10, 25, "Level 3: Career Strategist"),
+        3: (25, 50, "Level 4: Talent Pathfinder"),
+        4: (50, 100, "Level 5: Master Career Strategist"),
+    }
+    if level_num in tiers:
+        low, high, next_title = tiers[level_num]
+        needed = max(0, high - total_items)
+        percent = min(100, max(0, int(((total_items - low) / (high - low)) * 100)))
+        return {
+            "percent": percent,
+            "next_title": next_title,
+            "items_needed": needed,
+            "is_max": False,
+        }
+    return {
+        "percent": 100,
+        "next_title": "MAX RANK",
+        "items_needed": 0,
+        "is_max": True,
+    }
+
+
+@app.get("/portal", response_class=HTMLResponse)
+async def serve_user_portal():
+    """Serve the self-service member hub and opportunity vault page."""
+    html_path = os.path.join(TEMPLATES_DIR, "user_portal.html")
+    if not os.path.exists(html_path):
+        return HTMLResponse("<h3>Member portal template not found.</h3>", status_code=404)
+    with open(html_path, "r", encoding="utf-8") as f:
+        content = f.read()
+    return HTMLResponse(content)
+
+
+@app.get("/api/portal/subscribers")
+async def get_portal_subscribers():
+    """Return subscriber profiles for profile switcher."""
+    if not os.path.exists(RECIPIENTS_FILE):
+        return JSONResponse([])
+    try:
+        with open(RECIPIENTS_FILE, "r", encoding="utf-8") as f:
+            subscribers = json.load(f)
+        result = []
+        for s in subscribers:
+            email = s.get("email", "")
+            name = s.get("name") or email.split("@")[0].title()
+            result.append({
+                "name": name,
+                "email": email,
+                "active": s.get("active", True),
+            })
+        return JSONResponse(result)
+    except Exception as e:
+        return JSONResponse({"error": str(e)}, status_code=500)
+
+
+@app.get("/api/portal/user")
+async def get_portal_user(email: str = ""):
+    """Return personalized subscriber profile, gamified stats, and opportunity vault."""
+    email_clean = (email or "").strip().lower()
+    if not email_clean:
+        return JSONResponse({"error": "Email parameter is required"}, status_code=400)
+
+    if not os.path.exists(RECIPIENTS_FILE):
+        return JSONResponse({"error": "No subscribers configured"}, status_code=404)
+
+    with open(RECIPIENTS_FILE, "r", encoding="utf-8") as f:
+        subscribers = json.load(f)
+
+    user_sub = next((s for s in subscribers if s.get("email", "").strip().lower() == email_clean), None)
+    if not user_sub:
+        return JSONResponse({"error": f"Subscriber with email '{email_clean}' not found"}, status_code=404)
+
+    seen_dict = main.load_seen_dict()
+    stats = main.calculate_hunter_stats(email_clean, seen_dict)
+    stats["xp"] = calculate_xp_progress(stats.get("total_items", 0), stats.get("level_num", 1))
+
+    # Build opportunity vault from seen_dict
+    raw_history = seen_dict.get(email_clean, {}) if isinstance(seen_dict, dict) else {}
+    vault = []
+
+    for url, meta in raw_history.items():
+        if not url or url.startswith("__"):
+            continue
+        item_meta = meta if isinstance(meta, dict) else {}
+        item_type = item_meta.get("type") or classify_vault_item(url, item_meta)
+        title = derive_vault_title(url, item_meta)
+        date_str = item_meta.get("date") or "Earlier"
+        domain = urllib.parse.urlparse(url).netloc.replace("www.", "")
+
+        vault.append({
+            "url": url,
+            "title": title,
+            "type": item_type,
+            "date": date_str,
+            "domain": domain,
+            "location": item_meta.get("location"),
+            "salary": item_meta.get("salary"),
+        })
+
+    # Sort vault descending by date
+    vault.sort(key=lambda x: str(x.get("date", "")), reverse=True)
+
+    return JSONResponse({
+        "subscriber": {
+            "name": user_sub.get("name") or email_clean.split("@")[0].title(),
+            "email": user_sub.get("email"),
+            "active": user_sub.get("active", True),
+            "keywords": user_sub.get("keywords", []),
+            "job_searches": user_sub.get("job_searches", []),
+            "preferred_locations": user_sub.get("preferred_locations", []),
+            "max_items": user_sub.get("max_items", 10),
+        },
+        "stats": stats,
+        "vault": vault,
+        "vault_count": len(vault),
+    })
+
+
+@app.put("/api/portal/user")
+async def update_portal_user(payload: Dict[str, Any]):
+    """Allow member to update their own keywords, search queries, locations, and vacation mode."""
+    email_clean = (payload.get("email") or "").strip().lower()
+    if not email_clean:
+        return JSONResponse({"error": "Email is required"}, status_code=400)
+
+    if not os.path.exists(RECIPIENTS_FILE):
+        return JSONResponse({"error": "Recipients file not found"}, status_code=404)
+
+    with open(RECIPIENTS_FILE, "r", encoding="utf-8") as f:
+        subscribers = json.load(f)
+
+    target_idx = next((i for i, s in enumerate(subscribers) if s.get("email", "").strip().lower() == email_clean), None)
+    if target_idx is None:
+        return JSONResponse({"error": f"Subscriber with email '{email_clean}' not found"}, status_code=404)
+
+    target_sub = subscribers[target_idx]
+
+    # Update allowed self-service fields
+    if "keywords" in payload and isinstance(payload["keywords"], list):
+        target_sub["keywords"] = [str(k).strip() for k in payload["keywords"] if str(k).strip()]
+
+    if "job_searches" in payload and isinstance(payload["job_searches"], list):
+        target_sub["job_searches"] = [str(j).strip() for j in payload["job_searches"] if str(j).strip()]
+
+    if "preferred_locations" in payload and isinstance(payload["preferred_locations"], list):
+        target_sub["preferred_locations"] = [str(loc).strip() for loc in payload["preferred_locations"] if str(loc).strip()]
+
+    if "max_items" in payload:
+        try:
+            val = int(payload["max_items"])
+            target_sub["max_items"] = max(1, min(val, 50))
+        except (ValueError, TypeError):
+            pass
+
+    if "active" in payload:
+        target_sub["active"] = bool(payload["active"])
+
+    subscribers[target_idx] = target_sub
+
+    with open(RECIPIENTS_FILE, "w", encoding="utf-8") as f:
+        json.dump(subscribers, f, indent=2, ensure_ascii=False)
+        f.write("\n")
+
+    return JSONResponse({
+        "success": True,
+        "message": "Preferences saved successfully!",
+        "subscriber": target_sub,
+    })
 
 
 if __name__ == "__main__":

@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Member Hub & Opportunity Vault — Course & Job Hunter</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #090d16; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #334155; }
+    
+    .glow-card {
+      position: relative;
+    }
+    .glow-card::after {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(99, 102, 241, 0.15));
+      z-index: -1;
+      opacity: 0.6;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-emerald-500/30">
+
+  <!-- ========================================================================= -->
+  <!-- Top Navigation Bar -->
+  <!-- ========================================================================= -->
+  <header class="border-b border-slate-800/80 bg-slate-900/80 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      
+      <!-- Brand & Hub Identity -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 text-white font-bold text-lg">
+          🎓💎
+        </div>
+        <div>
+          <h1 class="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-2">
+            Opportunity Vault
+            <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">Member Hub</span>
+          </h1>
+          <p class="text-xs text-slate-400 hidden sm:block">Personalized courses, remote opportunities & career progression</p>
+        </div>
+      </div>
+
+      <!-- Right Controls: Subscriber Switcher & Admin Link -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Subscriber Switcher Dropdown -->
+        <div class="relative flex items-center">
+          <div class="flex items-center bg-slate-800/90 border border-slate-700/80 rounded-lg px-2.5 py-1.5 gap-2 shadow-sm">
+            <i class="fa-solid fa-circle-user text-emerald-400 text-sm"></i>
+            <select id="userSelector" onchange="onSelectUser(this.value)" class="bg-transparent text-xs sm:text-sm font-medium text-slate-200 focus:outline-none cursor-pointer pr-2">
+              <option value="" disabled selected>Loading members...</option>
+            </select>
+            <span id="activeBadge" class="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              Active
+            </span>
+          </div>
+        </div>
+
+        <!-- Link to Admin Portal -->
+        <a href="/" class="text-xs px-2.5 sm:px-3 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition flex items-center gap-1.5" title="Switch to Admin Center">
+          <i class="fa-solid fa-screwdriver-wrench text-slate-400"></i>
+          <span class="hidden sm:inline">Admin</span>
+        </a>
+      </div>
+
+    </div>
+
+    <!-- Hub Tabs Navigation -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex gap-2 border-t border-slate-800/50 overflow-x-auto">
+      <button onclick="switchTab('vault')" id="tab-vault" class="tab-btn px-4 py-2.5 text-xs sm:text-sm font-medium border-b-2 border-emerald-500 text-emerald-400 flex items-center gap-2 whitespace-nowrap">
+        <i class="fa-solid fa-vault"></i> Opportunity Vault (<span id="vaultCount">0</span>)
+      </button>
+      <button onclick="switchTab('preferences')" id="tab-preferences" class="tab-btn px-4 py-2.5 text-xs sm:text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
+        <i class="fa-solid fa-sliders"></i> My Career Focus & Preferences
+      </button>
+      <button onclick="switchTab('insights')" id="tab-insights" class="tab-btn px-4 py-2.5 text-xs sm:text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
+        <i class="fa-solid fa-chart-line"></i> Market Intelligence & Trends
+      </button>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- Main Container -->
+  <!-- ========================================================================= -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+
+    <!-- Loading Skeleton Indicator -->
+    <div id="loadingState" class="p-8 text-center bg-slate-900/60 rounded-2xl border border-slate-800/80">
+      <i class="fa-solid fa-circle-notch fa-spin text-3xl text-emerald-400 mb-3"></i>
+      <p class="text-sm text-slate-300 font-medium">Unlocking your personalized opportunity vault...</p>
+    </div>
+
+    <!-- Main Member Profile & Stats Section (Hidden until loaded) -->
+    <div id="loadedState" class="hidden space-y-6">
+
+      <!-- =================================================================== -->
+      <!-- Hero Gamification Section: Streak, Saved Value & Rank Progression -->
+      <!-- =================================================================== -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- 1. Daily Learning Streak -->
+        <div class="bg-gradient-to-br from-slate-900 to-slate-900/80 p-4 rounded-xl border border-slate-800 flex flex-col justify-between shadow-sm relative overflow-hidden">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs uppercase tracking-wider font-semibold text-amber-400 flex items-center gap-1.5">
+              <i class="fa-solid fa-fire animate-pulse text-amber-400"></i> Daily Streak
+            </span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/20">Active Habit</span>
+          </div>
+          <div>
+            <div class="flex items-baseline gap-2">
+              <span id="heroStreakNum" class="text-3xl font-extrabold text-white">0</span>
+              <span class="text-sm font-semibold text-slate-400">Days Active</span>
+            </div>
+            <p id="heroStreakText" class="text-xs text-slate-400 mt-1">Consistent daily hunter</p>
+          </div>
+          <div class="mt-3 pt-2.5 border-t border-slate-800/60 text-[11px] text-slate-400 flex items-center gap-1">
+            <i class="fa-solid fa-circle-check text-emerald-400"></i> Next delivery at 02:00 UTC
+          </div>
+        </div>
+
+        <!-- 2. Lifetime Money Saved Counter -->
+        <div class="bg-gradient-to-br from-slate-900 to-slate-900/80 p-4 rounded-xl border border-slate-800 flex flex-col justify-between shadow-sm relative overflow-hidden">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs uppercase tracking-wider font-semibold text-emerald-400 flex items-center gap-1.5">
+              <i class="fa-solid fa-hand-holding-dollar text-emerald-400"></i> Money Saved
+            </span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-400/10 text-emerald-300 border border-emerald-400/20">100% Free</span>
+          </div>
+          <div>
+            <div class="flex items-baseline gap-1">
+              <span class="text-xl font-bold text-emerald-400">$</span>
+              <span id="heroMoneySaved" class="text-3xl font-extrabold text-white">0</span>
+            </div>
+            <p class="text-xs text-slate-400 mt-1">Calculated at $20 / course</p>
+          </div>
+          <div class="mt-3 pt-2.5 border-t border-slate-800/60 text-[11px] text-slate-400 flex items-center gap-1">
+            <i class="fa-solid fa-certificate text-emerald-400"></i>
+            <span id="heroCoursesCount">0</span> certified courses unlocked
+          </div>
+        </div>
+
+        <!-- 3. Hunter Rank & XP Progression -->
+        <div class="bg-gradient-to-br from-slate-900 to-slate-900/80 p-4 rounded-xl border border-slate-800 flex flex-col justify-between shadow-sm relative overflow-hidden">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs uppercase tracking-wider font-semibold text-indigo-400 flex items-center gap-1.5">
+              <span id="heroBadgeEmoji" class="text-base">🌱</span> Hunter Rank
+            </span>
+            <span id="heroLevelTag" class="text-[10px] px-2 py-0.5 rounded-full bg-indigo-400/10 text-indigo-300 border border-indigo-400/20">Level 1</span>
+          </div>
+          <div>
+            <h3 id="heroLevelTitle" class="text-base font-bold text-white truncate">Rookie Hunter</h3>
+            
+            <!-- XP Progress Bar -->
+            <div class="mt-2">
+              <div class="flex justify-between text-[11px] text-slate-400 mb-1">
+                <span id="heroXpText">XP Progress</span>
+                <span id="heroXpPercent">0%</span>
+              </div>
+              <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                <div id="heroXpBar" class="bg-gradient-to-r from-emerald-500 to-indigo-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-3 pt-2.5 border-t border-slate-800/60 text-[11px] text-slate-400 truncate" id="heroNextRankText">
+            Items needed for next rank
+          </div>
+        </div>
+
+        <!-- 4. Total Vault Items -->
+        <div class="bg-gradient-to-br from-slate-900 to-slate-900/80 p-4 rounded-xl border border-slate-800 flex flex-col justify-between shadow-sm relative overflow-hidden">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs uppercase tracking-wider font-semibold text-purple-400 flex items-center gap-1.5">
+              <i class="fa-solid fa-box-archive text-purple-400"></i> Total Vault
+            </span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-400/10 text-purple-300 border border-purple-400/20">Delivered</span>
+          </div>
+          <div>
+            <div class="flex items-baseline gap-2">
+              <span id="heroTotalItems" class="text-3xl font-extrabold text-white">0</span>
+              <span class="text-sm font-semibold text-slate-400">Opportunities</span>
+            </div>
+            <p class="text-xs text-slate-400 mt-1">
+              <span id="heroJobsCount" class="text-slate-200 font-medium">0</span> remote jobs discovered
+            </p>
+          </div>
+          <div class="mt-3 pt-2.5 border-t border-slate-800/60 text-[11px] text-slate-400 flex items-center gap-1">
+            <i class="fa-solid fa-bullseye text-purple-400"></i> Curated exclusively for you
+          </div>
+        </div>
+
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- TAB 1: OPPORTUNITY VAULT -->
+      <!-- =================================================================== -->
+      <section id="content-vault" class="space-y-4">
+        
+        <!-- Search, Filter & View Controls -->
+        <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800/90 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+          
+          <!-- Search input -->
+          <div class="relative flex-1">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+            <input 
+              type="text" 
+              id="vaultSearch" 
+              oninput="filterVault()"
+              placeholder="Search your unlocked courses, remote roles, companies, skills..." 
+              class="w-full pl-9 pr-4 py-2 bg-slate-950/80 border border-slate-700/80 rounded-lg text-xs sm:text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition"
+            >
+          </div>
+
+          <!-- Filter Pills -->
+          <div class="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
+            <button onclick="setVaultFilter('all')" id="filter-all" class="filter-pill px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 whitespace-nowrap transition">
+              All (<span id="count-all">0</span>)
+            </button>
+            <button onclick="setVaultFilter('course')" id="filter-course" class="filter-pill px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-400 border border-slate-700 hover:text-slate-200 whitespace-nowrap transition">
+              🎓 Free Courses (<span id="count-course">0</span>)
+            </button>
+            <button onclick="setVaultFilter('job')" id="filter-job" class="filter-pill px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 text-slate-400 border border-slate-700 hover:text-slate-200 whitespace-nowrap transition">
+              💼 Remote Jobs (<span id="count-job">0</span>)
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Vault Items Grid -->
+        <div id="vaultGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <!-- Dynamically populated -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="vaultEmpty" class="hidden p-12 text-center bg-slate-900/40 rounded-xl border border-slate-800/60">
+          <div class="w-14 h-14 rounded-full bg-slate-800/80 flex items-center justify-center mx-auto mb-3 text-slate-400 text-2xl">
+            <i class="fa-solid fa-box-open"></i>
+          </div>
+          <h3 class="text-base font-semibold text-slate-200 mb-1">No Opportunities Found</h3>
+          <p id="vaultEmptyMessage" class="text-xs text-slate-400 max-w-sm mx-auto mb-4">
+            No items match your active search filter or no history is recorded yet.
+          </p>
+          <button onclick="resetVaultSearch()" class="text-xs px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-medium transition">
+            Clear Filters
+          </button>
+        </div>
+
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- TAB 2: MY CAREER FOCUS & PREFERENCES -->
+      <!-- =================================================================== -->
+      <section id="content-preferences" class="hidden space-y-6">
+        
+        <div class="bg-slate-900/90 rounded-2xl border border-slate-800 p-6 space-y-6">
+          
+          <!-- Header and Vacation Mode Banner -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-slate-800/80 gap-4">
+            <div>
+              <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-user-gear text-emerald-400"></i> Career Preferences & Automated Delivery
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">
+                Configure your personalized search keywords, remote targets, and delivery settings
+              </p>
+            </div>
+
+            <!-- Vacation Mode Switch -->
+            <div class="flex items-center gap-3 bg-slate-800/80 px-4 py-2 rounded-xl border border-slate-700/80">
+              <div class="text-right">
+                <span class="text-xs font-semibold text-slate-200 block" id="vacationStatusText">Active Delivery</span>
+                <span class="text-[10px] text-slate-400" id="vacationSubText">Daily digests enabled</span>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="prefActiveToggle" onchange="onVacationToggle(this.checked)" class="sr-only peer" checked>
+                <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Preference Form Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            <!-- 1. Course Focus Keywords -->
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <label class="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                  <i class="fa-solid fa-graduation-cap"></i> Free Course Focus Keywords
+                </label>
+                <span class="text-[11px] text-slate-400">Udemy, DiscUdemy, AnswersQ</span>
+              </div>
+              <p class="text-xs text-slate-400">
+                Courses matching these topics will be harvested and unlocked for you for free.
+              </p>
+              
+              <!-- Chips container -->
+              <div id="courseKeywordsContainer" class="flex flex-wrap gap-1.5 p-3 min-h-[90px] bg-slate-950/80 border border-slate-800 rounded-xl">
+                <!-- Dynamically populated chips -->
+              </div>
+
+              <!-- Add keyword input -->
+              <div class="flex gap-2">
+                <input 
+                  type="text" 
+                  id="newCourseKeyword" 
+                  placeholder="e.g. machine learning, python, excel"
+                  onkeydown="if(event.key==='Enter'){addKeyword('course');event.preventDefault();}"
+                  class="flex-1 px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
+                >
+                <button onclick="addKeyword('course')" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-medium text-emerald-400 border border-slate-700 rounded-lg transition">
+                  <i class="fa-solid fa-plus"></i> Add
+                </button>
+              </div>
+            </div>
+
+            <!-- 2. Remote Job Search Targets -->
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <label class="text-xs font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
+                  <i class="fa-solid fa-briefcase"></i> Remote Job Search Targets
+                </label>
+                <span class="text-[11px] text-slate-400">Jobicy, Arbeitnow, Remotive</span>
+              </div>
+              <p class="text-xs text-slate-400">
+                Job roles matching these search queries will be scraped from top remote boards.
+              </p>
+              
+              <!-- Chips container -->
+              <div id="jobKeywordsContainer" class="flex flex-wrap gap-1.5 p-3 min-h-[90px] bg-slate-950/80 border border-slate-800 rounded-xl">
+                <!-- Dynamically populated chips -->
+              </div>
+
+              <!-- Add search target input -->
+              <div class="flex gap-2">
+                <input 
+                  type="text" 
+                  id="newJobKeyword" 
+                  placeholder="e.g. project manager, automation qa, python dev"
+                  onkeydown="if(event.key==='Enter'){addKeyword('job');event.preventDefault();}"
+                  class="flex-1 px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
+                >
+                <button onclick="addKeyword('job')" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-medium text-indigo-400 border border-slate-700 rounded-lg transition">
+                  <i class="fa-solid fa-plus"></i> Add
+                </button>
+              </div>
+            </div>
+
+            <!-- 3. Preferred Remote Locations -->
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <label class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                  <i class="fa-solid fa-location-dot"></i> Preferred Remote Locations
+                </label>
+                <span class="text-[11px] text-slate-400">Filters jobs geographically</span>
+              </div>
+              <p class="text-xs text-slate-400">
+                Roles outside these regions will be filtered out. Leave "Worldwide" for everything.
+              </p>
+              
+              <!-- Chips container -->
+              <div id="locationKeywordsContainer" class="flex flex-wrap gap-1.5 p-3 min-h-[90px] bg-slate-950/80 border border-slate-800 rounded-xl">
+                <!-- Dynamically populated chips -->
+              </div>
+
+              <!-- Add location input -->
+              <div class="flex gap-2">
+                <input 
+                  type="text" 
+                  id="newLocationKeyword" 
+                  placeholder="e.g. Worldwide, India, Remote, USA"
+                  onkeydown="if(event.key==='Enter'){addKeyword('location');event.preventDefault();}"
+                  class="flex-1 px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-amber-500"
+                >
+                <button onclick="addKeyword('location')" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-medium text-amber-400 border border-slate-700 rounded-lg transition">
+                  <i class="fa-solid fa-plus"></i> Add
+                </button>
+              </div>
+            </div>
+
+            <!-- 4. Max Daily Items Capacity Slider -->
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <label class="text-xs font-bold uppercase tracking-wider text-purple-400 flex items-center gap-1.5">
+                  <i class="fa-solid fa-gauge-high"></i> Daily Digest Capacity
+                </label>
+                <span id="sliderValueBadge" class="text-xs font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">10 items / day</span>
+              </div>
+              <p class="text-xs text-slate-400">
+                Maximum number of new high-match opportunities sent in each daily email digest.
+              </p>
+              
+              <div class="p-4 bg-slate-950/80 border border-slate-800 rounded-xl space-y-3">
+                <input 
+                  type="range" 
+                  id="prefMaxItemsSlider" 
+                  min="3" 
+                  max="30" 
+                  step="1" 
+                  value="10" 
+                  oninput="onSliderChange(this.value)"
+                  class="w-full accent-emerald-500 cursor-pointer"
+                >
+                <div class="flex justify-between text-[11px] text-slate-500 font-medium">
+                  <span>3 items (Bite-sized)</span>
+                  <span>15 items (Balanced)</span>
+                  <span>30 items (Comprehensive)</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Action Buttons -->
+          <div class="pt-4 border-t border-slate-800/80 flex items-center justify-between">
+            <span class="text-xs text-slate-400" id="saveHintText">
+              Changes take effect immediately for the next daily hunt.
+            </span>
+            <button 
+              id="savePreferencesBtn" 
+              onclick="savePreferences()" 
+              class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-semibold text-xs sm:text-sm shadow-lg shadow-emerald-500/20 transition flex items-center gap-2 cursor-pointer"
+            >
+              <i class="fa-solid fa-floppy-disk"></i>
+              <span>Save My Preferences</span>
+            </button>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- TAB 3: MARKET INTELLIGENCE & INSIGHTS -->
+      <!-- =================================================================== -->
+      <section id="content-insights" class="hidden space-y-4">
+        
+        <div class="bg-slate-900/90 rounded-2xl border border-slate-800 p-6 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-800/80 gap-2">
+            <div>
+              <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-chart-line text-emerald-400"></i> 7-Day Market Intelligence Report
+              </h2>
+              <p class="text-xs text-slate-400">Real-time keyword demand, remote salary pulses, and high-velocity hiring shifts</p>
+            </div>
+            <button onclick="loadWeeklyInsights()" class="text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition flex items-center gap-1.5 self-start sm:self-auto">
+              <i class="fa-solid fa-rotate text-emerald-400"></i> Refresh Pulse
+            </button>
+          </div>
+
+          <!-- Insights Content Box -->
+          <div id="insightsBox" class="p-4 bg-slate-950 border border-slate-800 rounded-xl font-mono text-xs sm:text-sm text-slate-300 leading-relaxed whitespace-pre-wrap max-h-[500px] overflow-y-auto">
+            <i class="fa-solid fa-circle-notch fa-spin text-emerald-400"></i> Analyzing global market data...
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- Floating Toast Notification -->
+  <!-- ========================================================================= -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <div class="bg-slate-900 border border-emerald-500/40 text-slate-100 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3">
+      <div id="toastIcon" class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm font-bold">
+        <i class="fa-solid fa-check"></i>
+      </div>
+      <div>
+        <p id="toastMessage" class="text-xs sm:text-sm font-semibold">Notification</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- Client JavaScript Logic -->
+  <!-- ========================================================================= -->
+  <script>
+    let currentSubscribers = [];
+    let currentEmail = "";
+    let currentUserData = null;
+    let currentFilter = "all";
+
+    // Tag arrays for edit mode
+    let userKeywords = [];
+    let userJobSearches = [];
+    let userLocations = [];
+
+    // Initialize application on page load
+    document.addEventListener("DOMContentLoaded", async () => {
+      await loadSubscribers();
+    });
+
+    // 1. Fetch available subscribers for switcher
+    async function loadSubscribers() {
+      try {
+        const res = await fetch("/api/portal/subscribers");
+        const subscribers = await res.json();
+        currentSubscribers = subscribers;
+
+        const selector = document.getElementById("userSelector");
+        selector.innerHTML = "";
+
+        if (!subscribers || subscribers.length === 0) {
+          selector.innerHTML = '<option value="">No subscribers configured</option>';
+          return;
+        }
+
+        // Check if email is in URL search param, else localStorage, else pick first subscriber
+        const urlParams = new URLSearchParams(window.location.search);
+        let initialEmail = urlParams.get("email") || localStorage.getItem("last_portal_user") || subscribers[0].email;
+
+        // Verify initialEmail exists in list, else default to first
+        const exists = subscribers.find(s => s.email.toLowerCase() === initialEmail.toLowerCase());
+        if (!exists) {
+          initialEmail = subscribers[0].email;
+        }
+
+        subscribers.forEach(sub => {
+          const opt = document.createElement("option");
+          opt.value = sub.email;
+          opt.textContent = `${sub.name || sub.email} (${sub.email})`;
+          if (sub.email.toLowerCase() === initialEmail.toLowerCase()) {
+            opt.selected = true;
+          }
+          selector.appendChild(opt);
+        });
+
+        await loadUserProfile(initialEmail);
+      } catch (err) {
+        console.error("Failed to load subscribers:", err);
+        showToast("Failed to load subscriber list", "error");
+      }
+    }
+
+    // 2. Switch selected user
+    async function onSelectUser(email) {
+      if (!email) return;
+      localStorage.setItem("last_portal_user", email);
+      
+      // Update browser URL without reloading
+      const url = new URL(window.location);
+      url.searchParams.set("email", email);
+      window.history.replaceState({}, "", url);
+
+      await loadUserProfile(email);
+    }
+
+    // 3. Load full profile, gamified stats & opportunity vault for user
+    async function loadUserProfile(email) {
+      document.getElementById("loadingState").classList.remove("hidden");
+      document.getElementById("loadedState").classList.add("hidden");
+
+      try {
+        currentEmail = email;
+        const res = await fetch(`/api/portal/user?email=${encodeURIComponent(email)}`);
+        if (!res.ok) {
+          throw new Error(`HTTP error ${res.status}`);
+        }
+        const data = await res.json();
+        currentUserData = data;
+
+        renderUserProfile(data);
+        renderPreferences(data.subscriber);
+        filterVault();
+
+        document.getElementById("loadingState").classList.add("hidden");
+        document.getElementById("loadedState").classList.remove("hidden");
+      } catch (err) {
+        console.error("Failed to load user profile:", err);
+        showToast("Error loading user profile: " + err.message, "error");
+      }
+    }
+
+    // 4. Render hero gamification stats and badge
+    function renderUserProfile(data) {
+      const stats = data.stats || {};
+      const sub = data.subscriber || {};
+
+      // Active / Vacation badge
+      const activeBadge = document.getElementById("activeBadge");
+      if (sub.active) {
+        activeBadge.textContent = "Active";
+        activeBadge.className = "hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+      } else {
+        activeBadge.textContent = "🏖️ Vacation";
+        activeBadge.className = "hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30";
+      }
+
+      // Hero Stat 1: Streak
+      document.getElementById("heroStreakNum").textContent = stats.streak || 0;
+      document.getElementById("heroStreakText").textContent = (stats.streak > 1) 
+        ? `${stats.streak} days consecutive learning habit!` 
+        : "Start or maintain your daily momentum!";
+
+      // Hero Stat 2: Money Saved
+      document.getElementById("heroMoneySaved").textContent = (stats.money_saved || 0).toLocaleString();
+      document.getElementById("heroCoursesCount").textContent = stats.total_courses || 0;
+
+      // Hero Stat 3: Rank & XP Progress
+      document.getElementById("heroBadgeEmoji").textContent = stats.badge || "🌱";
+      document.getElementById("heroLevelTag").textContent = `Level ${stats.level_num || 1}`;
+      document.getElementById("heroLevelTitle").textContent = stats.level_title || "Rookie Hunter";
+      
+      const xp = stats.xp || {};
+      const percent = xp.percent || 0;
+      document.getElementById("heroXpBar").style.width = `${percent}%`;
+      document.getElementById("heroXpPercent").textContent = `${percent}%`;
+      
+      if (xp.is_max) {
+        document.getElementById("heroNextRankText").textContent = "👑 Max Rank Master Career Strategist achieved!";
+      } else {
+        document.getElementById("heroNextRankText").textContent = `${xp.items_needed} more items to unlock ${xp.next_title}`;
+      }
+
+      // Hero Stat 4: Total Vault Count
+      document.getElementById("heroTotalItems").textContent = (stats.total_items || 0).toLocaleString();
+      document.getElementById("heroJobsCount").textContent = stats.total_jobs || 0;
+      document.getElementById("vaultCount").textContent = data.vault_count || 0;
+    }
+
+    // 5. Render opportunity vault items with filtering & search
+    function setVaultFilter(filter) {
+      currentFilter = filter;
+      document.querySelectorAll(".filter-pill").forEach(btn => {
+        btn.classList.remove("bg-emerald-500/20", "text-emerald-400", "border-emerald-500/40");
+        btn.classList.add("bg-slate-800", "text-slate-400", "border-slate-700");
+      });
+      const activeBtn = document.getElementById(`filter-${filter}`);
+      if (activeBtn) {
+        activeBtn.classList.remove("bg-slate-800", "text-slate-400", "border-slate-700");
+        activeBtn.classList.add("bg-emerald-500/20", "text-emerald-400", "border-emerald-500/40");
+      }
+      filterVault();
+    }
+
+    function filterVault() {
+      if (!currentUserData || !currentUserData.vault) return;
+      const query = (document.getElementById("vaultSearch").value || "").trim().toLowerCase();
+      const vault = currentUserData.vault;
+
+      // Update counters
+      const totalCount = vault.length;
+      const courseCount = vault.filter(i => i.type === "course").length;
+      const jobCount = vault.filter(i => i.type === "job").length;
+
+      document.getElementById("count-all").textContent = totalCount;
+      document.getElementById("count-course").textContent = courseCount;
+      document.getElementById("count-job").textContent = jobCount;
+
+      // Filter by type and query
+      const filtered = vault.filter(item => {
+        if (currentFilter !== "all" && item.type !== currentFilter) {
+          return false;
+        }
+        if (!query) return true;
+        const searchStr = `${item.title} ${item.domain} ${item.location || ""} ${item.salary || ""}`.toLowerCase();
+        return searchStr.includes(query);
+      });
+
+      renderVaultGrid(filtered);
+    }
+
+    function renderVaultGrid(items) {
+      const grid = document.getElementById("vaultGrid");
+      const empty = document.getElementById("vaultEmpty");
+      grid.innerHTML = "";
+
+      if (!items || items.length === 0) {
+        empty.classList.remove("hidden");
+        return;
+      }
+      empty.classList.add("hidden");
+
+      items.forEach(item => {
+        const isCourse = item.type === "course";
+        const card = document.createElement("div");
+        card.className = "bg-gradient-to-br from-slate-900 to-slate-900/90 rounded-xl border border-slate-800/80 p-4 flex flex-col justify-between hover:border-slate-700 transition hover:shadow-lg hover:shadow-slate-950/50 group";
+
+        const badgeHtml = isCourse
+          ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+               <i class="fa-solid fa-graduation-cap"></i> Free Course
+             </span>`
+          : `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-indigo-500/15 text-indigo-400 border border-indigo-500/30">
+               <i class="fa-solid fa-briefcase"></i> Remote Job
+             </span>`;
+
+        const locationHtml = item.location
+          ? `<span class="inline-flex items-center gap-1 text-[11px] text-slate-400">
+               <i class="fa-solid fa-location-dot text-slate-500"></i> ${escapeHtml(item.location)}
+             </span>`
+          : "";
+
+        const salaryHtml = item.salary
+          ? `<span class="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-400">
+               <i class="fa-solid fa-money-bill-wave text-emerald-500"></i> ${escapeHtml(item.salary)}
+             </span>`
+          : "";
+
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between gap-2 mb-2">
+              ${badgeHtml}
+              <span class="text-[10px] text-slate-500 font-mono flex items-center gap-1">
+                <i class="fa-regular fa-calendar"></i> ${escapeHtml(item.date)}
+              </span>
+            </div>
+            
+            <h4 class="text-sm font-semibold text-slate-100 group-hover:text-white line-clamp-2 mb-2 leading-snug">
+              ${escapeHtml(item.title)}
+            </h4>
+            
+            <div class="flex flex-wrap items-center gap-2 mb-3">
+              <span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700/60 font-mono">
+                ${escapeHtml(item.domain)}
+              </span>
+              ${locationHtml}
+              ${salaryHtml}
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-slate-800/60 flex items-center justify-between">
+            <span class="text-[11px] text-emerald-400 font-medium flex items-center gap-1">
+              <i class="fa-solid fa-shield-check"></i> Verified
+            </span>
+            <a 
+              href="${escapeHtml(item.url)}" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              class="text-xs px-3 py-1.5 rounded-lg ${isCourse ? 'bg-emerald-600/80 hover:bg-emerald-600' : 'bg-indigo-600/80 hover:bg-indigo-600'} text-white font-medium transition flex items-center gap-1.5 shadow-sm"
+            >
+              <span>${isCourse ? 'Claim Course' : 'Apply Role'}</span>
+              <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+            </a>
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+    }
+
+    function resetVaultSearch() {
+      document.getElementById("vaultSearch").value = "";
+      setVaultFilter("all");
+    }
+
+    // 6. Preferences Tab Logic
+    function renderPreferences(sub) {
+      if (!sub) return;
+      
+      // Vacation toggle
+      const toggle = document.getElementById("prefActiveToggle");
+      toggle.checked = Boolean(sub.active);
+      onVacationToggle(toggle.checked);
+
+      // Max items slider
+      const slider = document.getElementById("prefMaxItemsSlider");
+      slider.value = sub.max_items || 10;
+      onSliderChange(slider.value);
+
+      // Tags
+      userKeywords = [...(sub.keywords || [])];
+      userJobSearches = [...(sub.job_searches || [])];
+      userLocations = [...(sub.preferred_locations || [])];
+
+      renderTags("course");
+      renderTags("job");
+      renderTags("location");
+    }
+
+    function onVacationToggle(isActive) {
+      const statusText = document.getElementById("vacationStatusText");
+      const subText = document.getElementById("vacationSubText");
+      if (isActive) {
+        statusText.textContent = "Active Delivery";
+        statusText.className = "text-xs font-semibold text-emerald-400 block";
+        subText.textContent = "Daily automated delivery at 02:00 UTC";
+      } else {
+        statusText.textContent = "🏖️ Vacation Mode";
+        statusText.className = "text-xs font-semibold text-amber-400 block";
+        subText.textContent = "Paused — streak preserved";
+      }
+    }
+
+    function onSliderChange(val) {
+      document.getElementById("sliderValueBadge").textContent = `${val} items / day`;
+    }
+
+    function renderTags(category) {
+      let container, items, colorClass;
+      if (category === "course") {
+        container = document.getElementById("courseKeywordsContainer");
+        items = userKeywords;
+        colorClass = "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+      } else if (category === "job") {
+        container = document.getElementById("jobKeywordsContainer");
+        items = userJobSearches;
+        colorClass = "bg-indigo-500/10 text-indigo-400 border-indigo-500/20";
+      } else {
+        container = document.getElementById("locationKeywordsContainer");
+        items = userLocations;
+        colorClass = "bg-amber-500/10 text-amber-400 border-amber-500/20";
+      }
+
+      container.innerHTML = "";
+      if (items.length === 0) {
+        container.innerHTML = '<span class="text-xs text-slate-500 italic p-1">No keywords added yet.</span>';
+        return;
+      }
+
+      items.forEach((item, index) => {
+        const chip = document.createElement("span");
+        chip.className = `inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border ${colorClass} transition hover:bg-slate-800`;
+        chip.innerHTML = `
+          <span>${escapeHtml(item)}</span>
+          <button type="button" onclick="removeKeyword('${category}', ${index})" class="text-slate-400 hover:text-rose-400 transition ml-0.5 focus:outline-none">
+            &times;
+          </button>
+        `;
+        container.appendChild(chip);
+      });
+    }
+
+    function addKeyword(category) {
+      let inputId, targetArray;
+      if (category === "course") {
+        inputId = "newCourseKeyword";
+        targetArray = userKeywords;
+      } else if (category === "job") {
+        inputId = "newJobKeyword";
+        targetArray = userJobSearches;
+      } else {
+        inputId = "newLocationKeyword";
+        targetArray = userLocations;
+      }
+
+      const input = document.getElementById(inputId);
+      const val = (input.value || "").trim();
+      if (!val) return;
+
+      // Check duplicates
+      if (!targetArray.some(x => x.toLowerCase() === val.toLowerCase())) {
+        targetArray.push(val);
+        renderTags(category);
+      }
+      input.value = "";
+      input.focus();
+    }
+
+    function removeKeyword(category, index) {
+      if (category === "course") {
+        userKeywords.splice(index, 1);
+      } else if (category === "job") {
+        userJobSearches.splice(index, 1);
+      } else {
+        userLocations.splice(index, 1);
+      }
+      renderTags(category);
+    }
+
+    // 7. Save preferences to backend
+    async function savePreferences() {
+      const btn = document.getElementById("savePreferencesBtn");
+      const originalHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Saving...';
+
+      try {
+        const payload = {
+          email: currentEmail,
+          keywords: userKeywords,
+          job_searches: userJobSearches,
+          preferred_locations: userLocations,
+          max_items: parseInt(document.getElementById("prefMaxItemsSlider").value, 10),
+          active: document.getElementById("prefActiveToggle").checked,
+        };
+
+        const res = await fetch("/api/portal/user", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Failed to save preferences");
+        }
+
+        showToast("✅ Preferences updated successfully!", "success");
+        // Reload profile in background to update header badges
+        await loadUserProfile(currentEmail);
+      } catch (err) {
+        console.error("Error saving preferences:", err);
+        showToast("Error saving preferences: " + err.message, "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+      }
+    }
+
+    // 8. Weekly Insights Tab
+    async function loadWeeklyInsights() {
+      const box = document.getElementById("insightsBox");
+      box.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-emerald-400"></i> Generating fresh market intelligence...';
+      try {
+        const res = await fetch("/api/weekly-insights");
+        const data = await res.json();
+        box.textContent = data.report || "No insights report generated.";
+      } catch (err) {
+        box.textContent = "Error loading market intelligence: " + err.message;
+      }
+    }
+
+    // Tab Navigation
+    function switchTab(tabId) {
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.classList.remove("border-emerald-500", "text-emerald-400");
+        btn.classList.add("border-transparent", "text-slate-400");
+      });
+      document.getElementById(`tab-${tabId}`).classList.remove("border-transparent", "text-slate-400");
+      document.getElementById(`tab-${tabId}`).classList.add("border-emerald-500", "text-emerald-400");
+
+      document.getElementById("content-vault").classList.add("hidden");
+      document.getElementById("content-preferences").classList.add("hidden");
+      document.getElementById("content-insights").classList.add("hidden");
+
+      document.getElementById(`content-${tabId}`).classList.remove("hidden");
+
+      if (tabId === "insights") {
+        loadWeeklyInsights();
+      }
+    }
+
+    // Toast Notification Utility
+    function showToast(message, type = "success") {
+      const toast = document.getElementById("toast");
+      const icon = document.getElementById("toastIcon");
+      const msg = document.getElementById("toastMessage");
+
+      msg.textContent = message;
+      if (type === "success") {
+        icon.className = "w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-sm font-bold";
+        icon.innerHTML = '<i class="fa-solid fa-check"></i>';
+      } else {
+        icon.className = "w-7 h-7 rounded-lg bg-rose-500/20 text-rose-400 flex items-center justify-center text-sm font-bold";
+        icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+      }
+
+      toast.classList.remove("translate-y-20", "opacity-0");
+      setTimeout(() => {
+        toast.classList.add("translate-y-20", "opacity-0");
+      }, 3500);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>
