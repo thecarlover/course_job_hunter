@@ -77,5 +77,40 @@
     "active": true,
     "course_feeds": [],
     "welcome_sent": true
+  },
+  {
+    "name": "Adhya",
+    "email": "adhyamittal01@gmail.com",
+    "keywords": [
+      "ui",
+      "ux",
+      "gaming",
+      "animation",
+      "figma",
+      "canva",
+      "data analysis",
+      "html",
+      "css",
+      "react",
+      "typescript",
+      "js"
+    ],
+    "job_searches": [
+      "MERN",
+      "developer",
+      "designer",
+      "figma",
+      "canva",
+      "marketing",
+      "animation"
+    ],
+    "preferred_locations": [
+      "remote",
+      "india"
+    ],
+    "max_items": 10,
+    "active": true,
+    "course_feeds": [],
+    "welcome_sent": true
   }
 ]
