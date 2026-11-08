@@ -785,9 +785,13 @@ async def get_portal_user(email: str = ""):
             "active": user_sub.get("active", True),
             "keywords": user_sub.get("keywords", []),
             "job_searches": user_sub.get("job_searches", []),
+            "job_sources": user_sub.get("job_sources", list(getattr(config, "AVAILABLE_JOB_SOURCES", {}).keys())),
+            "course_sources": user_sub.get("course_sources", list(getattr(config, "AVAILABLE_COURSE_PLATFORMS", {}).keys())),
             "preferred_locations": user_sub.get("preferred_locations", []),
             "max_items": user_sub.get("max_items", 10),
         },
+        "available_job_sources": getattr(config, "AVAILABLE_JOB_SOURCES", {}),
+        "available_course_platforms": getattr(config, "AVAILABLE_COURSE_PLATFORMS", {}),
         "stats": stats,
         "vault": vault,
         "vault_count": len(vault),
@@ -796,7 +800,7 @@ async def get_portal_user(email: str = ""):
 
 @app.put("/api/portal/user")
 async def update_portal_user(payload: Dict[str, Any]):
-    """Allow member to update their own keywords, search queries, locations, and vacation mode."""
+    """Allow member to update their own keywords, search queries, locations, source APIs, and vacation mode."""
     email_clean = (payload.get("email") or "").strip().lower()
     if not email_clean:
         return JSONResponse({"error": "Email is required"}, status_code=400)
@@ -819,6 +823,12 @@ async def update_portal_user(payload: Dict[str, Any]):
 
     if "job_searches" in payload and isinstance(payload["job_searches"], list):
         target_sub["job_searches"] = [str(j).strip() for j in payload["job_searches"] if str(j).strip()]
+
+    if "job_sources" in payload and isinstance(payload["job_sources"], list):
+        target_sub["job_sources"] = [str(s).strip() for s in payload["job_sources"] if str(s).strip()]
+
+    if "course_sources" in payload and isinstance(payload["course_sources"], list):
+        target_sub["course_sources"] = [str(c).strip() for c in payload["course_sources"] if str(c).strip()]
 
     if "preferred_locations" in payload and isinstance(payload["preferred_locations"], list):
         target_sub["preferred_locations"] = [str(loc).strip() for loc in payload["preferred_locations"] if str(loc).strip()]

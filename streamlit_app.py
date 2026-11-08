@@ -351,6 +351,30 @@ elif nav_page == "👥 Subscribers & Preferences":
                     searches = ", ".join(sub.get("job_searches", []))
                     search_val = st.text_area("Job Searches", value=searches, key=f"search_{idx}")
 
+                # Source APIs Customization
+                all_job_opts = list(getattr(config, "AVAILABLE_JOB_SOURCES", {}).keys())
+                cur_job_sources = sub.get("job_sources") if sub.get("job_sources") else all_job_opts
+                # Filter to only valid options
+                cur_job_sources = [s for s in cur_job_sources if s in all_job_opts]
+                selected_jobs = st.multiselect(
+                    "Job Board Sources",
+                    all_job_opts,
+                    default=cur_job_sources,
+                    format_func=lambda k: getattr(config, "AVAILABLE_JOB_SOURCES", {}).get(k, k),
+                    key=f"jobs_{idx}"
+                )
+
+                all_course_opts = list(getattr(config, "AVAILABLE_COURSE_PLATFORMS", {}).keys())
+                cur_course_sources = sub.get("course_sources") if sub.get("course_sources") else all_course_opts
+                cur_course_sources = [c for c in cur_course_sources if c in all_course_opts]
+                selected_courses = st.multiselect(
+                    "Course Platforms",
+                    all_course_opts,
+                    default=cur_course_sources,
+                    format_func=lambda k: getattr(config, "AVAILABLE_COURSE_PLATFORMS", {}).get(k, k),
+                    key=f"courses_{idx}"
+                )
+
                 sub_col1, sub_col2 = st.columns([1, 4])
                 with sub_col1:
                     save_btn = st.form_submit_button("Save Changes")
@@ -360,6 +384,8 @@ elif nav_page == "👥 Subscribers & Preferences":
                     subscribers[idx]["max_items"] = int(max_val)
                     subscribers[idx]["keywords"] = [k.strip() for k in kw_val.split(",") if k.strip()]
                     subscribers[idx]["job_searches"] = [j.strip() for j in search_val.split(",") if j.strip()]
+                    subscribers[idx]["job_sources"] = selected_jobs
+                    subscribers[idx]["course_sources"] = selected_courses
                     save_subscribers(subscribers)
                     st.success("Preferences updated!")
                     st.rerun()
@@ -390,17 +416,19 @@ elif nav_page == "📡 Source Health Inspector":
             st.divider()
             st.subheader("💼 Remote & India Job Board APIs")
             job_tests = [
+                ("LinkedIn Jobs (India & Global)", "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=python&location=India&f_WT=2&start=0"),
+                ("Naukri.com (India)", "https://www.naukri.com/python-jobs"),
                 ("Remotive API", "https://remotive.com/api/remote-jobs?limit=2"),
                 ("Jobicy API", "https://jobicy.com/api/v2/remote-jobs?count=2"),
                 ("Arbeitnow API", "https://www.arbeitnow.com/api/job-board-api"),
+                ("Glassdoor India RSS", "https://www.glassdoor.co.in/Job/python-jobs-SRCH_KO0,6.htm?format=rss"),
                 ("Adzuna India RSS", "https://www.adzuna.in/search.rss?q=python&country=in"),
-                ("Indeed India RSS", "https://in.indeed.com/rss?q=python&l=India&fromage=7"),
             ]
             for name, url in job_tests:
                 try:
-                    res = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=6)
-                    if res.status_code == 200:
-                        st.success(f"🟢 **{name}** — Operational (HTTP 200)")
+                    res = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=8)
+                    if res.status_code in (200, 201):
+                        st.success(f"🟢 **{name}** — Operational (HTTP {res.status_code})")
                     else:
                         st.warning(f"🟡 **{name}** — HTTP {res.status_code}")
                 except Exception as e:

@@ -84,15 +84,29 @@ ENABLE_WEEKLY_INSIGHTS = True
 WEEKLY_INSIGHTS_DAY = "Sunday"
 
 # ============================================================================
-# Feature 3: Multi-Board Job Aggregation (Free APIs)
+# Feature 3: Multi-Board Job & Course Source Customization
 # ============================================================================
-# Enabled job board sources (all free APIs, no API keys required)
-# Options: "remotive", "jobicy", "arbeitnow"
-JOB_SOURCES = [
-    "remotive",
-    "jobicy",
-    "arbeitnow",
-]
+AVAILABLE_JOB_SOURCES = {
+    "linkedin": "LinkedIn Jobs (India & Global)",
+    "naukri": "Naukri.com (India)",
+    "indeed_india": "Indeed India",
+    "remotive": "Remotive (Remote Tech & Ops)",
+    "arbeitnow": "Arbeitnow (Remote & Visa)",
+    "jobicy": "Jobicy (Remote Worldwide)",
+    "glassdoor": "Glassdoor India",
+    "adzuna_india": "Adzuna India",
+}
+
+AVAILABLE_COURSE_PLATFORMS = {
+    "udemy_coupons": "Udemy 100% OFF (TutorialBar, Discudemy, CourseTegg)",
+    "swayam_nptel": "Swayam / NPTEL (Govt of India Certifications)",
+    "freecodecamp": "freeCodeCamp (Python, AI, Web, Security)",
+    "cloud_certs": "Google Cloud & Microsoft Learn Certifications",
+    "geeksforgeeks": "GeeksForGeeks (Tech Articles & Certs)",
+}
+
+# Enabled job board sources by default
+JOB_SOURCES = list(AVAILABLE_JOB_SOURCES.keys())
 
 # ============================================================================
 # Feature 4: Salary, Location & Visa Filtering

@@ -1480,19 +1480,22 @@ def fetch_linkedin_jobs_rss(search_terms: List[str]) -> List[Dict[str, Any]]:
                 continue
             # LinkedIn returns HTML cards, parse job IDs from href attributes
             import re as _re
-            links_found = _re.findall(r'href="(https://www\.linkedin\.com/jobs/view/[^"]+)"', response.text)
-            titles_found = _re.findall(r'class="base-search-card__title"[^>]*>(.*?)</h3>', response.text, _re.DOTALL)
-            companies_found = _re.findall(r'class="base-search-card__subtitle"[^>]*>(.*?)</a>', response.text, _re.DOTALL)
-            locations_found = _re.findall(r'class="job-search-card__location"[^>]*>(.*?)</span>', response.text, _re.DOTALL)
+            links_found = _re.findall(r'href=[\"\'](https://[a-z.]*linkedin\.com/jobs/view/[^\"\'?]+)', response.text)
+            titles_found = _re.findall(r'<h3[^>]*class=[\"\'][^\"\']*base-search-card__title[^\"\']*[\"\'][^>]*>(.*?)</h3>', response.text, _re.DOTALL)
+            companies_found = _re.findall(r'<h4[^>]*class=[\"\'][^\"\']*base-search-card__subtitle[^\"\']*[\"\'][^>]*>(.*?)</h4>', response.text, _re.DOTALL)
+            locations_found = _re.findall(r'<span[^>]*class=[\"\'][^\"\']*job-search-card__location[^\"\']*[\"\'][^>]*>(.*?)</span>', response.text, _re.DOTALL)
 
             count = 0
             for i, link in enumerate(links_found[:10]):
                 link = link.split("?")[0].strip()
                 title = titles_found[i].strip() if i < len(titles_found) else clean_term
+                title = _re.sub(r'<[^>]+>', '', title)
                 title = _re.sub(r'\s+', ' ', title).strip()
                 company = companies_found[i].strip() if i < len(companies_found) else ""
+                company = _re.sub(r'<[^>]+>', '', company)
                 company = _re.sub(r'\s+', ' ', company).strip()
                 location = locations_found[i].strip() if i < len(locations_found) else "India"
+                location = _re.sub(r'<[^>]+>', '', location)
                 location = _re.sub(r'\s+', ' ', location).strip()
 
                 if not link or not title:
@@ -1516,6 +1519,111 @@ def fetch_linkedin_jobs_rss(search_terms: List[str]) -> List[Dict[str, Any]]:
             print(f"  [LinkedIn] Harvested {count} job(s) for '{clean_term}'")
         except Exception as e:
             print(f"  [Warning] LinkedIn search failed for '{clean_term}': {e}")
+
+    return jobs_out
+
+
+def fetch_naukri_jobs(search_terms: List[str]) -> List[Dict[str, Any]]:
+    """
+    Fetch jobs from Naukri.com (India's leading job portal).
+    Queries Naukri search API with desktop client credentials,
+    and falls back cleanly to curated direct search portals if CAPTCHA gated.
+    """
+    jobs_out = []
+    headers = {
+        "appid": "109",
+        "systemid": "Naukri",
+        "clientid": "d3skt0p",
+        "accept": "application/json",
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
+        ),
+    }
+
+    for term in search_terms:
+        clean_term = term.strip()
+        if not clean_term:
+            continue
+
+        print(f"  [Naukri] Searching India jobs for: '{clean_term}'")
+        try:
+            url = "https://www.naukri.com/jobapi/v3/search"
+            params = {
+                "noOfResults": 10,
+                "urlType": "search_by_keyword",
+                "searchType": "adv",
+                "keyword": clean_term,
+                "pageNo": 1,
+                "src": "jobsearchDesk",
+            }
+            res = requests.get(url, headers=headers, params=params, timeout=8)
+            count = 0
+            if res.status_code == 200:
+                data = res.json()
+                items = data.get("jobDetails", [])
+                for j in items[:10]:
+                    title = j.get("title", "").strip()
+                    company = j.get("companyName", "").strip()
+                    jd_url = j.get("jdURL", "").strip()
+                    if jd_url and not jd_url.startswith("http"):
+                        link = f"https://www.naukri.com{jd_url}"
+                    else:
+                        link = jd_url or f"https://www.naukri.com/{clean_term.replace(' ', '-')}-jobs"
+                    salary = j.get("salary", "").strip()
+                    placeholders = j.get("placeholders", [])
+                    loc = "India"
+                    for p in placeholders:
+                        if isinstance(p, dict) and p.get("type") == "location":
+                            loc = p.get("label", "India")
+                    display_title = f"{title} ({company})" if company else title
+                    jobs_out.append({
+                        "type": "job",
+                        "source": "Naukri",
+                        "title": display_title,
+                        "company": company,
+                        "link": link,
+                        "salary": salary,
+                        "location": loc,
+                        "job_type": "Full-time",
+                        "tags": [clean_term.lower(), "naukri", "india"],
+                        "search_term": clean_term.lower(),
+                    })
+                    count += 1
+                print(f"  [Naukri] Harvested {count} job(s) for '{clean_term}'")
+            else:
+                # Direct curated search portal fallback (1-click search on Naukri)
+                slug = clean_term.replace(" ", "-").lower()
+                direct_link = f"https://www.naukri.com/{slug}-jobs"
+                jobs_out.append({
+                    "type": "job",
+                    "source": "Naukri",
+                    "title": f"Explore Latest {clean_term.title()} Jobs on Naukri",
+                    "company": "Naukri India",
+                    "link": direct_link,
+                    "salary": "",
+                    "location": "India (Multiple Locations)",
+                    "job_type": "Full-time / Remote",
+                    "tags": [clean_term.lower(), "naukri", "india"],
+                    "search_term": clean_term.lower(),
+                })
+                print(f"  [Naukri] Added direct curated search link for '{clean_term}'")
+        except Exception as e:
+            print(f"  [Warning] Naukri search exception for '{clean_term}': {e}")
+            slug = clean_term.replace(" ", "-").lower()
+            direct_link = f"https://www.naukri.com/{slug}-jobs"
+            jobs_out.append({
+                "type": "job",
+                "source": "Naukri",
+                "title": f"Explore Latest {clean_term.title()} Jobs on Naukri",
+                "company": "Naukri India",
+                "link": direct_link,
+                "salary": "",
+                "location": "India (Multiple Locations)",
+                "job_type": "Full-time / Remote",
+                "tags": [clean_term.lower(), "naukri", "india"],
+                "search_term": clean_term.lower(),
+            })
 
     return jobs_out
 
@@ -1581,8 +1689,8 @@ def fetch_raw_jobs(search_terms: List[str], sources: List[str] = None) -> List[D
     """
     if sources is None:
         sources = getattr(config, "JOB_SOURCES", [
-            "remotive", "jobicy", "arbeitnow",
-            "adzuna_india", "indeed_india", "linkedin", "glassdoor",
+            "linkedin", "naukri", "remotive", "jobicy", "arbeitnow",
+            "adzuna_india", "indeed_india", "glassdoor",
         ])
 
     all_jobs = []
@@ -1603,6 +1711,8 @@ def fetch_raw_jobs(search_terms: List[str], sources: List[str] = None) -> List[D
             jobs = fetch_indeed_india_rss(search_terms)
         elif src_name == "linkedin":
             jobs = fetch_linkedin_jobs_rss(search_terms)
+        elif src_name == "naukri":
+            jobs = fetch_naukri_jobs(search_terms)
         elif src_name == "glassdoor":
             jobs = fetch_glassdoor_rss(search_terms)
         else:
@@ -1828,10 +1938,37 @@ def run(
 
         print(f"\nEvaluating for {name} <{email}> (already seen {len(recipient_seen)} items):")
 
+        # Check recipient's configured sources preferences
+        user_job_sources = recipient.get("job_sources")
+        allowed_job_sources = set()
+        if user_job_sources and isinstance(user_job_sources, list):
+            allowed_job_sources = {str(s).lower().replace("_", "").replace(" ", "") for s in user_job_sources if str(s).strip()}
+
+        user_course_sources = recipient.get("course_sources")
+        allowed_course_cats = set()
+        if user_course_sources and isinstance(user_course_sources, list):
+            allowed_course_cats = {str(c).lower().strip() for c in user_course_sources if str(c).strip()}
+
         # Filter courses: must belong to recipient's subscribed feeds, match keywords, and not be seen
         matched_courses = []
         for c in raw_courses:
             if c["feed_url"] in user_feeds and c["link"] not in recipient_seen:
+                if allowed_course_cats:
+                    feed = c["feed_url"].lower()
+                    cat_match = False
+                    if "udemy_coupons" in allowed_course_cats and any(u in feed for u in ["tutorialbar", "discudemy", "coursetegg", "learnviral", "udemyfreebies", "onlinecourseshub"]):
+                        cat_match = True
+                    if "swayam_nptel" in allowed_course_cats and "swayam" in feed:
+                        cat_match = True
+                    if "freecodecamp" in allowed_course_cats and "freecodecamp" in feed:
+                        cat_match = True
+                    if "cloud_certs" in allowed_course_cats and any(cl in feed for cl in ["cloudblog", "microsoft"]):
+                        cat_match = True
+                    if "geeksforgeeks" in allowed_course_cats and "geeksforgeeks" in feed:
+                        cat_match = True
+                    if not cat_match:
+                        continue
+
                 if matches_keywords(c["title"], keywords):
                     matched_courses.append(c)
 
@@ -1843,6 +1980,12 @@ def run(
         for j in raw_jobs:
             if j["link"] in recipient_seen:
                 continue
+
+            # Check if source is allowed by recipient
+            if allowed_job_sources:
+                j_src = (j.get("source") or "").lower().replace("_", "").replace(" ", "")
+                if j_src not in allowed_job_sources:
+                    continue
 
             # Strict location check if enabled in config
             if strict_loc and not matches_location_filter(j.get("location", ""), preferred_locs):

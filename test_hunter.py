@@ -932,6 +932,47 @@ def test_notifier_email_with_html(monkeypatch):
         assert any("<h1>Hello in HTML</h1>" in str(p) for p in payloads)
 
 
+def test_fetch_naukri_jobs():
+    """Test Naukri job fetcher handles search terms and returns structured job dicts."""
+    from main import fetch_naukri_jobs
+
+    jobs = fetch_naukri_jobs(["Python Developer"])
+    assert isinstance(jobs, list)
+    assert len(jobs) >= 1
+    sample = jobs[0]
+    assert sample["type"] == "job"
+    assert sample["source"] == "Naukri"
+    assert "naukri.com" in sample["link"]
+    assert any("python" in t for t in sample["tags"])
+
+
+def test_portal_user_sources_config():
+    """Test GET and PUT /api/portal/user with job_sources and course_sources."""
+    from fastapi.testclient import TestClient
+    from admin import app
+
+    client = TestClient(app)
+    # Fetch user data
+    res = client.get("/api/portal/user?email=ojasvimittalofficial@gmail.com")
+    assert res.status_code == 200
+    data = res.json()
+    assert "available_job_sources" in data
+    assert "naukri" in data["available_job_sources"]
+    assert "linkedin" in data["available_job_sources"]
+
+    # Update sources via PUT
+    put_res = client.put("/api/portal/user", json={
+        "email": "ojasvimittalofficial@gmail.com",
+        "job_sources": ["linkedin", "naukri", "remotive"],
+        "course_sources": ["udemy_coupons", "swayam_nptel"],
+    })
+    assert put_res.status_code == 200
+    updated_sub = put_res.json()["subscriber"]
+    assert "naukri" in updated_sub.get("job_sources", [])
+    assert "swayam_nptel" in updated_sub.get("course_sources", [])
+
+
+
 
 
 

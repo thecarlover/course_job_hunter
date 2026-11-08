@@ -282,8 +282,28 @@
     <div class="space-y-2">
       <label class="text-xs font-semibold text-white block">Keywords &amp; Topics</label>
       <p class="text-[11px] text-[#52525b]">Comma-separated. Used to match free courses &amp; job searches.</p>
-      <textarea id="settingKeywords" rows="4" placeholder="python, ui/ux, remote, project management…"
+      <textarea id="settingKeywords" rows="3" placeholder="python, ui/ux, remote, project management…"
         class="w-full bg-[#1a1c24] border border-[#262833] rounded-lg p-2.5 text-xs text-white placeholder-[#52525b] focus:outline-none focus:border-[#3b82f6] transition leading-relaxed font-mono resize-none"></textarea>
+    </div>
+
+    <!-- Job Source APIs -->
+    <div class="space-y-2">
+      <div class="flex items-center justify-between">
+        <label class="text-xs font-semibold text-white block">Job Board APIs</label>
+        <span class="text-[10px] text-[#52525b]">Click to toggle</span>
+      </div>
+      <p class="text-[11px] text-[#52525b]">Only receive jobs from your selected platforms:</p>
+      <div id="jobSourcesContainer" class="flex flex-wrap gap-1.5 pt-0.5"></div>
+    </div>
+
+    <!-- Course Platforms -->
+    <div class="space-y-2">
+      <div class="flex items-center justify-between">
+        <label class="text-xs font-semibold text-white block">Course Platforms</label>
+        <span class="text-[10px] text-[#52525b]">Click to toggle</span>
+      </div>
+      <p class="text-[11px] text-[#52525b]">Only receive courses from your selected providers:</p>
+      <div id="courseSourcesContainer" class="flex flex-wrap gap-1.5 pt-0.5"></div>
     </div>
 
     <!-- Save prefs -->
@@ -667,12 +687,98 @@
     document.getElementById("settingsOverlay").classList.add("hidden");
   }
 
+  let selectedJobSources = [];
+  let selectedCourseSources = [];
+
+  const ALL_JOB_SOURCES = {
+    "linkedin": "LinkedIn",
+    "naukri": "Naukri",
+    "indeed_india": "Indeed India",
+    "remotive": "Remotive",
+    "arbeitnow": "Arbeitnow",
+    "jobicy": "Jobicy",
+    "glassdoor": "Glassdoor",
+    "adzuna_india": "Adzuna"
+  };
+
+  const ALL_COURSE_SOURCES = {
+    "udemy_coupons": "Udemy 100% OFF",
+    "swayam_nptel": "Swayam / NPTEL",
+    "freecodecamp": "freeCodeCamp",
+    "cloud_certs": "Google / MS Cloud",
+    "geeksforgeeks": "GeeksForGeeks"
+  };
+
   function renderSettings(sub) {
     if (!sub) return;
     document.getElementById("settingActive").checked = Boolean(sub.active);
     const all = Array.from(new Set([...(sub.keywords || []), ...(sub.job_searches || [])]));
     document.getElementById("settingKeywords").value = all.join(", ");
+
+    selectedJobSources = sub.job_sources && sub.job_sources.length
+      ? [...sub.job_sources]
+      : Object.keys(ALL_JOB_SOURCES);
+
+    selectedCourseSources = sub.course_sources && sub.course_sources.length
+      ? [...sub.course_sources]
+      : Object.keys(ALL_COURSE_SOURCES);
+
+    renderSourcePills();
     document.getElementById("saveNotice").style.opacity = "0";
+  }
+
+  function renderSourcePills() {
+    // Job sources
+    const jobContainer = document.getElementById("jobSourcesContainer");
+    if (jobContainer) {
+      jobContainer.innerHTML = "";
+      Object.entries(ALL_JOB_SOURCES).forEach(([key, label]) => {
+        const active = selectedJobSources.includes(key);
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = active
+          ? "text-[11px] px-2.5 py-1 rounded-full font-medium transition bg-[#1d4ed8] text-white border border-[#3b82f6]"
+          : "text-[11px] px-2.5 py-1 rounded-full font-medium transition bg-[#181a22] text-[#71717a] border border-[#262833] hover:text-[#a1a1aa]";
+        btn.textContent = (active ? "✓ " : "+ ") + label;
+        btn.onclick = () => {
+          if (selectedJobSources.includes(key)) {
+            if (selectedJobSources.length > 1) {
+              selectedJobSources = selectedJobSources.filter(k => k !== key);
+            }
+          } else {
+            selectedJobSources.push(key);
+          }
+          renderSourcePills();
+        };
+        jobContainer.appendChild(btn);
+      });
+    }
+
+    // Course sources
+    const courseContainer = document.getElementById("courseSourcesContainer");
+    if (courseContainer) {
+      courseContainer.innerHTML = "";
+      Object.entries(ALL_COURSE_SOURCES).forEach(([key, label]) => {
+        const active = selectedCourseSources.includes(key);
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = active
+          ? "text-[11px] px-2.5 py-1 rounded-full font-medium transition bg-[#047857] text-white border border-[#10b981]"
+          : "text-[11px] px-2.5 py-1 rounded-full font-medium transition bg-[#181a22] text-[#71717a] border border-[#262833] hover:text-[#a1a1aa]";
+        btn.textContent = (active ? "✓ " : "+ ") + label;
+        btn.onclick = () => {
+          if (selectedCourseSources.includes(key)) {
+            if (selectedCourseSources.length > 1) {
+              selectedCourseSources = selectedCourseSources.filter(k => k !== key);
+            }
+          } else {
+            selectedCourseSources.push(key);
+          }
+          renderSourcePills();
+        };
+        courseContainer.appendChild(btn);
+      });
+    }
   }
 
   async function saveSimpleSettings() {
@@ -686,7 +792,14 @@
       const res = await fetch("/api/portal/user", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: currentEmail, keywords: kw, job_searches: kw, active }),
+        body: JSON.stringify({
+          email: currentEmail,
+          keywords: kw,
+          job_searches: kw,
+          active,
+          job_sources: selectedJobSources,
+          course_sources: selectedCourseSources
+        }),
       });
       if (!res.ok) throw new Error("Failed");
       notice.style.opacity = "1";
