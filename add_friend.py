@@ -118,10 +118,16 @@ def add_friend_interactive():
     if send_now != "n":
         try:
             import notifier
-            from main import compose_welcome_message, mark_welcome_sent, load_seen_dict
+            from main import compose_welcome_message, build_html_welcome, mark_welcome_sent, load_seen_dict
             welcome_msg = compose_welcome_message(name, email, keywords, job_searches, max_items)
+            welcome_html = build_html_welcome(name, email, keywords, job_searches, max_items)
             print(f"Sending welcome email to {email}...")
-            notifier.send(welcome_msg, to_email=email, subject=f"👋 Welcome to Course & Job Hunter, {name}!")
+            notifier.send(
+                welcome_msg,
+                to_email=email,
+                subject=f"👋 Welcome to Course & Job Hunter, {name}!",
+                html=welcome_html,
+            )
             seen_dict = load_seen_dict()
             mark_welcome_sent(new_person, seen_dict, RECIPIENTS_FILE)
             print(f"✅ Welcome email successfully sent to {name} <{email}>!")

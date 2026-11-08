@@ -826,5 +826,112 @@ def test_user_portal_endpoints():
     assert classify_vault_item("https://jobicy.com/jobs/dev") == "job"
 
 
+def test_build_html_digest():
+    """Test generating a modern HTML email digest with course and job cards."""
+    from main import build_html_digest
+
+    items = [
+        {
+            "type": "course",
+            "title": "Machine Learning for Beginners & AI Intro",
+            "link": "https://freecodecamp.org/ml-course",
+            "feed_url": "https://freecodecamp.org/news/rss/",
+        },
+        {
+            "type": "job",
+            "title": "Senior Python Developer",
+            "link": "https://in.indeed.com/viewjob?jk=12345",
+            "source": "indeed_india",
+            "location": "India (Remote)",
+            "salary": "₹25,00,000/year",
+            "job_type": "Full-time",
+            "tags": ["python", "ai", "worldwide"],
+        },
+    ]
+
+    stats = {
+        "streak": 5,
+        "level_num": 3,
+        "level_title": "Career Sniper",
+        "badge": "🎯",
+        "money_saved": 140,
+        "total_courses": 7,
+    }
+
+    html = build_html_digest(
+        recipient_name="Ishani Ganguly",
+        recipient_email="ishani@example.com",
+        items=items,
+        stats=stats,
+        insights="Demand for Python & AI is up 25%.",
+        sender_email="admin@example.com",
+    )
+
+    assert "<!DOCTYPE html>" in html
+    assert "Good morning, Ishani" in html
+    assert "Day 5" in html
+    assert "Career Sniper" in html
+    assert "$140" in html
+    assert "Machine Learning for Beginners &amp; AI Intro" in html
+    assert "Senior Python Developer" in html
+    assert "Indeed India" in html
+    assert "India (Remote)" in html
+    assert "₹25,00,000/year" in html
+    assert "Demand for Python &amp; AI is up 25%." in html
+    assert "ishani@example.com" in html
+
+
+def test_build_html_welcome():
+    """Test generating an attractive HTML welcome email."""
+    from main import build_html_welcome
+
+    html = build_html_welcome(
+        name="Adhya Mittal",
+        email="adhyamittal01@gmail.com",
+        keywords=["UI/UX", "Product Management", "Figma"],
+        job_searches=["Product Designer", "MERN Stack"],
+        max_items=12,
+        sender_email="admin@example.com",
+    )
+
+    assert "<!DOCTYPE html>" in html
+    assert "Welcome, Adhya! 🎉" in html
+    assert "UI/UX" in html
+    assert "Product Designer" in html
+    assert "12 opportunities / morning" in html
+    assert "adhyamittal01@gmail.com" not in html or "admin@example.com" in html
+
+
+def test_notifier_email_with_html(monkeypatch):
+    """Test notifier sends multipart alternative email when html is passed."""
+    import notifier
+    monkeypatch.setattr(notifier.config, "NOTIFIER", "email")
+    monkeypatch.setenv("EMAIL", "sender@gmail.com")
+    monkeypatch.setenv("APP_PASSWORD", "test password 1234")
+
+    with patch("smtplib.SMTP_SSL") as mock_smtp:
+        mock_server = MagicMock()
+        mock_smtp.return_value.__enter__.return_value = mock_server
+
+        notifier.send(
+            text="Plain text fallback",
+            to_email="friend@example.com",
+            subject="Test Attractive Email",
+            html="<h1>Hello in HTML</h1>",
+        )
+
+        mock_server.send_message.assert_called_once()
+        sent_msg = mock_server.send_message.call_args[0][0]
+
+        assert sent_msg["Subject"] == "Test Attractive Email"
+        assert sent_msg["To"] == "friend@example.com"
+        assert sent_msg.is_multipart()
+        # Verify both plain text and HTML payloads exist
+        payloads = [p.get_payload() for p in sent_msg.iter_parts()]
+        assert any("Plain text fallback" in str(p) for p in payloads)
+        assert any("<h1>Hello in HTML</h1>" in str(p) for p in payloads)
+
+
+
 
 

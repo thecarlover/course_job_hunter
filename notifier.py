@@ -12,6 +12,7 @@ All credentials are read from environment variables to keep secrets secure.
 import os
 import smtplib
 from email.message import EmailMessage
+from typing import Optional
 import requests
 import config
 
@@ -103,8 +104,8 @@ def validate_credentials() -> tuple:
     )
 
 
-def _send_email(text: str, to_email: str = None, subject: str = None) -> None:
-    """Send digest email to a recipient via Gmail SMTP over SSL."""
+def _send_email(text: str, to_email: str = None, subject: str = None, html: Optional[str] = None) -> None:
+    """Send digest email to a recipient via Gmail SMTP over SSL with optional HTML body."""
     load_dotenv()
     email_addr = (os.environ.get("EMAIL") or getattr(config, "EMAIL", "") or "").strip()
     app_password = (os.environ.get("APP_PASSWORD") or getattr(config, "APP_PASSWORD", "") or "").strip()
@@ -124,6 +125,9 @@ def _send_email(text: str, to_email: str = None, subject: str = None) -> None:
     msg["From"] = email_addr
     msg["To"] = target_email
     msg.set_content(text)
+
+    if html:
+        msg.add_alternative(html, subtype="html")
 
     try:
         # Gmail SMTP over SSL on port 465
@@ -177,15 +181,15 @@ def _send_discord(text: str) -> None:
     response.raise_for_status()
 
 
-def send(text: str, to_email: str = None, subject: str = None) -> None:
+def send(text: str, to_email: str = None, subject: str = None, html: Optional[str] = None) -> None:
     """
     Route the notification to the provider configured in config.NOTIFIER.
-    For email, sends to `to_email` (defaulting to self if omitted).
+    For email, sends to `to_email` (defaulting to self if omitted) with optional HTML alternative.
     """
     method = (config.NOTIFIER or "").strip().lower()
 
     if method == "email":
-        _send_email(text, to_email=to_email, subject=subject)
+        _send_email(text, to_email=to_email, subject=subject, html=html)
     elif method == "ntfy":
         _send_ntfy(text)
     elif method == "discord":

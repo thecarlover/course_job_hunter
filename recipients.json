@@ -12,17 +12,24 @@
       "free",
       "security",
       "compliance",
-      "python"
+      "python",
+      "cybersecurity"
     ],
     "job_searches": [
       "project management",
       "automation",
-      "cybersecurity",
+      "excel",
+      "ai",
+      "linkedin",
+      "free",
+      "security",
       "compliance",
-      "python"
+      "python",
+      "cybersecurity"
     ],
     "course_feeds": [],
-    "max_items": 15
+    "max_items": 15,
+    "portal_password": "sha256:8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92"
   },
   {
     "name": "Saurabh",

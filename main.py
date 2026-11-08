@@ -11,11 +11,13 @@ and sends individual, customized digests while tracking seen history per recipie
 import argparse
 from collections import Counter
 from datetime import datetime, timezone, timedelta
+import html
 import json
 import os
 import re
 import sys
 from typing import Any, Dict, List, Optional, Set
+import urllib.parse
 
 import feedparser
 import requests
@@ -552,6 +554,425 @@ Simply reply directly to this email ({sender_email}) anytime.
 
 Cheers,
 Course & Job Hunter 🎓💼"""
+
+
+def extract_domain_from_url(url: str) -> str:
+    """Extract a friendly clean domain name from a URL."""
+    try:
+        netloc = urllib.parse.urlparse(url).netloc
+        netloc = netloc.replace("www.", "")
+        return netloc or "Opportunity"
+    except Exception:
+        return "Opportunity"
+
+
+def build_html_digest(
+    recipient_name: str,
+    recipient_email: str,
+    items: List[Dict[str, Any]],
+    stats: Dict[str, Any],
+    insights: Optional[str] = None,
+    sender_email: str = "",
+    portal_url: str = "",
+) -> str:
+    """
+    Build a modern, highly attractive, mobile-responsive HTML email digest.
+    Includes branded header, gamified metrics bar, distinct courses & jobs cards,
+    badges for salary/location/visa, Sunday market insights, and member hub CTA.
+    """
+    first_name = (recipient_name or "").strip().split()[0] if recipient_name else "Friend"
+    safe_name = html.escape(first_name)
+    today_label = datetime.now(timezone.utc).strftime("%B %d, %Y")
+    reply_email = sender_email or notifier.get_sender_email() or "ojasvimittalofficial@gmail.com"
+    hub_url = portal_url or os.environ.get("PORTAL_BASE_URL") or "http://localhost:8000/portal"
+
+    courses = [it for it in items if it.get("type") == "course"]
+    jobs = [it for it in items if it.get("type") == "job"]
+
+    streak = stats.get("streak", 1)
+    level_num = stats.get("level_num", 1)
+    level_title = stats.get("level_title", "Rookie Hunter")
+    badge = stats.get("badge", "🌱")
+    money_saved = stats.get("money_saved", 0)
+
+    # 1. Course Cards HTML
+    course_cards_html = ""
+    if courses:
+        cards = []
+        for c in courses:
+            c_title = html.escape(c.get("title", "Untitled Course"))
+            c_link = html.escape(c.get("link", "#"))
+            domain = html.escape(extract_domain_from_url(c.get("link", "")))
+            card = f"""
+            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #ffffff; border: 1px solid #e2e8f0; border-left: 4px solid #10b981; border-radius: 10px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+              <tr>
+                <td style="padding: 14px 16px;">
+                  <div style="margin-bottom: 6px;">
+                    <span style="display: inline-block; background-color: #ecfdf5; color: #047857; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; padding: 2px 7px; border-radius: 4px; border: 1px solid #a7f3d0; margin-right: 6px;">100% FREE</span>
+                    <span style="font-size: 11px; color: #64748b; font-weight: 600;">{domain}</span>
+                  </div>
+                  <div style="font-size: 14px; font-weight: 600; color: #0f172a; line-height: 1.4; margin-bottom: 10px;">
+                    {c_title}
+                  </div>
+                  <a href="{c_link}" target="_blank" style="display: inline-block; background-color: #059669; color: #ffffff; font-size: 12px; font-weight: 600; text-decoration: none; padding: 6px 14px; border-radius: 6px;">
+                    Enroll Free ↗
+                  </a>
+                </td>
+              </tr>
+            </table>
+            """
+            cards.append(card)
+        course_cards_html = f"""
+        <div style="margin-top: 10px; margin-bottom: 24px;">
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 12px;">
+            <tr>
+              <td align="left">
+                <span style="font-size: 15px; font-weight: 700; color: #065f46;">🎓 Free Courses &amp; Certifications</span>
+              </td>
+              <td align="right">
+                <span style="background-color: #d1fae5; color: #065f46; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 12px;">{len(courses)} available</span>
+              </td>
+            </tr>
+          </table>
+          {''.join(cards)}
+        </div>
+        """
+
+    # 2. Job Cards HTML
+    job_cards_html = ""
+    if jobs:
+        cards = []
+        for j in jobs:
+            j_title = html.escape(j.get("title", "Untitled Job"))
+            j_link = html.escape(j.get("link", "#"))
+            source_raw = j.get("source") or extract_domain_from_url(j.get("link", ""))
+            source = html.escape(str(source_raw).replace("_", " ").title())
+            location = (j.get("location") or "").strip()
+            salary = (j.get("salary") or "").strip()
+            job_type = (j.get("job_type") or "").strip()
+            tags = j.get("tags") or []
+            tags_str = " ".join(tags).lower() if isinstance(tags, list) else str(tags).lower()
+            loc_lower = location.lower()
+
+            meta_pills = []
+            if location:
+                meta_pills.append(f"""<span style="display: inline-block; background-color: #f8fafc; border: 1px solid #e2e8f0; color: #334155; font-size: 11px; padding: 2px 7px; border-radius: 4px; margin-right: 4px; margin-bottom: 4px;">📍 {html.escape(location)}</span>""")
+            if salary:
+                meta_pills.append(f"""<span style="display: inline-block; background-color: #ecfdf5; border: 1px solid #a7f3d0; color: #047857; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 4px; margin-right: 4px; margin-bottom: 4px;">💰 {html.escape(salary)}</span>""")
+            if job_type:
+                meta_pills.append(f"""<span style="display: inline-block; background-color: #f8fafc; border: 1px solid #e2e8f0; color: #334155; font-size: 11px; padding: 2px 7px; border-radius: 4px; margin-right: 4px; margin-bottom: 4px;">⏱️ {html.escape(job_type.replace('_', ' ').title())}</span>""")
+            if "visa" in tags_str or "sponsorship" in tags_str or "visa" in loc_lower:
+                meta_pills.append("""<span style="display: inline-block; background-color: #fef3c7; border: 1px solid #fde68a; color: #92400e; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 4px; margin-right: 4px; margin-bottom: 4px;">🛂 Visa Sponsored</span>""")
+            elif "worldwide" in loc_lower or "anywhere" in loc_lower:
+                meta_pills.append("""<span style="display: inline-block; background-color: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 4px; margin-right: 4px; margin-bottom: 4px;">🌍 Open Worldwide</span>""")
+
+            pills_html = "".join(meta_pills)
+            card = f"""
+            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #ffffff; border: 1px solid #e2e8f0; border-left: 4px solid #3b82f6; border-radius: 10px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+              <tr>
+                <td style="padding: 14px 16px;">
+                  <div style="margin-bottom: 6px;">
+                    <span style="display: inline-block; background-color: #eff6ff; color: #1d4ed8; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; padding: 2px 7px; border-radius: 4px; border: 1px solid #bfdbfe; margin-right: 6px;">{source}</span>
+                    <span style="display: inline-block; background-color: #f1f5f9; color: #475569; font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 2px 7px; border-radius: 4px;">Remote</span>
+                  </div>
+                  <div style="font-size: 14px; font-weight: 600; color: #0f172a; line-height: 1.4; margin-bottom: 8px;">
+                    {j_title}
+                  </div>
+                  {f'<div style="margin-bottom: 10px;">{pills_html}</div>' if pills_html else ''}
+                  <a href="{j_link}" target="_blank" style="display: inline-block; background-color: #2563eb; color: #ffffff; font-size: 12px; font-weight: 600; text-decoration: none; padding: 6px 14px; border-radius: 6px;">
+                    View &amp; Apply ↗
+                  </a>
+                </td>
+              </tr>
+            </table>
+            """
+            cards.append(card)
+        job_cards_html = f"""
+        <div style="margin-top: 10px; margin-bottom: 24px;">
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 12px;">
+            <tr>
+              <td align="left">
+                <span style="font-size: 15px; font-weight: 700; color: #1e40af;">💼 Remote &amp; India Job Openings</span>
+              </td>
+              <td align="right">
+                <span style="background-color: #dbeafe; color: #1e40af; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 12px;">{len(jobs)} available</span>
+              </td>
+            </tr>
+          </table>
+          {''.join(cards)}
+        </div>
+        """
+
+    # 3. Weekly Insights HTML
+    insights_html = ""
+    if insights:
+        safe_insights = html.escape(insights.strip())
+        insights_html = f"""
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #fefce8; border: 1px solid #fef08a; border-radius: 12px; margin-bottom: 24px;">
+          <tr>
+            <td style="padding: 18px 20px;">
+              <div style="font-size: 14px; font-weight: 700; color: #854d0e; margin-bottom: 8px;">
+                📊 Weekly Market &amp; Tech Insights
+              </div>
+              <div style="font-size: 12px; color: #713f12; line-height: 1.6; white-space: pre-wrap; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">{safe_insights}</div>
+            </td>
+          </tr>
+        </table>
+        """
+
+    # Empty fallback
+    empty_html = ""
+    if not courses and not jobs:
+        empty_html = """
+        <div style="text-align: center; padding: 32px 16px; color: #64748b; font-size: 13px;">
+          <div style="font-size: 28px; margin-bottom: 8px;">🎯</div>
+          No new matches found today. Your radar is active and watching for fresh drops!
+        </div>
+        """
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Course &amp; Job Hunter Daily Digest</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f1f5f9; padding: 24px 10px;">
+    <tr>
+      <td align="center">
+        <!-- Main Card Container -->
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 14px rgba(0,0,0,0.05);">
+          
+          <!-- Brand Header -->
+          <tr>
+            <td style="background-color: #0f172a; padding: 32px 24px 24px 24px;">
+              <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                  <td align="left">
+                    <span style="display: inline-block; padding: 3px 10px; background-color: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); border-radius: 20px; font-size: 11px; font-weight: 700; color: #60a5fa; letter-spacing: 0.5px; text-transform: uppercase;">
+                      Course &amp; Job Hunter 🎯
+                    </span>
+                  </td>
+                  <td align="right">
+                    <span style="font-size: 11px; color: #94a3b8; font-weight: 500;">{today_label}</span>
+                  </td>
+                </tr>
+              </table>
+
+              <h1 style="margin: 14px 0 4px 0; font-size: 22px; font-weight: 700; color: #ffffff; line-height: 1.3;">
+                Good morning, {safe_name} 👋
+              </h1>
+              <p style="margin: 0; font-size: 13px; color: #94a3b8; line-height: 1.5;">
+                Here are your fresh matches for free certified courses &amp; remote job openings.
+              </p>
+
+              <!-- Gamification Metrics Strip -->
+              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #1e293b; border-radius: 12px; margin-top: 18px; border: 1px solid #334155;">
+                <tr>
+                  <td width="33%" align="center" style="padding: 10px 6px; border-right: 1px solid #334155;">
+                    <div style="font-size: 10px; text-transform: uppercase; color: #94a3b8; font-weight: 700; letter-spacing: 0.5px;">Streak</div>
+                    <div style="font-size: 14px; font-weight: 700; color: #f59e0b; margin-top: 2px;">🔥 Day {streak}</div>
+                  </td>
+                  <td width="34%" align="center" style="padding: 10px 6px; border-right: 1px solid #334155;">
+                    <div style="font-size: 10px; text-transform: uppercase; color: #94a3b8; font-weight: 700; letter-spacing: 0.5px;">Level {level_num}</div>
+                    <div style="font-size: 13px; font-weight: 700; color: #60a5fa; margin-top: 2px; white-space: nowrap;">{badge} {html.escape(level_title)}</div>
+                  </td>
+                  <td width="33%" align="center" style="padding: 10px 6px;">
+                    <div style="font-size: 10px; text-transform: uppercase; color: #94a3b8; font-weight: 700; letter-spacing: 0.5px;">Saved</div>
+                    <div style="font-size: 14px; font-weight: 700; color: #10b981; margin-top: 2px;">${money_saved}</div>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+          <!-- Digest Content Area -->
+          <tr>
+            <td style="padding: 24px 24px 16px 24px;">
+              {insights_html}
+              {course_cards_html}
+              {job_cards_html}
+              {empty_html}
+
+              <!-- Opportunity Vault Callout -->
+              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #0f172a; border-radius: 12px; margin-top: 8px; text-align: center;">
+                <tr>
+                  <td style="padding: 20px 20px;">
+                    <div style="font-size: 14px; font-weight: 700; color: #ffffff; margin-bottom: 4px;">
+                      📂 Your Member Opportunity Vault
+                    </div>
+                    <div style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin-bottom: 12px;">
+                      Search every opportunity found for you, manage topics, or update preferences.
+                    </div>
+                    <a href="{hub_url}" target="_blank" style="display: inline-block; background-color: #2563eb; color: #ffffff; font-size: 12px; font-weight: 600; text-decoration: none; padding: 7px 18px; border-radius: 6px;">
+                      Open Member Hub ↗
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 20px 24px; text-align: center;">
+              <div style="font-size: 11px; color: #64748b; line-height: 1.6;">
+                Tailored for <strong>{html.escape(recipient_email)}</strong> · Delivered daily at ~8:00 AM IST<br/>
+                Want to tweak your keywords or pause digests? Reply directly to <strong>{html.escape(reply_email)}</strong> anytime.
+              </div>
+              <div style="font-size: 11px; color: #94a3b8; margin-top: 8px; font-weight: 500;">
+                Course &amp; Job Hunter 🎯 · Curated for the team
+              </div>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+"""
+
+
+def build_html_welcome(
+    name: str,
+    email: str,
+    keywords: List[str],
+    job_searches: List[str],
+    max_items: int,
+    sender_email: str = "",
+    portal_url: str = "",
+) -> str:
+    """
+    Build a warm, highly attractive HTML welcome email for new friends joining the radar.
+    """
+    first_name = (name or "").strip().split()[0] if name else "Friend"
+    safe_name = html.escape(first_name)
+    reply_email = sender_email or notifier.get_sender_email() or "ojasvimittalofficial@gmail.com"
+    hub_url = portal_url or os.environ.get("PORTAL_BASE_URL") or "http://localhost:8000/portal"
+
+    kw_pills = " ".join(
+        f"""<span style="display: inline-block; background: #ecfdf5; border: 1px solid #a7f3d0; color: #047857; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 4px; margin: 2px;">{html.escape(k)}</span>"""
+        for k in (keywords or ["All curated courses"])
+    )
+    js_pills = " ".join(
+        f"""<span style="display: inline-block; background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 4px; margin: 2px;">{html.escape(j)}</span>"""
+        for j in (job_searches or ["All remote openings"])
+    )
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to Course &amp; Job Hunter</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
+  <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f1f5f9; padding: 24px 10px;">
+    <tr>
+      <td align="center">
+        <!-- Main Card -->
+        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 14px rgba(0,0,0,0.05);">
+          
+          <!-- Header -->
+          <tr>
+            <td style="background-color: #0f172a; padding: 36px 28px; text-align: center;">
+              <span style="display: inline-block; padding: 3px 12px; background-color: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); border-radius: 20px; font-size: 11px; font-weight: 700; color: #60a5fa; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 12px;">
+                Course &amp; Job Hunter 🎯
+              </span>
+              <h1 style="margin: 0; font-size: 24px; font-weight: 700; color: #ffffff; line-height: 1.3;">
+                Welcome, {safe_name}! 🎉
+              </h1>
+              <p style="margin: 8px 0 0 0; font-size: 13px; color: #94a3b8;">
+                Your automated career radar is officially active.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding: 28px 24px;">
+              <p style="font-size: 14px; color: #334155; line-height: 1.6; margin: 0 0 18px 0;">
+                You are all set to receive your personalized morning digest of <strong>100% free certified online courses</strong> and <strong>verified remote job openings</strong> (India &amp; Global).
+              </p>
+
+              <!-- Profile summary -->
+              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 22px;">
+                <tr>
+                  <td style="padding: 16px 18px;">
+                    <div style="font-size: 12px; font-weight: 700; color: #0f172a; margin-bottom: 10px;">📋 Your Custom Profile</div>
+                    <div style="font-size: 12px; color: #334155; line-height: 1.8;">
+                      <div style="margin-bottom: 6px;"><strong>🎯 Course Keywords:</strong><br/>{kw_pills}</div>
+                      <div style="margin-bottom: 6px;"><strong>💼 Job Searches:</strong><br/>{js_pills}</div>
+                      <div><strong>📦 Max Delivery:</strong> {max_items} opportunities / morning</div>
+                      <div><strong>⏰ Schedule:</strong> Daily at ~8:00 AM IST</div>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- How It Works -->
+              <div style="font-size: 13px; font-weight: 700; color: #0f172a; margin-bottom: 12px;">⚡ How It Works</div>
+              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 20px;">
+                <tr>
+                  <td style="padding: 8px 0; font-size: 13px; color: #475569; line-height: 1.5;">
+                    <strong style="color: #0f172a;">1. Multi-Platform Scan:</strong> Every morning we check Udemy 100% OFF coupons, Swayam/NPTEL, freeCodeCamp, LinkedIn, Indeed India, Remotive, and more.
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; font-size: 13px; color: #475569; line-height: 1.5;">
+                    <strong style="color: #0f172a;">2. Keyword Match:</strong> We only surface items matching your specific skills and target roles.
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; font-size: 13px; color: #475569; line-height: 1.5;">
+                    <strong style="color: #0f172a;">3. Zero Duplicates:</strong> Every link you receive is remembered so you never see the same course or job twice.
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; font-size: 13px; color: #475569; line-height: 1.5;">
+                    <strong style="color: #0f172a;">4. Inbox Zero:</strong> If there's nothing high-quality matching on a given day, we keep your inbox quiet.
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Button -->
+              <table border="0" cellpadding="0" cellspacing="0" width="100%" style="text-align: center; margin-top: 10px;">
+                <tr>
+                  <td align="center">
+                    <a href="{hub_url}" target="_blank" style="display: inline-block; background-color: #2563eb; color: #ffffff; font-size: 13px; font-weight: 600; text-decoration: none; padding: 10px 22px; border-radius: 8px;">
+                      Explore Your Member Vault ↗
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 20px 24px; text-align: center;">
+              <div style="font-size: 11px; color: #64748b; line-height: 1.6;">
+                Welcome aboard! Want to update your keywords or pause digests anytime? Simply reply to <strong>{html.escape(reply_email)}</strong>.
+              </div>
+              <div style="font-size: 11px; color: #94a3b8; margin-top: 8px; font-weight: 500;">
+                Course &amp; Job Hunter 🎓💼
+              </div>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+"""
 
 
 def is_welcome_sent(recipient: Dict[str, Any], seen_dict: Dict[str, Any]) -> bool:
@@ -1366,10 +1787,21 @@ def run(
         if not is_welcome_sent(recipient, seen_dict):
             welcome_msg = compose_welcome_message(name, email, keywords, job_searches, max_items)
             welcome_subject = f"👋 Welcome to Course & Job Hunter, {name}!"
+            welcome_html = build_html_welcome(
+                name=name,
+                email=email,
+                keywords=keywords,
+                job_searches=job_searches,
+                max_items=max_items,
+                sender_email=sender_email,
+            )
             if dry_run:
                 print(f"\n--- [DRY RUN: Welcome Email for {name} <{email}>] ---")
                 print(f"Subject: {welcome_subject}")
                 print(welcome_msg)
+                print("<!-- HTML_START -->")
+                print(welcome_html)
+                print("<!-- HTML_END -->")
                 print("--- [END OF WELCOME EMAIL] ---\n")
             else:
                 try:
@@ -1378,6 +1810,7 @@ def run(
                         welcome_msg,
                         to_email=email,
                         subject=welcome_subject,
+                        html=welcome_html,
                     )
                     mark_welcome_sent(recipient, seen_dict, RECIPIENTS_FILE)
                     emails_sent += 1
@@ -1468,10 +1901,22 @@ def run(
             weekly=weekly,
         )
 
+        html_message = build_html_digest(
+            recipient_name=name,
+            recipient_email=email,
+            items=selected_items,
+            stats=hunter_stats,
+            insights=sunday_weekly_section if sunday_weekly_section else None,
+            sender_email=sender_email,
+        )
+
         if dry_run:
             print(f"\n--- [DRY RUN: Digest for {name} <{email}>] ---")
             print(f"Subject: {digest_subject}")
             print(message)
+            print("<!-- HTML_START -->")
+            print(html_message)
+            print("<!-- HTML_END -->")
             print("--- [END OF MESSAGE] ---")
         else:
             try:
@@ -1480,6 +1925,7 @@ def run(
                     message,
                     to_email=email,
                     subject=digest_subject,
+                    html=html_message,
                 )
                 print(f"  -> ✅ Email successfully sent to {name} <{email}>!")
                 emails_sent += 1

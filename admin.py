@@ -374,10 +374,18 @@ async def run_test(payload: Dict[str, Any]):
                         body = remaining_body.strip()
 
                     items_count = body.count("🎓") + body.count("💼")
+                    html_content = ""
+                    if "<!-- HTML_START -->" in body and "<!-- HTML_END -->" in body:
+                        before_html, _, rest_html = body.partition("<!-- HTML_START -->")
+                        html_content, _, after_html = rest_html.partition("<!-- HTML_END -->")
+                        body = (before_html + after_html).strip()
+                        html_content = html_content.strip()
+
                     digests.append({
                         "recipient": header_line,
                         "subject": subject_line,
                         "content": body,
+                        "html": html_content,
                         "items_count": items_count,
                     })
 
@@ -396,10 +404,18 @@ async def run_test(payload: Dict[str, Any]):
                         subject_line = subject_part.replace("Subject:", "").strip()
                         body = remaining_body.strip()
 
+                    welcome_html_content = ""
+                    if "<!-- HTML_START -->" in body and "<!-- HTML_END -->" in body:
+                        before_html, _, rest_html = body.partition("<!-- HTML_START -->")
+                        welcome_html_content, _, after_html = rest_html.partition("<!-- HTML_END -->")
+                        body = (before_html + after_html).strip()
+                        welcome_html_content = welcome_html_content.strip()
+
                     digests.append({
                         "recipient": f"👋 Welcome Email: {header_line}",
                         "subject": subject_line,
                         "content": body,
+                        "html": welcome_html_content,
                         "items_count": 1,
                     })
 
