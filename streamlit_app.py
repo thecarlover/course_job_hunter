@@ -829,19 +829,17 @@ if nav_page == "🎯 Member Portal":
                 <div style="font-size:12px;margin-top:4px;">Jobs from LinkedIn, Naukri, Remotive appear after digest runs.</div>
             </div>""", unsafe_allow_html=True)
         else:
-            # Render with AI Pitch button — use Streamlit columns for each job
-            for j in filtered_jobs:
-                jrow1, jrow2, jrow3 = st.columns([6, 1, 1])
+            # Render with AI Pitch button — use Streamlit columns with unique hash keys
+            for j_idx, j in enumerate(filtered_jobs):
+                jrow1, jrow2 = st.columns([6, 1])
                 with jrow1:
                     st.markdown(item_row_html(j), unsafe_allow_html=True)
                 with jrow2:
                     st.markdown("<div style='height:28px;'></div>", unsafe_allow_html=True)
-                    if st.button("🤖 Pitch", key=f"pitch_{j['url'][:30]}"):
+                    url_hash = hashlib.sha256(j.get("url", str(j_idx)).encode()).hexdigest()[:10]
+                    if st.button("🤖 Pitch", key=f"pitch_job_{j_idx}_{url_hash}"):
                         st.session_state.pitch_job = j
-                        st.session_state.active_tab_hint = "pitch"
                         st.rerun()
-                with jrow3:
-                    st.markdown("<div style='height:28px;'></div>", unsafe_allow_html=True)
 
     # ── TAB: DAILY INTERVIEW BYTE ─────────────────────────────────────────────
     with tab_quiz:
@@ -920,13 +918,13 @@ if nav_page == "🎯 Member Portal":
 
         pc1, pc2 = st.columns(2)
         with pc1:
-            pitch_title   = st.text_input("Job Title / Role", value=pre_title, placeholder="e.g. Senior Python Developer")
+            pitch_title   = st.text_input("Job Title / Role", value=pre_title, placeholder="e.g. Senior Python Developer", key="pitch_role_inp")
         with pc2:
-            pitch_company = st.text_input("Company Name", value=pre_company, placeholder="e.g. Infosys")
+            pitch_company = st.text_input("Company Name", value=pre_company, placeholder="e.g. Infosys", key="pitch_company_inp")
 
-        pitch_name = st.text_input("Your Name", value=name, placeholder="Your full name")
+        pitch_name = st.text_input("Your Name", value=name, placeholder="Your full name", key="pitch_name_inp")
 
-        if st.button("🤖 Generate AI Pitch Now", use_container_width=True):
+        if st.button("🤖 Generate AI Pitch Now", key="gen_ai_pitch_btn", use_container_width=True):
             if not pitch_title:
                 st.error("Please enter the job title.")
             else:
@@ -974,7 +972,8 @@ if nav_page == "🎯 Member Portal":
         with st.form("portal_settings_form"):
             s_active = st.checkbox(
                 "Morning Email Digest Active (~8 AM IST)",
-                value=bool(sub.get("active", True))
+                value=bool(sub.get("active", True)),
+                key="portal_set_active"
             )
             st.caption("Uncheck to pause without losing your streak.")
 
@@ -982,7 +981,8 @@ if nav_page == "🎯 Member Portal":
             s_keywords = st.text_area(
                 "Target Keywords & Roles (comma-separated)",
                 value=existing_kws,
-                placeholder="python, machine learning, remote, devops…"
+                placeholder="python, machine learning, remote, devops…",
+                key="portal_set_kws"
             )
 
             all_job_opts    = list(getattr(config, "AVAILABLE_JOB_SOURCES", {}).keys())
@@ -995,12 +995,14 @@ if nav_page == "🎯 Member Portal":
                 options=all_job_opts,
                 default=cur_job_srcs,
                 format_func=lambda k: getattr(config, "AVAILABLE_JOB_SOURCES", {}).get(k, k),
+                key="portal_set_jobs"
             )
             s_course_srcs = st.multiselect(
                 "Course Platforms",
                 options=all_course_opts,
                 default=cur_course_srcs,
                 format_func=lambda k: getattr(config, "AVAILABLE_COURSE_PLATFORMS", {}).get(k, k),
+                key="portal_set_courses"
             )
 
             save_prefs = st.form_submit_button("💾 Save Preferences", use_container_width=True)
@@ -1020,8 +1022,8 @@ if nav_page == "🎯 Member Portal":
         st.markdown("<hr style='border-color:rgba(255,255,255,0.07);margin:16px 0;'>", unsafe_allow_html=True)
         st.markdown('<div style="font-size:12px;font-weight:700;color:#f1f5f9;margin-bottom:10px;">🔐 Change Password</div>', unsafe_allow_html=True)
         with st.form("change_pw_form"):
-            old_pw = st.text_input("Current Password", type="password")
-            new_pw = st.text_input("New Password (min 6 chars)", type="password")
+            old_pw = st.text_input("Current Password", type="password", key="portal_cpw_old")
+            new_pw = st.text_input("New Password (min 6 chars)", type="password", key="portal_cpw_new")
             change_pw = st.form_submit_button("Update Password")
 
         if change_pw:
@@ -1056,22 +1058,23 @@ elif nav_page == "🚀 Digest Engine":
         run_mode = st.radio(
             "Execution Mode",
             ["🔵 Dry Run (Safe Simulation — No Emails)", "🔴 Live Run (Send Real Emails)"],
+            key="de_run_mode"
         )
         is_dry = "Dry Run" in run_mode
     with col_b:
-        target_sel = st.selectbox("Target Recipient", recipient_options)
-        weekly_flag = st.checkbox("Include Weekly Insights Report")
+        target_sel = st.selectbox("Target Recipient", recipient_options, key="de_target_sel")
+        weekly_flag = st.checkbox("Include Weekly Insights Report", key="de_weekly_flag")
 
     if not is_dry:
         st.markdown(f"""
         <div style="background:rgba(244,63,94,0.08);border:1px solid rgba(244,63,94,0.2);border-radius:12px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#fda4af;">
             ⚠️  <strong>Live mode</strong> will send real emails to recipients. Enter admin password to confirm.
         </div>""", unsafe_allow_html=True)
-        admin_pw_input = st.text_input("Admin Password", type="password")
+        admin_pw_input = st.text_input("Admin Password", type="password", key="de_admin_pw")
     else:
         admin_pw_input = ""
 
-    if st.button("🚀 Execute Digest Engine", use_container_width=True):
+    if st.button("🚀 Execute Digest Engine", key="de_exec_btn", use_container_width=True):
         if not is_dry and admin_pw_input != ADMIN_PASSWORD:
             st.error("Invalid admin password. Live sending blocked.")
         else:
@@ -1109,13 +1112,13 @@ elif nav_page == "👥 Subscribers":
         with st.form("add_sub_form", clear_on_submit=True):
             fc1, fc2 = st.columns(2)
             with fc1:
-                f_name  = st.text_input("Full Name", placeholder="e.g. Ojasvi")
-                f_email = st.text_input("Email", placeholder="e.g. ojasvi@example.com")
+                f_name  = st.text_input("Full Name", placeholder="e.g. Ojasvi", key="as_name_inp")
+                f_email = st.text_input("Email", placeholder="e.g. ojasvi@example.com", key="as_email_inp")
             with fc2:
-                f_max  = st.number_input("Max Items Daily", 1, 50, 15)
-                f_active = st.checkbox("Active from Day 1", value=True)
-            f_kws  = st.text_area("Course Keywords (comma-separated)", "python, ai, project management")
-            f_jobs = st.text_area("Job Searches (comma-separated)", "remote python, product manager, devops")
+                f_max  = st.number_input("Max Items Daily", 1, 50, 15, key="as_max_inp")
+                f_active = st.checkbox("Active from Day 1", value=True, key="as_active_cb")
+            f_kws  = st.text_area("Course Keywords (comma-separated)", "python, ai, project management", key="as_kws_inp")
+            f_jobs = st.text_area("Job Searches (comma-separated)", "remote python, product manager, devops", key="as_jobs_inp")
             if st.form_submit_button("Add Subscriber →", use_container_width=True):
                 if not f_email.strip() or not f_name.strip():
                     st.error("Name and Email are required.")
@@ -1181,7 +1184,7 @@ elif nav_page == "📡 Source Health":
     {craft_card_end()}
     """, unsafe_allow_html=True)
 
-    if st.button("🔄 Test All Sources Now", use_container_width=True):
+    if st.button("🔄 Test All Sources Now", key="sh_test_sources_btn", use_container_width=True):
         feeds = getattr(config, "COURSE_FEEDS", [])
         st.markdown(f'<div style="font-size:13px;font-weight:700;color:#f1f5f9;margin:16px 0 8px;">📚 Course Feeds ({len(feeds)})</div>', unsafe_allow_html=True)
         for url in feeds:
