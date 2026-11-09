@@ -87,6 +87,26 @@ def is_authenticated(request: fastapi.Request) -> bool:
     return False
 
 
+def extract_email_from_query(query_params: Any) -> Optional[str]:
+    """Extract email from query params supporting ?email=, ?user=, ?u=, ?=email, or ?email@domain.com."""
+    if not query_params:
+        return None
+    # 1. Known keys: email, user, u, id, "" (for ?=email or ?email)
+    for key in ["email", "user", "u", "id", ""]:
+        val = str(query_params.get(key, "")).strip()
+        if "@" in val and "." in val:
+            return val.lower()
+    # 2. Check any key or value containing '@'
+    for k, v in query_params.items():
+        k_str = str(k).strip()
+        v_str = str(v).strip()
+        if "@" in k_str and "." in k_str:
+            return k_str.lower()
+        if "@" in v_str and "." in v_str:
+            return v_str.lower()
+    return None
+
+
 # ── Portal auth helpers ──────────────────────────────────────────────────────
 
 def _hash_password(password: str, salt: str = "") -> str:
@@ -208,8 +228,16 @@ async def get_network_info():
 # ============================================================================
 
 @app.get("/", response_class=HTMLResponse)
-async def serve_dashboard():
-    """Serve the single-page admin dashboard."""
+async def serve_dashboard(request: fastapi.Request):
+    """Serve the single-page admin dashboard, or redirect to member portal if email is provided in query."""
+    email = extract_email_from_query(request.query_params)
+    if email:
+        token = _create_portal_token(email)
+        redirect_url = f"/portal?email={urllib.parse.quote(email)}"
+        resp = fastapi.responses.RedirectResponse(url=redirect_url, status_code=303)
+        resp.set_cookie("portal_token", token, httponly=True, samesite="lax", max_age=60 * 60 * 24 * 30)
+        return resp
+
     html_path = os.path.join(TEMPLATES_DIR, "admin.html")
     if not os.path.exists(html_path):
         return HTMLResponse("<h3>Admin dashboard template not found.</h3>", status_code=404)
@@ -699,14 +727,44 @@ def calculate_xp_progress(total_items: int, level_num: int) -> Dict[str, Any]:
 
 
 @app.get("/portal", response_class=HTMLResponse)
-async def serve_user_portal():
+async def serve_user_portal(request: fastapi.Request):
     """Serve the self-service member hub and opportunity vault page."""
     html_path = os.path.join(TEMPLATES_DIR, "user_portal.html")
     if not os.path.exists(html_path):
         return HTMLResponse("<h3>Member portal template not found.</h3>", status_code=404)
     with open(html_path, "r", encoding="utf-8") as f:
         content = f.read()
-    return HTMLResponse(content)
+
+    resp = HTMLResponse(content)
+    email = extract_email_from_query(request.query_params)
+    if email:
+        token = _create_portal_token(email)
+        resp.set_cookie("portal_token", token, httponly=True, samesite="lax", max_age=60 * 60 * 24 * 30)
+    return resp
+
+
+@app.get("/api/portal/auth/magic")
+async def portal_magic_login(request: fastapi.Request, response: fastapi.Response):
+    """1-Click Magic Login API for query param authentication (?email=, ?user=, ?=email)."""
+    email = extract_email_from_query(request.query_params)
+    if not email:
+        return JSONResponse({"error": "No email parameter provided"}, status_code=400)
+
+    sub_name = email.split("@")[0].title()
+    if os.path.exists(RECIPIENTS_FILE):
+        try:
+            with open(RECIPIENTS_FILE, "r", encoding="utf-8") as f:
+                subs = json.load(f)
+                matched = next((s for s in subs if s.get("email", "").strip().lower() == email), None)
+                if matched and matched.get("name"):
+                    sub_name = matched["name"]
+        except Exception:
+            pass
+
+    token = _create_portal_token(email)
+    resp = JSONResponse({"success": True, "email": email, "name": sub_name, "token": token})
+    resp.set_cookie("portal_token", token, httponly=True, samesite="lax", max_age=60 * 60 * 24 * 30)
+    return resp
 
 
 @app.get("/api/portal/subscribers")

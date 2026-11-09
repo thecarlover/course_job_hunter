@@ -972,6 +972,52 @@ def test_portal_user_sources_config():
     assert "swayam_nptel" in updated_sub.get("course_sources", [])
 
 
+def test_email_query_redirection_and_magic_login():
+    """Test 1-click magic redirection with ?email=, ?user=, and ?=email query parameters."""
+    from fastapi.testclient import TestClient
+    from admin import app, extract_email_from_query
+
+    client = TestClient(app)
+
+    # 1. Test helper extractor
+    assert extract_email_from_query({"email": "test@example.com"}) == "test@example.com"
+    assert extract_email_from_query({"user": "user@test.org"}) == "user@test.org"
+    assert extract_email_from_query({"": "bare@test.org"}) == "bare@test.org"
+    assert extract_email_from_query({"unknown@domain.com": ""}) == "unknown@domain.com"
+    assert extract_email_from_query({}) is None
+
+    # 2. GET / with ?email= redirects to /portal?email= and sets portal_token cookie
+    res = client.get("/?email=ojasvimittalofficial@gmail.com", follow_redirects=False)
+    assert res.status_code == 303
+    assert "/portal?email=" in res.headers["location"]
+    assert "portal_token" in res.cookies
+
+    # 3. GET / with ?user= also redirects
+    res_user = client.get("/?user=ojasvimittalofficial@gmail.com", follow_redirects=False)
+    assert res_user.status_code == 303
+    assert "/portal?email=" in res_user.headers["location"]
+    assert "portal_token" in res_user.cookies
+
+    # 4. GET / with ?= also redirects
+    res_bare = client.get("/?=ojasvimittalofficial@gmail.com", follow_redirects=False)
+    assert res_bare.status_code == 303
+    assert "/portal?email=" in res_bare.headers["location"]
+
+    # 5. GET /portal?email= returns 200 and sets portal_token cookie
+    res_portal = client.get("/portal?email=ojasvimittalofficial@gmail.com")
+    assert res_portal.status_code == 200
+    assert "portal_token" in res_portal.cookies
+
+    # 6. GET /api/portal/auth/magic returns 200 JSON with token
+    res_magic = client.get("/api/portal/auth/magic?email=ojasvimittalofficial@gmail.com")
+    assert res_magic.status_code == 200
+    data = res_magic.json()
+    assert data["success"] is True
+    assert data["email"] == "ojasvimittalofficial@gmail.com"
+    assert "portal_token" in res_magic.cookies
+
+
+
 
 
 

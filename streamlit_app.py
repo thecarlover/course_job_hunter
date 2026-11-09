@@ -223,10 +223,23 @@ if not all_subscribers:
     st.error("No subscribers configured in recipients.json.")
     st.stop()
 
-# Priority: URL ?user=email -> EMAIL env var -> First subscriber
+# Priority: URL ?user=email / ?email=email / ?=email -> EMAIL env var -> First subscriber
 target_email = ""
 try:
-    target_email = st.query_params.get("user") or st.query_params.get("email") or ""
+    for qk in ["user", "email", "u", "id", ""]:
+        qv = str(st.query_params.get(qk, "")).strip()
+        if "@" in qv and "." in qv:
+            target_email = qv.lower()
+            break
+    if not target_email:
+        for k, v in st.query_params.items():
+            k_s, v_s = str(k).strip(), str(v).strip()
+            if "@" in k_s and "." in k_s:
+                target_email = k_s.lower()
+                break
+            if "@" in v_s and "." in v_s:
+                target_email = v_s.lower()
+                break
 except Exception:
     pass
 

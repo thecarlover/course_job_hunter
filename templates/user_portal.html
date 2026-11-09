@@ -925,6 +925,30 @@
     });
 
     try {
+      // 1-Click Magic Link URL detection (?email=, ?user=, ?u=, ?=email, or ?email@domain.com)
+      const params = new URLSearchParams(window.location.search);
+      let magicEmail = params.get("email") || params.get("user") || params.get("u") || params.get("");
+      if (!magicEmail) {
+        for (const [k, v] of params.entries()) {
+          if (k.includes("@") && k.includes(".")) { magicEmail = k; break; }
+          if (v.includes("@") && v.includes(".")) { magicEmail = v; break; }
+        }
+      }
+
+      if (magicEmail) {
+        try {
+          const mr = await fetch(`/api/portal/auth/magic?email=${encodeURIComponent(magicEmail)}`);
+          const md = await mr.json();
+          if (md.success) {
+            currentEmail = md.email;
+            setHeaderUser(md.name || md.email);
+            showPortal();
+            await loadProfile(md.email);
+            return;
+          }
+        } catch (_) {}
+      }
+
       const r = await fetch("/api/portal/auth/me");
       const d = await r.json();
       if (d.authenticated) {
