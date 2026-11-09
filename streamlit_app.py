@@ -334,7 +334,8 @@ render_html(f"""
         </div>
     </div>
     <div style="text-align:right;">
-        <div style="font-size:11px;color:#64748b;font-family:'JetBrains Mono',monospace;">{user_email}</div>
+        <div style="font-size:11px;color:#64748b;font-family:'JetBrains Mono',monospace;margin-bottom:4px;">{user_email}</div>
+        <a href="?" target="_self" style="font-size:10px;color:#f43f5e;text-decoration:none;font-weight:600;padding:2px 8px;border-radius:6px;background:rgba(244,63,94,0.1);border:1px solid rgba(244,63,94,0.2);">Log Out ↗</a>
     </div>
 </div>
 """)
