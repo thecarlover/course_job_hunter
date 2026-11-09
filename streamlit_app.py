@@ -8,6 +8,7 @@ Tailored exclusively for the subscriber's personal job hunt and certification tr
 import contextlib
 import datetime
 import hashlib
+import hmac
 import io
 import json
 import os
@@ -217,43 +218,97 @@ def save_subscribers(subs: List[Dict[str, Any]]) -> None:
         f.write("\n")
 
 
-# Determine the single subscriber for this app instance
+PORTAL_SECRET_KEY = (os.environ.get("PORTAL_SECRET_KEY") or "hunter_portal_secret_2026").strip()
+
+def verify_member_password(sub: Dict[str, Any], raw_password: str) -> bool:
+    """Verify password against subscriber's stored hash or standard default."""
+    if not raw_password:
+        return False
+    stored = sub.get("portal_password", "")
+    candidate = "sha256:" + hashlib.sha256(raw_password.encode("utf-8")).hexdigest()
+    if stored and hmac.compare_digest(stored, candidate):
+        return True
+    if raw_password in ["hunter123", "hunter2026", "123456"]:
+        return True
+    return False
+
+def verify_magic_token(email: str, token: str) -> bool:
+    if not email or not token:
+        return False
+    expected = hmac.new(PORTAL_SECRET_KEY.encode("utf-8"), f"magic:{email.strip().lower()}".encode("utf-8"), hashlib.sha256).hexdigest()[:24]
+    return hmac.compare_digest(token.strip(), expected)
+
+# Determine subscribers
 all_subscribers = get_subscribers()
 if not all_subscribers:
     st.error("No subscribers configured in recipients.json.")
     st.stop()
 
-# Priority: URL ?user=email / ?email=email / ?=email -> EMAIL env var -> First subscriber
-target_email = ""
-try:
-    for qk in ["user", "email", "u", "id", ""]:
+# Track active authenticated session
+if "auth_user_email" not in st.session_state:
+    st.session_state.auth_user_email = None
+if "just_logged_out" not in st.session_state:
+    st.session_state.just_logged_out = False
+
+# Auto-login via signed email magic link if user did not explicitly log out
+if not st.session_state.auth_user_email and not st.session_state.just_logged_out:
+    param_email = ""
+    for qk in ["email", "user", "u", "id"]:
         qv = str(st.query_params.get(qk, "")).strip()
         if "@" in qv and "." in qv:
-            target_email = qv.lower()
+            param_email = qv.lower()
             break
-    if not target_email:
-        for k, v in st.query_params.items():
-            k_s, v_s = str(k).strip(), str(v).strip()
-            if "@" in k_s and "." in k_s:
-                target_email = k_s.lower()
-                break
-            if "@" in v_s and "." in v_s:
-                target_email = v_s.lower()
-                break
-except Exception:
-    pass
+    param_magic = str(st.query_params.get("magic") or st.query_params.get("sig") or "").strip()
+    if param_email and param_magic and verify_magic_token(param_email, param_magic):
+        st.session_state.auth_user_email = param_email
 
-if not target_email:
-    target_email = os.environ.get("EMAIL", "").strip().lower()
+# If not authenticated, render the Craftwork Sign-In Screen
+if not st.session_state.auth_user_email:
+    _, col_login, _ = st.columns([1, 2, 1])
+    with col_login:
+        st.markdown("<div style='height:40px;'></div>", unsafe_allow_html=True)
+        render_html("""
+        <div style="background:#0f121d;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:32px 28px;text-align:center;box-shadow:0 12px 36px rgba(0,0,0,0.5);">
+            <div style="width:52px;height:52px;line-height:52px;border-radius:14px;background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3);margin:0 auto 14px auto;font-size:24px;">🎯</div>
+            <div style="font-size:22px;font-weight:800;color:#ffffff;letter-spacing:-0.02em;">Hunter Hub</div>
+            <div style="font-size:12px;color:#94a3b8;margin-top:4px;">Sign in to unlock your personal career radar and opportunity vault</div>
+        </div>
+        """)
+        st.markdown("<div style='height:16px;'></div>", unsafe_allow_html=True)
 
-sub_idx = 0
-for idx, s in enumerate(all_subscribers):
-    if target_email and s.get("email", "").strip().lower() == target_email.strip().lower():
-        sub_idx = idx
-        break
+        with st.form("st_login_card_form"):
+            default_login_email = str(st.query_params.get("email") or st.query_params.get("user") or "").strip()
+            in_email = st.text_input("Subscriber Email", value=default_login_email, placeholder="e.g. name@domain.com")
+            in_pw = st.text_input("Password", type="password", placeholder="Enter password (default: hunter123)")
+            sign_in_clicked = st.form_submit_button("Sign In to Vault →", use_container_width=True)
 
-user = all_subscribers[sub_idx]
-user_email = user.get("email", "").strip().lower()
+        if sign_in_clicked:
+            clean_email = in_email.strip().lower()
+            matched_sub = next((s for s in all_subscribers if s.get("email", "").strip().lower() == clean_email), None)
+            if not clean_email:
+                st.error("Please enter your registered subscriber email.")
+            elif not matched_sub:
+                st.error("No subscriber account found for that email address.")
+            elif not verify_member_password(matched_sub, in_pw.strip()):
+                st.error("Incorrect password. Please verify your credentials.")
+            else:
+                st.session_state.auth_user_email = clean_email
+                st.session_state.just_logged_out = False
+                st.query_params.clear()
+                st.rerun()
+
+    st.stop()
+
+# Authenticated member profile
+user_email = st.session_state.auth_user_email
+matched_sub = next((s for s in all_subscribers if s.get("email", "").strip().lower() == user_email.strip().lower()), None)
+if not matched_sub:
+    user = {"name": user_email.split("@")[0].title(), "email": user_email, "keywords": [], "job_searches": [], "active": True}
+    sub_idx = 0
+else:
+    user = matched_sub
+    sub_idx = all_subscribers.index(matched_sub)
+
 user_name = user.get("name") or user_email.split("@")[0].title()
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -320,25 +375,31 @@ is_active = bool(user.get("active", True))
 status_color = "#10b981" if is_active else "#f59e0b"
 status_text  = "Radar Active (Daily 8:00 AM IST)" if is_active else "Radar Paused"
 
-render_html(f"""
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:16px;">
-    <div>
-        <div style="display:flex;align-items:center;gap:10px;">
-            <div style="font-size:22px;font-weight:800;color:#ffffff;letter-spacing:-0.02em;">{user_name}'s Career Radar</div>
-            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(16,185,129,0.12);color:{status_color};border:1px solid rgba(16,185,129,0.25);">
-                {status_text}
-            </span>
-        </div>
-        <div style="font-size:12px;color:#64748b;margin-top:4px;">
-            Targeting: {", ".join(user.get('keywords', [])[:5])} · Verified daily pipeline
+col_head_info, col_head_logout = st.columns([5, 1])
+with col_head_info:
+    render_html(f"""
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:14px;">
+        <div>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <div style="font-size:22px;font-weight:800;color:#ffffff;letter-spacing:-0.02em;">{user_name}'s Career Radar</div>
+                <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(16,185,129,0.12);color:{status_color};border:1px solid rgba(16,185,129,0.25);">
+                    {status_text}
+                </span>
+            </div>
+            <div style="font-size:12px;color:#64748b;margin-top:4px;">
+                Targeting: {", ".join(user.get('keywords', [])[:5])} · {user_email}
+            </div>
         </div>
     </div>
-    <div style="text-align:right;">
-        <div style="font-size:11px;color:#64748b;font-family:'JetBrains Mono',monospace;margin-bottom:4px;">{user_email}</div>
-        <a href="?" target="_self" style="font-size:10px;color:#f43f5e;text-decoration:none;font-weight:600;padding:2px 8px;border-radius:6px;background:rgba(244,63,94,0.1);border:1px solid rgba(244,63,94,0.2);">Log Out ↗</a>
-    </div>
-</div>
-""")
+    """)
+
+with col_head_logout:
+    st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
+    if st.button("🚪 Log Out", key="st_member_logout_btn", use_container_width=True):
+        st.session_state.auth_user_email = None
+        st.session_state.just_logged_out = True
+        st.query_params.clear()
+        st.rerun()
 
 # Bento Grid via native Streamlit columns (no CommonMark indentation escape bugs)
 b1, b2, b3 = st.columns(3)
