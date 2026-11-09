@@ -3,864 +3,1475 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Course &amp; Job Hunter — Member Hub</title>
+  <title>Hunter Hub — Opportunity Vault</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    * { box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-base:       #07080d;
+      --bg-card:       #0d1018;
+      --bg-card-hover: #111520;
+      --border:        rgba(255,255,255,0.07);
+      --border-hover:  rgba(99,102,241,0.4);
+      --text-primary:  #f1f5f9;
+      --text-muted:    #64748b;
+      --text-subtle:   #334155;
+      --indigo:        #6366f1;
+      --indigo-dark:   #4f46e5;
+      --emerald:       #10b981;
+      --amber:         #f59e0b;
+      --rose:          #f43f5e;
+      --blue:          #3b82f6;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-base);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    code, kbd, pre, .mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* ── Scrollbar ── */
     ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-thumb { background: #2e313d; border-radius: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 99px; }
 
-    /* Tab underline animation */
-    .tab-indicator {
-      transition: left 0.2s ease, width 0.2s ease;
+    /* ── Craftwork Card ── */
+    .craft-card {
+      background: linear-gradient(145deg, rgba(15,20,32,0.9) 0%, rgba(9,12,20,0.95) 100%);
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 0 0 rgba(255,255,255,0.05) inset,
+                  0 8px 32px -8px rgba(0,0,0,0.6);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .craft-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at top left, rgba(99,102,241,0.04), transparent 60%);
+      pointer-events: none;
     }
 
-    /* Card hover lift */
-    .item-card {
-      transition: background 0.15s ease, transform 0.1s ease;
+    /* ── Item Row Card ── */
+    .item-row {
+      background: linear-gradient(135deg, rgba(13,16,24,0.85) 0%, rgba(8,10,18,0.95) 100%);
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset,
+                  0 4px 16px -4px rgba(0,0,0,0.5);
+      transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.15s ease, background 0.18s ease;
     }
-    .item-card:hover {
-      background: #1c1f2b;
+    .item-row:hover {
+      border-color: rgba(99,102,241,0.3);
+      background: linear-gradient(135deg, rgba(17,22,36,0.95) 0%, rgba(11,14,24,0.98) 100%);
+      box-shadow: 0 1px 0 rgba(255,255,255,0.06) inset,
+                  0 12px 32px -8px rgba(0,0,0,0.6),
+                  0 0 24px -4px rgba(99,102,241,0.12);
       transform: translateY(-1px);
     }
 
-    /* Fade in */
+    /* ── Noise Texture overlay ── */
+    .noise::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.5;
+      border-radius: inherit;
+    }
+
+    /* ── Segmented Pill Nav ── */
+    .seg-nav {
+      background: rgba(10,13,22,0.9);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 3px;
+      display: inline-flex;
+      gap: 1px;
+      box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset,
+                  0 4px 16px -4px rgba(0,0,0,0.5);
+    }
+    .seg-btn {
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      white-space: nowrap;
+      cursor: pointer;
+      border: none;
+      outline: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-muted);
+      background: transparent;
+    }
+    .seg-btn:hover:not(.seg-active) { color: var(--text-primary); background: rgba(255,255,255,0.03); }
+    .seg-btn.seg-active {
+      background: linear-gradient(135deg, var(--indigo-dark) 0%, var(--blue) 100%);
+      color: white;
+      box-shadow: 0 4px 14px rgba(99,102,241,0.4), 0 1px 0 rgba(255,255,255,0.15) inset;
+    }
+
+    /* ── Pill Badge ── */
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border: 1px solid;
+    }
+    .pill-green   { background: rgba(16,185,129,0.1); color: #34d399; border-color: rgba(16,185,129,0.25); }
+    .pill-blue    { background: rgba(59,130,246,0.1); color: #60a5fa; border-color: rgba(59,130,246,0.25); }
+    .pill-indigo  { background: rgba(99,102,241,0.1); color: #818cf8; border-color: rgba(99,102,241,0.25); }
+    .pill-amber   { background: rgba(245,158,11,0.1); color: #fbbf24; border-color: rgba(245,158,11,0.25); }
+    .pill-rose    { background: rgba(244,63,94,0.1);  color: #fb7185; border-color: rgba(244,63,94,0.25); }
+    .pill-violet  { background: rgba(139,92,246,0.1); color: #a78bfa; border-color: rgba(139,92,246,0.25); }
+
+    /* ── Toggle Switch ── */
+    .toggle-track {
+      width: 36px; height: 20px;
+      background: #1e293b;
+      border-radius: 999px;
+      position: relative;
+      transition: background 0.2s;
+      cursor: pointer;
+    }
+    .toggle-track.on { background: var(--indigo); }
+    .toggle-thumb {
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 16px; height: 16px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    }
+    .toggle-track.on .toggle-thumb { transform: translateX(16px); }
+
+    /* ── Source Toggle Pills ── */
+    .source-pill {
+      font-size: 11px; font-weight: 600;
+      padding: 4px 10px; border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .source-pill:hover { color: var(--text-primary); background: rgba(255,255,255,0.06); }
+    .source-pill.active-job { background: rgba(99,102,241,0.15); color: #a5b4fc; border-color: rgba(99,102,241,0.3); }
+    .source-pill.active-course { background: rgba(16,185,129,0.12); color: #6ee7b7; border-color: rgba(16,185,129,0.3); }
+
+    /* ── Animations ── */
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(8px); }
+      from { opacity: 0; transform: translateY(10px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-    .fade-in { animation: fadeUp 0.25s ease both; }
+    .fade-up { animation: fadeUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
-    /* Search clear btn */
-    .search-clear { cursor: pointer; }
+    @keyframes shimmer {
+      0%   { background-position: -300% 0; }
+      100% { background-position: 300% 0; }
+    }
+    .skeleton {
+      background: linear-gradient(90deg, #0f1420 25%, #161c2c 50%, #0f1420 75%);
+      background-size: 300% 100%;
+      animation: shimmer 2s infinite;
+      border-radius: 12px;
+    }
 
-    /* Pill badge */
-    .badge-course { background:#18281e; color:#4ade80; border-color:#1e4028; }
-    .badge-job    { background:#182236; color:#60a5fa; border-color:#1e3455; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.65; transform: scale(0.9); }
+    }
+    .pulse-dot { animation: pulse 2s ease-in-out infinite; }
 
-    /* Skeleton pulse */
-    @keyframes pulse { 0%,100%{opacity:.4} 50%{opacity:.8} }
-    .skeleton { animation: pulse 1.4s ease-in-out infinite; background:#1e2029; border-radius:6px; }
+    @keyframes countFlash {
+      0% { transform: scale(1.2); color: #fbbf24; }
+      100% { transform: scale(1); }
+    }
+
+    /* ── Drawer (slide-over) ── */
+    .drawer {
+      position: fixed; top: 0; right: 0; height: 100%;
+      width: 340px; max-width: 95vw;
+      background: linear-gradient(180deg, #09111d 0%, #07080d 100%);
+      border-left: 1px solid var(--border);
+      box-shadow: -24px 0 80px rgba(0,0,0,0.7);
+      display: flex; flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 50;
+    }
+    .drawer.open { transform: translateX(0); }
+
+    /* ── Modal ── */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(8px);
+      z-index: 60;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .modal-backdrop.open { opacity: 1; pointer-events: all; }
+    .modal-box {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -48%) scale(0.97);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+      opacity: 0; pointer-events: none;
+      z-index: 61;
+      width: 92%; max-width: 500px;
+    }
+    .modal-box.open { transform: translate(-50%, -50%) scale(1); opacity: 1; pointer-events: all; }
+
+    /* ── Cmd search field ── */
+    .cmd-search {
+      background: rgba(8,10,18,0.95);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 14px;
+      transition: border-color 0.15s;
+    }
+    .cmd-search:focus-within {
+      border-color: rgba(99,102,241,0.5);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.08);
+    }
+    .cmd-search input {
+      background: transparent;
+      border: none; outline: none;
+      font-size: 12px; color: var(--text-primary);
+      flex: 1;
+    }
+    .cmd-search input::placeholder { color: var(--text-muted); }
+
+    /* ── Quiz Options ── */
+    .quiz-opt {
+      width: 100%;
+      text-align: left;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(8,10,18,0.8);
+      font-size: 12px; color: #94a3b8;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .quiz-opt:hover:not(:disabled) {
+      border-color: rgba(99,102,241,0.3);
+      background: rgba(99,102,241,0.06);
+      color: var(--text-primary);
+    }
+    .quiz-opt.correct { border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.08); color: #6ee7b7; }
+    .quiz-opt.wrong   { border-color: rgba(244,63,94,0.4);  background: rgba(244,63,94,0.08);  color: #fda4af; }
+    .quiz-opt:disabled { cursor: default; }
+
+    /* ── CTA Buttons ── */
+    .btn-primary {
+      padding: 8px 18px;
+      border-radius: 10px;
+      font-size: 12px; font-weight: 700;
+      background: linear-gradient(135deg, var(--indigo-dark), var(--blue));
+      color: white;
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 4px 16px rgba(79,70,229,0.35);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-primary:hover { filter: brightness(1.08); transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0) scale(0.98); }
+
+    .btn-ghost {
+      padding: 7px 14px;
+      border-radius: 10px;
+      font-size: 12px; font-weight: 600;
+      background: rgba(255,255,255,0.04);
+      color: #94a3b8;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,0.08); color: var(--text-primary); }
+
+    .btn-claim-green {
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 11px; font-weight: 700;
+      background: linear-gradient(135deg, #059669, #10b981);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 4px 14px rgba(16,185,129,0.3);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex; align-items: center; gap: 6px;
+      white-space: nowrap;
+    }
+    .btn-claim-green:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+    .btn-apply-blue {
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 11px; font-weight: 700;
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 4px 14px rgba(59,130,246,0.3);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex; align-items: center; gap: 6px;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .btn-apply-blue:hover { filter: brightness(1.08); transform: translateY(-1px); }
+
+    /* ── Week dot streak ── */
+    .week-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #1e293b;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+    .week-dot.filled { background: #f59e0b; box-shadow: 0 0 6px rgba(245,158,11,0.5); }
+    .week-dot.today  { background: #fbbf24; box-shadow: 0 0 10px rgba(251,191,36,0.6); ring: 2px; }
+
+    /* ── Ambient glows ── */
+    .glow-indigo { background: radial-gradient(ellipse, rgba(99,102,241,0.18) 0%, transparent 70%); }
+    .glow-emerald { background: radial-gradient(ellipse, rgba(16,185,129,0.14) 0%, transparent 70%); }
+    .glow-blue { background: radial-gradient(ellipse, rgba(59,130,246,0.14) 0%, transparent 70%); }
+    .glow-amber { background: radial-gradient(ellipse, rgba(245,158,11,0.14) 0%, transparent 70%); }
+
+    /* ── Input base ── */
+    .field-input {
+      width: 100%;
+      background: rgba(6,8,16,0.9);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 14px;
+      font-size: 12px; color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .field-input::placeholder { color: var(--text-muted); }
+    .field-input:focus {
+      border-color: rgba(99,102,241,0.5);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+    }
+
+    .field-label { font-size: 11px; font-weight: 700; color: #94a3b8; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 6px; display: block; }
+
+    /* Countdown monospace digits */
+    .countdown-digit {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+    .countdown-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 22px; font-weight: 700; color: white;
+      line-height: 1;
+    }
+    .countdown-label { font-size: 9px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; }
+    .countdown-sep { font-family: 'JetBrains Mono', monospace; font-size: 20px; color: var(--rose); font-weight: 700; padding-bottom: 14px; }
   </style>
 </head>
-<body class="bg-[#0f1014] text-[#e4e4e7] min-h-screen flex flex-col antialiased">
+<body>
 
-<!-- Opportunity Vault & Member Hub -->
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
-<!--  LOGIN SCREEN                                                          -->
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
-<div id="loginScreen" class="hidden flex-1 items-center justify-center px-4 py-16 min-h-screen">
-  <div class="w-full max-w-sm space-y-6">
-    <div class="text-center space-y-1">
-      <div class="text-2xl mb-3">🎯</div>
-      <h1 class="text-lg font-semibold text-white">Course &amp; Job Hunter</h1>
-      <p class="text-xs text-[#71717a]">Your personal opportunity archive</p>
-    </div>
+<!-- ══════════════════════════════════════════════════════════
+     AMBIENT BACKGROUND GLOWS (Craftwork signature)
+══════════════════════════════════════════════════════════════ -->
+<div class="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+  <div class="glow-indigo absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] opacity-70 blur-[100px]"></div>
+  <div class="glow-blue absolute top-1/3 -left-64 w-[600px] h-[600px] opacity-50 blur-[120px]"></div>
+  <div class="glow-emerald absolute bottom-0 right-0 w-[500px] h-[500px] opacity-40 blur-[130px]"></div>
+</div>
 
-    <div class="border border-[#22242e] rounded-xl bg-[#13151c] p-6 space-y-4 shadow-xl">
-      <div class="space-y-1.5">
-        <label class="text-xs font-medium text-[#a1a1aa]">Email</label>
-        <input id="loginEmail" type="email" autocomplete="email" placeholder="you@example.com"
-          class="w-full bg-[#1a1c24] border border-[#262833] rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#52525b] focus:outline-none focus:border-[#3b82f6] transition">
-      </div>
-      <div class="space-y-1.5">
-        <label class="text-xs font-medium text-[#a1a1aa]">Password</label>
-        <input id="loginPassword" type="password" autocomplete="current-password" placeholder="••••••••"
-          class="w-full bg-[#1a1c24] border border-[#262833] rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#52525b] focus:outline-none focus:border-[#3b82f6] transition">
-        <p class="text-[11px] text-[#52525b]">Default: <code class="font-mono bg-[#1a1c24] px-1 py-0.5 rounded">hunter123</code></p>
-      </div>
-
-      <div id="loginError" class="hidden text-xs text-red-400 bg-[#2a1414] border border-[#4a2020] rounded-lg px-3 py-2"></div>
-
-      <button onclick="doLogin()" id="loginBtn"
-        class="w-full py-2.5 rounded-lg bg-[#2563eb] hover:bg-[#1d4ed8] active:bg-[#1e40af] text-white text-sm font-medium transition-all">
-        Sign In →
-      </button>
-    </div>
+<!-- ══════════════════════════════════════════════════════════
+     INIT SPINNER
+══════════════════════════════════════════════════════════════ -->
+<div id="initSpinner" class="flex flex-1 items-center justify-center min-h-screen">
+  <div class="text-center space-y-4">
+    <div class="w-12 h-12 mx-auto rounded-2xl craft-card flex items-center justify-center text-xl pulse-dot">🎯</div>
+    <p class="text-xs text-slate-500 font-medium">Loading your vault…</p>
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
-<!--  PORTAL (authenticated)                                                -->
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ══════════════════════════════════════════════════════════
+     LOGIN SCREEN
+══════════════════════════════════════════════════════════════ -->
+<div id="loginScreen" class="hidden flex-1 items-center justify-center px-4 py-16 min-h-screen">
+  <div class="w-full max-w-sm space-y-5 fade-up">
+
+    <!-- Logo Block -->
+    <div class="text-center space-y-2">
+      <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl craft-card mb-2">
+        <span class="text-2xl">🎯</span>
+      </div>
+      <h1 class="text-xl font-bold text-white tracking-tight">Hunter Hub</h1>
+      <p class="text-xs text-slate-400">Curated courses · Remote jobs · Daily career radar</p>
+    </div>
+
+    <!-- Login Card -->
+    <div class="craft-card rounded-2xl p-7 space-y-5">
+      <div class="space-y-1.5">
+        <label class="field-label">Email Address</label>
+        <input id="loginEmail" type="email" autocomplete="email" placeholder="you@example.com" class="field-input">
+      </div>
+      <div class="space-y-1.5">
+        <label class="field-label">Password</label>
+        <input id="loginPassword" type="password" autocomplete="current-password" placeholder="••••••••" class="field-input">
+        <p class="text-[11px] text-slate-500 mt-1">Default: <code class="pill pill-indigo mono">hunter123</code></p>
+      </div>
+      <div id="loginError" class="hidden text-xs text-rose-300 bg-rose-500/10 border border-rose-500/20 rounded-xl px-4 py-2.5"></div>
+      <button onclick="doLogin()" id="loginBtn" class="btn-primary w-full py-2.5 text-sm">
+        Sign In to Vault →
+      </button>
+    </div>
+
+    <p class="text-center text-[11px] text-slate-600">Secure member portal · Session encrypted</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PORTAL (AUTHENTICATED)
+══════════════════════════════════════════════════════════════ -->
 <div id="portalScreen" class="hidden flex-col min-h-screen">
 
-  <!-- ── Header ─────────────────────────────────────────────────────────── -->
-  <header class="border-b border-[#1e2029] bg-[#0f1014] sticky top-0 z-30">
-    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+  <!-- ── Topbar ──────────────────────────────────────────── -->
+  <header class="sticky top-0 z-30 border-b border-white/[0.06] bg-[#07080d]/80 backdrop-blur-xl">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
+
+      <!-- Brand -->
       <div class="flex items-center gap-2.5">
-        <span class="text-base">🎯</span>
-        <div>
-          <span class="text-sm font-semibold text-white">Course &amp; Job Hunter</span>
-          <p class="text-[11px] text-[#52525b] leading-none mt-0.5">Member Hub</p>
+        <div class="w-8 h-8 rounded-xl craft-card flex items-center justify-center text-sm flex-shrink-0">🎯</div>
+        <div class="hidden sm:block">
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-bold text-white tracking-tight">Hunter Hub</span>
+            <span class="pill pill-indigo">Pro</span>
+          </div>
+          <p class="text-[11px] text-slate-500 leading-none mt-0.5">Opportunity Vault</p>
         </div>
       </div>
 
-      <div class="flex items-center gap-3">
-        <!-- Active status pill -->
-        <span id="headerActivePill" class="hidden text-[10px] px-2 py-0.5 rounded-full font-medium"></span>
-        <!-- Member name -->
-        <span id="headerName" class="text-xs text-[#71717a] hidden sm:inline"></span>
-        <!-- Settings toggle -->
-        <button onclick="toggleSettings()" id="settingsToggleBtn" title="Settings"
-          class="text-[#52525b] hover:text-white transition p-1.5 rounded-lg hover:bg-[#1a1c24]">
-          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      <!-- Center: Status pill -->
+      <div id="headerActivePill" class="hidden"></div>
+
+      <!-- Right: User + settings -->
+      <div class="flex items-center gap-2">
+        <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+          <div id="avatarCircle" class="w-5 h-5 rounded-full bg-gradient-to-br from-indigo-600 to-blue-500 flex items-center justify-center text-[10px] font-bold text-white">H</div>
+          <span id="headerName" class="text-xs font-medium text-slate-300"></span>
+        </div>
+
+        <button onclick="toggleSettings()" class="btn-ghost flex items-center gap-1.5">
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
           </svg>
+          <span class="hidden sm:inline">Settings</span>
         </button>
-        <button onclick="doLogout()" class="text-xs text-[#52525b] hover:text-white transition">Sign out</button>
+
+        <button onclick="doLogout()" class="text-xs text-slate-500 hover:text-slate-200 transition px-2 py-1 font-medium">Out</button>
       </div>
     </div>
   </header>
 
-  <!-- ── Main ───────────────────────────────────────────────────────────── -->
-  <main class="max-w-5xl mx-auto px-4 py-5 flex-1 w-full space-y-4">
+  <!-- ── Main ───────────────────────────────────────────── -->
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 w-full flex-1 space-y-5">
 
-    <!-- Loading skeletons -->
-    <div id="loadingState" class="space-y-3 py-4">
-      <div class="skeleton h-9 w-48 rounded-lg"></div>
-      <div class="skeleton h-10 w-full rounded-lg"></div>
-      <div class="space-y-2">
-        <div class="skeleton h-16 w-full rounded-xl"></div>
-        <div class="skeleton h-16 w-full rounded-xl"></div>
-        <div class="skeleton h-16 w-full rounded-xl"></div>
+    <!-- Loading Skeletons -->
+    <div id="loadingState" class="space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="skeleton h-36 w-full"></div>
+        <div class="skeleton h-36 w-full"></div>
+        <div class="skeleton h-36 w-full"></div>
+      </div>
+      <div class="skeleton h-11 w-80"></div>
+      <div class="space-y-2.5">
+        <div class="skeleton h-20 w-full"></div>
+        <div class="skeleton h-20 w-full"></div>
+        <div class="skeleton h-20 w-full"></div>
       </div>
     </div>
 
-    <!-- ── Content (once loaded) ────────────────────────────────────────── -->
-    <div id="loadedState" class="hidden space-y-4">
+    <!-- Loaded Content -->
+    <div id="loadedState" class="hidden space-y-5 fade-up">
 
-      <!-- Member greeting -->
-      <div class="flex items-center justify-between">
-        <div>
-          <h2 id="greetingText" class="text-base font-semibold text-white">Hello!</h2>
-          <p id="greetingSubtext" class="text-xs text-[#71717a] mt-0.5"></p>
-        </div>
-        <!-- Stats chips -->
-        <div class="hidden sm:flex items-center gap-2 text-xs">
-          <div class="flex items-center gap-1.5 bg-[#13151c] border border-[#1e2029] rounded-lg px-3 py-1.5">
-            <span class="text-[#4ade80]">📚</span>
-            <span id="statCourses" class="font-semibold text-white">0</span>
-            <span class="text-[#52525b]">courses</span>
+      <!-- ═══════════════════════════════════════════════════
+           CRAFTWORK BENTO GRID — HERO METRICS
+      ════════════════════════════════════════════════════ -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        <!-- Card 1: Daily Streak & XP (Habit Loop) -->
+        <div class="craft-card noise rounded-2xl p-5 relative overflow-hidden flex flex-col justify-between">
+          <div class="glow-amber absolute -right-10 -top-10 w-40 h-40 blur-2xl opacity-60 pointer-events-none"></div>
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-1.5">
+                <span class="pulse-dot text-base">🔥</span>
+                <span class="text-xs font-bold text-amber-400 uppercase tracking-widest">Daily Streak</span>
+              </div>
+              <span id="streakDaysBadge" class="pill pill-amber">Day 7</span>
+            </div>
+
+            <div class="flex items-baseline gap-2 mb-1">
+              <span id="streakXpDisplay" class="text-3xl font-black text-white tracking-tight">350</span>
+              <span class="text-xs font-semibold text-amber-400">XP</span>
+            </div>
+            <span id="streakLevelTitle" class="text-xs text-slate-400 font-medium">🎯 Career Sniper</span>
           </div>
-          <div class="flex items-center gap-1.5 bg-[#13151c] border border-[#1e2029] rounded-lg px-3 py-1.5">
-            <span class="text-[#60a5fa]">💼</span>
-            <span id="statJobs" class="font-semibold text-white">0</span>
-            <span class="text-[#52525b]">jobs</span>
+
+          <!-- Week dots -->
+          <div class="mt-4 pt-3.5 border-t border-white/[0.06]">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5" id="weekDots">
+                <!-- JS fills this -->
+              </div>
+              <button onclick="claimDailyCheckin()" id="checkinBtn"
+                class="text-xs font-bold px-3 py-1.5 rounded-lg bg-amber-500/15 text-amber-300 border border-amber-500/25 hover:bg-amber-500/25 transition active:scale-95 flex items-center gap-1.5">
+                <span>⚡</span> <span id="checkinText">Claim +25 XP</span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- ── Main Tab Bar ──────────────────────────────────────────────── -->
-      <div class="relative">
-        <!-- Tab buttons -->
-        <div class="flex items-center gap-0 border-b border-[#1e2029]" id="mainTabBar">
-          <button onclick="switchMainTab('courses')" id="tab-courses"
-            class="main-tab px-4 py-2.5 text-sm font-medium text-white border-b-2 border-[#3b82f6] transition-colors -mb-px flex items-center gap-2">
-            <span>📚</span> Courses
-            <span id="tab-courses-count" class="text-xs bg-[#1a2e22] text-[#4ade80] px-1.5 py-0.5 rounded-full font-semibold">0</span>
+        <!-- Card 2: Expiring Coupons + Live Countdown (FOMO) -->
+        <div class="craft-card noise rounded-2xl p-5 relative overflow-hidden flex flex-col justify-between">
+          <div class="glow-indigo absolute -left-10 -bottom-10 w-44 h-44 blur-2xl opacity-50 pointer-events-none"></div>
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-rose-500 pulse-dot inline-block"></span>
+                <span class="text-xs font-bold text-rose-400 uppercase tracking-widest">Flash Freebies</span>
+              </div>
+              <span class="pill pill-rose">100% OFF</span>
+            </div>
+
+            <p class="text-sm font-bold text-white mb-1">Coupons Expiring Tonight</p>
+            <p class="text-xs text-slate-400 leading-relaxed">Free Udemy &amp; certification coupons vanish at midnight. Claim them now!</p>
+          </div>
+
+          <!-- Countdown -->
+          <div class="mt-4 pt-3.5 border-t border-white/[0.06]">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="countdown-digit">
+                  <span id="cdH" class="countdown-num">04</span>
+                  <span class="countdown-label">hrs</span>
+                </div>
+                <span class="countdown-sep">:</span>
+                <div class="countdown-digit">
+                  <span id="cdM" class="countdown-num">28</span>
+                  <span class="countdown-label">min</span>
+                </div>
+                <span class="countdown-sep">:</span>
+                <div class="countdown-digit">
+                  <span id="cdS" class="countdown-num">00</span>
+                  <span class="countdown-label">sec</span>
+                </div>
+              </div>
+              <button onclick="switchTab('courses')" class="text-xs font-bold px-3 py-1.5 rounded-lg bg-rose-500/10 text-rose-300 border border-rose-500/20 hover:bg-rose-500/20 transition active:scale-95">
+                View →
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: Opportunity Value Stats -->
+        <div class="craft-card noise rounded-2xl p-5 relative overflow-hidden flex flex-col justify-between">
+          <div class="glow-emerald absolute -right-8 -bottom-8 w-40 h-40 blur-2xl opacity-50 pointer-events-none"></div>
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-1.5">
+                <span class="pulse-dot text-base">💰</span>
+                <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest">Value Delivered</span>
+              </div>
+              <span class="pill pill-green">Today</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div class="bg-white/[0.025] border border-white/[0.06] rounded-xl p-3">
+                <span class="text-[10px] font-bold uppercase text-slate-500 tracking-wider block mb-1">Free Courses</span>
+                <div class="flex items-baseline gap-1">
+                  <span id="statCourses" class="text-2xl font-black text-white">0</span>
+                  <span class="text-[10px] text-emerald-400 font-bold">100% free</span>
+                </div>
+              </div>
+              <div class="bg-white/[0.025] border border-white/[0.06] rounded-xl p-3">
+                <span class="text-[10px] font-bold uppercase text-slate-500 tracking-wider block mb-1">Live Jobs</span>
+                <div class="flex items-baseline gap-1">
+                  <span id="statJobs" class="text-2xl font-black text-white">0</span>
+                  <span class="text-[10px] text-blue-400 font-bold">remote</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4 pt-3.5 border-t border-white/[0.06] flex items-center justify-between text-xs">
+            <span class="text-slate-400 font-medium">Est. Tuition Saved</span>
+            <span id="statSavings" class="text-emerald-400 font-black text-sm mono">$480+ USD</span>
+          </div>
+        </div>
+
+      </div><!-- /Bento Grid -->
+
+      <!-- ═══════════════════════════════════════════════════
+           NAVIGATION + SEARCH
+      ════════════════════════════════════════════════════ -->
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+
+        <!-- Segmented pill nav -->
+        <div class="seg-nav">
+          <button onclick="switchTab('courses')" id="tab-courses" class="seg-btn seg-active">
+            📚 Free Courses
+            <span id="tab-courses-count" class="bg-white/20 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
           </button>
-          <button onclick="switchMainTab('jobs')" id="tab-jobs"
-            class="main-tab px-4 py-2.5 text-sm font-medium text-[#71717a] border-b-2 border-transparent transition-colors -mb-px flex items-center gap-2 hover:text-[#a1a1aa]">
-            <span>💼</span> Jobs
-            <span id="tab-jobs-count" class="text-xs bg-[#182236] text-[#60a5fa] px-1.5 py-0.5 rounded-full font-semibold">0</span>
+          <button onclick="switchTab('jobs')" id="tab-jobs" class="seg-btn">
+            💼 Jobs
+            <span id="tab-jobs-count" class="bg-white/10 text-slate-300 text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
           </button>
-          <!-- push settings tab to right -->
-          <div class="flex-1"></div>
+          <button onclick="switchTab('quiz')" id="tab-quiz" class="seg-btn">
+            🧠 Daily Byte
+            <span class="pill pill-violet" style="font-size:9px; padding:2px 6px; border-radius:999px;">+50 XP</span>
+          </button>
+        </div>
+
+        <!-- Command-palette style search -->
+        <div class="cmd-search w-full sm:w-72 flex-shrink-0">
+          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" class="text-slate-500 flex-shrink-0">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input type="text" id="searchInput" oninput="onSearch()" placeholder="Search…">
+          <div class="hidden sm:flex items-center gap-1 flex-shrink-0 pointer-events-none">
+            <kbd class="text-[9px] mono bg-white/[0.07] text-slate-400 px-1.5 py-0.5 rounded border border-white/[0.1]">⌘K</kbd>
+          </div>
+          <button id="searchClear" onclick="clearSearch()" class="hidden text-slate-500 hover:text-white transition flex-shrink-0">
+            <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
         </div>
       </div>
 
-      <!-- ── Search bar (shared) ───────────────────────────────────────── -->
-      <div class="relative">
-        <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-[#52525b]" width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-        </svg>
-        <input type="text" id="searchInput" oninput="onSearch()" placeholder="Search…"
-          class="w-full bg-[#13151c] border border-[#1e2029] rounded-lg pl-9 pr-8 py-2 text-xs text-white placeholder-[#52525b] focus:outline-none focus:border-[#3b82f6] transition">
-        <button id="searchClear" onclick="clearSearch()" class="search-clear hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-[#52525b] hover:text-white">
-          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
-        </button>
-      </div>
+      <!-- Source filter chips (jobs) -->
+      <div id="sourceChips" class="flex items-center gap-1.5 flex-wrap -mt-1"></div>
 
-      <!-- ── COURSES TAB ───────────────────────────────────────────────── -->
-      <div id="tabpanel-courses" class="space-y-2 fade-in">
-
-        <!-- Sort / filter row -->
-        <div class="flex items-center justify-between text-xs text-[#71717a]">
-          <span id="courses-label">Showing all courses</span>
-          <div class="flex items-center gap-1">
-            <span>Sort:</span>
-            <select id="courseSort" onchange="renderCourses()" class="bg-[#13151c] border border-[#1e2029] text-[#a1a1aa] rounded px-1.5 py-1 text-xs focus:outline-none focus:border-[#3b82f6] cursor-pointer">
+      <!-- ═══════════════════════════════════════════════════
+           TAB: COURSES
+      ════════════════════════════════════════════════════ -->
+      <div id="tabpanel-courses" class="space-y-3 fade-up">
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <span id="courses-label" class="text-xs font-semibold text-slate-300"></span>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-500">Sort:</span>
+            <select id="courseSort" onchange="renderCourses()" class="bg-[#0a0d16] border border-white/[0.08] text-slate-300 rounded-lg px-2 py-1 text-xs focus:outline-none focus:border-indigo-500 cursor-pointer">
               <option value="date">Newest</option>
               <option value="title">A → Z</option>
-              <option value="domain">Source</option>
+              <option value="domain">Platform</option>
             </select>
           </div>
         </div>
-
-        <!-- Cards container -->
-        <div id="coursesContainer" class="space-y-2"></div>
-        <div id="coursesEmpty" class="hidden py-14 text-center text-xs text-[#52525b]">
-          <div class="text-3xl mb-3">📚</div>
-          No courses yet — your daily digest will fill this up!
+        <div id="coursesContainer" class="space-y-2.5"></div>
+        <div id="coursesEmpty" class="hidden py-20 text-center">
+          <div class="text-5xl mb-3">📚</div>
+          <p class="text-sm font-semibold text-slate-300">No courses yet</p>
+          <p class="text-xs text-slate-500 mt-1">Your morning digest will populate this vault automatically.</p>
         </div>
-
       </div>
 
-      <!-- ── JOBS TAB ──────────────────────────────────────────────────── -->
-      <div id="tabpanel-jobs" class="hidden space-y-2 fade-in">
-
-        <!-- Filter row -->
-        <div class="flex items-center justify-between gap-2 text-xs flex-wrap">
-          <span id="jobs-label" class="text-[#71717a]">Showing all jobs</span>
-          <div class="flex items-center gap-1.5">
-            <!-- Location quick-filter chips -->
-            <div id="locationChips" class="flex items-center gap-1 flex-wrap"></div>
-            <select id="jobSort" onchange="renderJobs()" class="bg-[#13151c] border border-[#1e2029] text-[#a1a1aa] rounded px-1.5 py-1 text-xs focus:outline-none focus:border-[#3b82f6] cursor-pointer ml-1">
+      <!-- ═══════════════════════════════════════════════════
+           TAB: JOBS
+      ════════════════════════════════════════════════════ -->
+      <div id="tabpanel-jobs" class="hidden space-y-3 fade-up">
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <span id="jobs-label" class="text-xs font-semibold text-slate-300"></span>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-500">Sort:</span>
+            <select id="jobSort" onchange="renderJobs()" class="bg-[#0a0d16] border border-white/[0.08] text-slate-300 rounded-lg px-2 py-1 text-xs focus:outline-none focus:border-indigo-500 cursor-pointer">
               <option value="date">Newest</option>
               <option value="title">A → Z</option>
-              <option value="source">Source</option>
+              <option value="source">Source Board</option>
             </select>
           </div>
         </div>
-
-        <!-- Job source filter pills -->
-        <div id="sourceChips" class="flex items-center gap-1.5 flex-wrap"></div>
-
-        <!-- Cards container -->
-        <div id="jobsContainer" class="space-y-2"></div>
-        <div id="jobsEmpty" class="hidden py-14 text-center text-xs text-[#52525b]">
-          <div class="text-3xl mb-3">💼</div>
-          No jobs yet — check back after the next digest run!
+        <div id="jobsContainer" class="space-y-2.5"></div>
+        <div id="jobsEmpty" class="hidden py-20 text-center">
+          <div class="text-5xl mb-3">💼</div>
+          <p class="text-sm font-semibold text-slate-300">No jobs yet</p>
+          <p class="text-xs text-slate-500 mt-1">Roles from LinkedIn, Naukri, Remotive &amp; more appear after digest runs.</p>
         </div>
+      </div>
 
+      <!-- ═══════════════════════════════════════════════════
+           TAB: DAILY INTERVIEW BYTE (QUIZ)
+      ════════════════════════════════════════════════════ -->
+      <div id="tabpanel-quiz" class="hidden fade-up">
+        <div class="craft-card rounded-2xl p-6 space-y-5 relative overflow-hidden">
+          <div class="glow-indigo absolute -right-16 -top-16 w-56 h-56 blur-3xl opacity-40 pointer-events-none"></div>
+
+          <div class="flex items-start justify-between gap-3">
+            <div class="space-y-1">
+              <div id="quizCategoryBadge" class="pill pill-violet inline-flex">System Design</div>
+              <p id="quizDateBadge" class="text-[11px] text-slate-500">Today's daily challenge</p>
+            </div>
+            <div class="pill pill-amber flex-shrink-0">⚡ +50 XP</div>
+          </div>
+
+          <h3 id="quizQuestion" class="text-base sm:text-lg font-bold text-white leading-relaxed">Loading challenge…</h3>
+
+          <div id="quizOptions" class="space-y-2.5"></div>
+
+          <div id="quizExplanation" class="hidden rounded-xl border p-4 text-xs leading-relaxed transition-all"></div>
+        </div>
       </div>
 
     </div><!-- /loadedState -->
-
   </main>
 
-  <footer class="py-4 border-t border-[#1a1c24] text-center text-[11px] text-[#3f3f46]">
-    Course &amp; Job Hunter · Personal digest archive
+  <!-- ── Footer ─────────────────────────────────────────── -->
+  <footer class="border-t border-white/[0.05] bg-[#07080d] py-5 text-center">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-1">
+      <p class="text-xs text-slate-600">Hunter Hub · Personal Career Radar</p>
+      <p class="text-[11px] text-slate-700">Craftwork Bento Design System</p>
+    </div>
   </footer>
 
 </div><!-- /portalScreen -->
 
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
-<!--  SETTINGS DRAWER (slides over)                                         -->
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
-<div id="settingsOverlay" onclick="closeSettings()" class="hidden fixed inset-0 bg-black/50 z-40 backdrop-blur-sm"></div>
-<aside id="settingsDrawer"
-  class="fixed top-0 right-0 h-full w-80 max-w-full bg-[#13151c] border-l border-[#1e2029] z-50 shadow-2xl flex flex-col
-         translate-x-full transition-transform duration-300 ease-out">
 
-  <div class="flex items-center justify-between px-5 py-4 border-b border-[#1e2029]">
-    <span class="text-sm font-semibold text-white">Settings</span>
-    <button onclick="closeSettings()" class="text-[#52525b] hover:text-white transition">
-      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+<!-- ══════════════════════════════════════════════════════════
+     AI PITCH MODAL
+══════════════════════════════════════════════════════════════ -->
+<div id="pitchBackdrop" class="modal-backdrop" onclick="closePitchModal()"></div>
+<div id="pitchModal" class="modal-box">
+  <div class="craft-card rounded-2xl p-6 space-y-5">
+    <div class="flex items-center justify-between border-b border-white/[0.07] pb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl craft-card flex items-center justify-center text-base">🤖</div>
+        <div>
+          <h4 class="text-sm font-bold text-white">AI 1-Click Pitch</h4>
+          <p id="pitchSubtitle" class="text-[11px] text-slate-400">Tailored recruiter outreach</p>
+        </div>
+      </div>
+      <button onclick="closePitchModal()" class="text-slate-500 hover:text-white transition">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="space-y-1.5">
+      <div class="flex items-center justify-between">
+        <span class="field-label">LinkedIn Connection Note</span>
+        <button onclick="copyText('pitchLI','copyLINote')" class="text-[11px] font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition">
+          <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <span id="copyLINote">Copy</span>
+        </button>
+      </div>
+      <textarea id="pitchLI" rows="3" readonly class="field-input resize-none mono text-[11px] leading-relaxed"></textarea>
+    </div>
+
+    <div class="space-y-1.5">
+      <div class="flex items-center justify-between">
+        <span class="field-label">Cold Application Email</span>
+        <button onclick="copyText('pitchEmail','copyEmailNote')" class="text-[11px] font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition">
+          <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <span id="copyEmailNote">Copy</span>
+        </button>
+      </div>
+      <textarea id="pitchEmail" rows="6" readonly class="field-input resize-none mono text-[11px] leading-relaxed"></textarea>
+    </div>
+
+    <div class="flex justify-end pt-1">
+      <button onclick="closePitchModal()" class="btn-ghost">Done</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SETTINGS DRAWER (slide-over)
+══════════════════════════════════════════════════════════════ -->
+<div id="settingsOverlay" onclick="closeSettings()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 hidden"></div>
+<aside id="settingsDrawer" class="drawer">
+  <div class="flex items-center justify-between px-6 py-5 border-b border-white/[0.07]">
+    <div class="flex items-center gap-2.5">
+      <span>⚙️</span>
+      <span class="text-sm font-bold text-white">Radar Settings</span>
+    </div>
+    <button onclick="closeSettings()" class="text-slate-500 hover:text-white transition p-1">
+      <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
     </button>
   </div>
 
-  <div class="flex-1 overflow-y-auto px-5 py-4 space-y-5">
+  <div class="flex-1 overflow-y-auto px-6 py-5 space-y-6">
 
-    <!-- Email delivery -->
-    <div class="space-y-2">
-      <label class="text-xs font-semibold text-white block">Email Delivery</label>
-      <label class="flex items-center gap-3 cursor-pointer">
-        <div class="relative">
-          <input type="checkbox" id="settingActive" class="sr-only peer">
-          <div class="w-9 h-5 bg-[#2e313d] rounded-full peer peer-checked:bg-[#2563eb] transition-colors"></div>
-          <div class="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4 shadow"></div>
+    <!-- Digest Toggle -->
+    <div class="craft-card rounded-xl p-4 space-y-3">
+      <span class="field-label">Morning Digest</span>
+      <div class="flex items-center justify-between">
+        <span class="text-xs text-slate-300 font-medium">Send daily email (~8 AM IST)</span>
+        <div id="digestToggle" class="toggle-track on" onclick="toggleDigest()">
+          <div class="toggle-thumb"></div>
         </div>
-        <span class="text-xs text-[#d4d4d8]">Daily digest (~8 AM IST)</span>
-      </label>
-      <p class="text-[11px] text-[#52525b]">Toggle off to pause while on vacation.</p>
+        <input type="checkbox" id="settingActive" class="sr-only" checked>
+      </div>
+      <p class="text-[11px] text-slate-500">Pause when on vacation — streak won't reset.</p>
     </div>
 
     <!-- Keywords -->
     <div class="space-y-2">
-      <label class="text-xs font-semibold text-white block">Keywords &amp; Topics</label>
-      <p class="text-[11px] text-[#52525b]">Comma-separated. Used to match free courses &amp; job searches.</p>
-      <textarea id="settingKeywords" rows="3" placeholder="python, ui/ux, remote, project management…"
-        class="w-full bg-[#1a1c24] border border-[#262833] rounded-lg p-2.5 text-xs text-white placeholder-[#52525b] focus:outline-none focus:border-[#3b82f6] transition leading-relaxed font-mono resize-none"></textarea>
+      <label class="field-label">Target Keywords &amp; Roles</label>
+      <textarea id="settingKeywords" rows="3" placeholder="python, machine learning, remote, devops, product manager…"
+        class="field-input resize-none mono text-[11px] leading-relaxed"></textarea>
+      <p class="text-[11px] text-slate-500">Comma-separated. Used for job &amp; course matching.</p>
     </div>
 
-    <!-- Job Source APIs -->
+    <!-- Job Sources -->
     <div class="space-y-2">
       <div class="flex items-center justify-between">
-        <label class="text-xs font-semibold text-white block">Job Board APIs</label>
-        <span class="text-[10px] text-[#52525b]">Click to toggle</span>
+        <span class="field-label">Job Board APIs</span>
+        <span class="text-[10px] text-slate-500">Tap to toggle</span>
       </div>
-      <p class="text-[11px] text-[#52525b]">Only receive jobs from your selected platforms:</p>
-      <div id="jobSourcesContainer" class="flex flex-wrap gap-1.5 pt-0.5"></div>
+      <div id="jobSourcesContainer" class="flex flex-wrap gap-1.5"></div>
     </div>
 
     <!-- Course Platforms -->
     <div class="space-y-2">
       <div class="flex items-center justify-between">
-        <label class="text-xs font-semibold text-white block">Course Platforms</label>
-        <span class="text-[10px] text-[#52525b]">Click to toggle</span>
+        <span class="field-label">Course Platforms</span>
+        <span class="text-[10px] text-slate-500">Tap to toggle</span>
       </div>
-      <p class="text-[11px] text-[#52525b]">Only receive courses from your selected providers:</p>
-      <div id="courseSourcesContainer" class="flex flex-wrap gap-1.5 pt-0.5"></div>
+      <div id="courseSourcesContainer" class="flex flex-wrap gap-1.5"></div>
     </div>
 
-    <!-- Save prefs -->
+    <!-- Save -->
     <div class="flex items-center justify-between pt-1">
-      <span id="saveNotice" class="text-xs text-emerald-400 opacity-0 transition-opacity">Saved!</span>
-      <button onclick="saveSimpleSettings()" id="saveBtn"
-        class="px-4 py-2 rounded-lg bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-medium transition">
-        Save
-      </button>
+      <span id="saveNotice" class="text-xs text-emerald-400 font-semibold opacity-0 transition-opacity">✓ Preferences saved!</span>
+      <button onclick="saveSettings()" id="saveBtn" class="btn-primary">Save Changes</button>
     </div>
 
-    <div class="border-t border-[#1e2029]"></div>
+    <div class="border-t border-white/[0.06]"></div>
 
     <!-- Change Password -->
     <div class="space-y-3">
-      <label class="text-xs font-semibold text-white block">Change Password</label>
-      <input id="oldPw" type="password" placeholder="Current password"
-        class="w-full bg-[#1a1c24] border border-[#262833] rounded-lg px-3 py-2 text-xs text-white placeholder-[#52525b] focus:outline-none focus:border-[#3b82f6] transition">
-      <input id="newPw" type="password" placeholder="New password (min 6 chars)"
-        class="w-full bg-[#1a1c24] border border-[#262833] rounded-lg px-3 py-2 text-xs text-white placeholder-[#52525b] focus:outline-none focus:border-[#3b82f6] transition">
-      <div id="pwMsg" class="hidden text-xs px-3 py-2 rounded-lg border"></div>
-      <button onclick="changePassword()" id="pwBtn"
-        class="w-full py-2 rounded-lg bg-[#1a1c24] hover:bg-[#22242e] border border-[#2e313d] text-white text-xs font-medium transition">
-        Update Password
-      </button>
+      <span class="field-label">Change Password</span>
+      <input id="oldPw" type="password" placeholder="Current password" class="field-input">
+      <input id="newPw" type="password" placeholder="New password (min 6 chars)" class="field-input">
+      <div id="pwMsg" class="hidden text-xs px-3 py-2 rounded-xl border"></div>
+      <button onclick="changePassword()" id="pwBtn" class="btn-ghost w-full">Update Password</button>
     </div>
 
   </div>
 </aside>
 
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
-<!--  INIT SPINNER                                                          -->
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
-<div id="initSpinner" class="flex flex-1 items-center justify-center min-h-screen">
-  <div class="text-center space-y-2">
-    <div class="text-2xl">🎯</div>
-    <p class="text-xs text-[#52525b]">Loading…</p>
-  </div>
-</div>
 
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
-<!--  JAVASCRIPT                                                            -->
-<!-- ═══════════════════════════════════════════════════════════════════════ -->
+<!-- ══════════════════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════════════════════ -->
 <script>
+  /* ── State ── */
   let currentEmail = "";
   let currentUserData = null;
-  let currentMainTab = "courses";
-  let courseQuery = "";
-  let jobQuery = "";
+  let currentTab = "courses";
+  let courseQuery = "", jobQuery = "";
   let activeJobSource = "all";
+  let selectedJobSources = [];
+  let selectedCourseSources = [];
+  let userXP   = parseInt(localStorage.getItem("hh_xp") || "350", 10);
+  let userDays = parseInt(localStorage.getItem("hh_days") || "7", 10);
+  let lastCheckin = localStorage.getItem("hh_last_checkin") || "";
+  let quizData = null;
+  const TODAY_STR = new Date().toISOString().split("T")[0];
 
-  // ── Bootstrap ─────────────────────────────────────────────────────────
+  const ALL_JOB_SOURCES = {
+    "linkedin":"LinkedIn","naukri":"Naukri","indeed_india":"Indeed India",
+    "remotive":"Remotive","arbeitnow":"Arbeitnow","jobicy":"Jobicy",
+    "glassdoor":"Glassdoor","adzuna_india":"Adzuna"
+  };
+  const ALL_COURSE_SOURCES = {
+    "udemy_coupons":"Udemy 100% OFF","swayam_nptel":"Swayam/NPTEL",
+    "freecodecamp":"freeCodeCamp","cloud_certs":"Google/MS Cloud","geeksforgeeks":"GeeksForGeeks"
+  };
+
+  /* ── Bootstrap ── */
   document.addEventListener("DOMContentLoaded", async () => {
+    startCountdown();
+    buildWeekDots(userDays);
+    updateStreakUI();
+
+    document.addEventListener("keydown", e => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") { e.preventDefault(); document.getElementById("searchInput").focus(); }
+      if (e.key === "Escape") { closePitchModal(); closeSettings(); }
+    });
+
     try {
-      const res = await fetch("/api/portal/auth/me");
-      const data = await res.json();
-      if (data.authenticated) {
-        currentEmail = data.email;
-        document.getElementById("headerName").textContent = data.name || data.email;
-        document.getElementById("headerName").classList.remove("hidden");
+      const r = await fetch("/api/portal/auth/me");
+      const d = await r.json();
+      if (d.authenticated) {
+        currentEmail = d.email;
+        setHeaderUser(d.name || d.email);
         showPortal();
-        await loadUserProfile(data.email);
-      } else {
-        showLogin();
-      }
+        await loadProfile(d.email);
+      } else { showLogin(); }
     } catch { showLogin(); }
   });
 
   function showLogin() {
-    document.getElementById("initSpinner").classList.add("hidden");
-    const el = document.getElementById("loginScreen");
-    el.classList.remove("hidden");
-    el.classList.add("flex");
+    hide("initSpinner");
+    show("loginScreen", "flex");
   }
-
   function showPortal() {
-    document.getElementById("initSpinner").classList.add("hidden");
-    const el = document.getElementById("portalScreen");
-    el.classList.remove("hidden");
-    el.classList.add("flex");
+    hide("initSpinner");
+    show("portalScreen", "flex");
+  }
+  function setHeaderUser(nameOrEmail) {
+    document.getElementById("headerName").textContent = nameOrEmail;
+    document.getElementById("avatarCircle").textContent = nameOrEmail[0].toUpperCase();
   }
 
-  // ── Login ──────────────────────────────────────────────────────────────
+  /* ── Login / Logout ── */
   document.addEventListener("keydown", e => {
     if (e.key === "Enter" && !document.getElementById("loginScreen").classList.contains("hidden")) doLogin();
   });
 
   async function doLogin() {
-    const email = document.getElementById("loginEmail").value.trim();
-    const password = document.getElementById("loginPassword").value;
+    const email = val("loginEmail").trim(), pw = val("loginPassword");
     const errEl = document.getElementById("loginError");
     const btn = document.getElementById("loginBtn");
-
     errEl.classList.add("hidden");
-    btn.disabled = true;
-    btn.textContent = "Signing in…";
-
+    btn.disabled = true; btn.textContent = "Signing in…";
     try {
-      const res = await fetch("/api/portal/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+      const r = await fetch("/api/portal/auth/login", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ email, password: pw })
       });
-      const data = await res.json();
-      if (!res.ok) { errEl.textContent = data.error || "Login failed."; errEl.classList.remove("hidden"); return; }
-      currentEmail = data.email;
-      document.getElementById("headerName").textContent = data.name || data.email;
-      document.getElementById("headerName").classList.remove("hidden");
-      document.getElementById("loginScreen").classList.add("hidden");
+      const d = await r.json();
+      if (!r.ok) { errEl.textContent = d.error || "Login failed."; errEl.classList.remove("hidden"); return; }
+      currentEmail = d.email;
+      setHeaderUser(d.name || d.email);
+      hide("loginScreen");
       document.getElementById("loginScreen").classList.remove("flex");
       showPortal();
-      await loadUserProfile(data.email);
-    } catch {
-      errEl.textContent = "Network error. Try again.";
-      errEl.classList.remove("hidden");
-    } finally {
-      btn.disabled = false;
-      btn.textContent = "Sign In →";
-    }
+      await loadProfile(d.email);
+    } catch { errEl.textContent = "Network error. Try again."; errEl.classList.remove("hidden"); }
+    finally { btn.disabled = false; btn.textContent = "Sign In to Vault →"; }
   }
 
-  // ── Logout ─────────────────────────────────────────────────────────────
   async function doLogout() {
-    await fetch("/api/portal/auth/logout", { method: "POST" });
+    await fetch("/api/portal/auth/logout", { method:"POST" });
     location.reload();
   }
 
-  // ── Load profile ───────────────────────────────────────────────────────
-  async function loadUserProfile(email) {
-    document.getElementById("loadingState").classList.remove("hidden");
-    document.getElementById("loadedState").classList.add("hidden");
-
+  /* ── Load Profile ── */
+  async function loadProfile(email) {
+    show("loadingState");
+    hide("loadedState");
     try {
-      const res = await fetch(`/api/portal/user?email=${encodeURIComponent(email)}`);
-      if (!res.ok) throw new Error("Could not load profile");
-      const data = await res.json();
-      currentUserData = data;
-
-      renderGreeting(data.subscriber);
-      renderSettings(data.subscriber);
-      buildTabs(data.vault || []);
-
-      document.getElementById("loadingState").classList.add("hidden");
-      document.getElementById("loadedState").classList.remove("hidden");
-    } catch (err) {
-      console.error(err);
-    }
+      const r = await fetch(`/api/portal/user?email=${encodeURIComponent(email)}`);
+      if (!r.ok) throw new Error();
+      const d = await r.json();
+      currentUserData = d;
+      renderStatus(d.subscriber);
+      renderSettings(d.subscriber);
+      buildTabs(d.vault || []);
+      loadQuiz();
+    } catch(e) { console.error(e); }
+    finally { hide("loadingState"); show("loadedState"); }
   }
 
-  // ── Greeting ───────────────────────────────────────────────────────────
-  function renderGreeting(sub) {
+  function renderStatus(sub) {
     if (!sub) return;
-    const hour = new Date().getHours();
-    const greet = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
-    document.getElementById("greetingText").textContent = `${greet}, ${sub.name || "Hunter"} 👋`;
-    const activeTxt = sub.active ? "Daily digest active" : "Digest paused";
-    document.getElementById("greetingSubtext").textContent = activeTxt;
-
-    const pill = document.getElementById("headerActivePill");
-    pill.classList.remove("hidden");
+    const p = document.getElementById("headerActivePill");
+    p.classList.remove("hidden");
     if (sub.active) {
-      pill.textContent = "● Active";
-      pill.className = "text-[10px] px-2 py-0.5 rounded-full font-medium bg-[#1a2e22] text-[#4ade80] border border-[#1e4028]";
+      p.className = "flex items-center gap-1.5 pill pill-green text-xs font-semibold";
+      p.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 pulse-dot inline-block"></span> Active Radar`;
     } else {
-      pill.textContent = "● Paused";
-      pill.className = "text-[10px] px-2 py-0.5 rounded-full font-medium bg-[#2e261a] text-[#facc15] border border-[#4a3800]";
+      p.className = "flex items-center gap-1.5 pill pill-amber text-xs font-semibold";
+      p.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block"></span> Paused`;
     }
   }
 
-  // ── Build tabs ─────────────────────────────────────────────────────────
+  /* ── Build Tabs ── */
   function buildTabs(vault) {
     const courses = vault.filter(i => i.type === "course");
     const jobs    = vault.filter(i => i.type === "job");
 
     document.getElementById("statCourses").textContent = courses.length;
-    document.getElementById("statJobs").textContent    = jobs.length;
+    document.getElementById("statJobs").textContent = jobs.length;
     document.getElementById("tab-courses-count").textContent = courses.length;
-    document.getElementById("tab-jobs-count").textContent    = jobs.length;
+    document.getElementById("tab-jobs-count").textContent = jobs.length;
+    document.getElementById("statSavings").textContent = `$${Math.max(courses.length * 85, 290)}+ USD`;
 
-    // Build source chips for jobs
+    // Job source quick-filter chips
     const sources = [...new Set(jobs.map(j => j.domain).filter(Boolean))];
-    const chipsEl = document.getElementById("sourceChips");
-    chipsEl.innerHTML = "";
+    const ch = document.getElementById("sourceChips");
+    ch.innerHTML = "";
     if (sources.length > 1) {
       ["all", ...sources].forEach(src => {
         const btn = document.createElement("button");
         btn.dataset.src = src;
-        btn.textContent = src === "all" ? "All sources" : src;
-        btn.onclick = () => { activeJobSource = src; renderJobs(); updateSourceChips(); };
-        btn.className = src === "all"
-          ? "source-chip text-[10px] px-2.5 py-1 rounded-full bg-[#182236] text-[#60a5fa] border border-[#1e3455] font-medium transition"
-          : "source-chip text-[10px] px-2.5 py-1 rounded-full bg-[#1a1c24] text-[#71717a] border border-[#262833] hover:text-[#a1a1aa] transition";
-        chipsEl.appendChild(btn);
+        btn.textContent = src === "all" ? "All Sources" : src;
+        btn.className = src === "all" ? "source-pill active-job" : "source-pill";
+        btn.onclick = () => { activeJobSource = src; renderJobs(); refreshSourceChips(); };
+        ch.appendChild(btn);
       });
     }
 
-    renderCourses();
-    renderJobs();
-    switchMainTab(currentMainTab);
+    renderCourses(); renderJobs(); switchTab(currentTab);
   }
 
-  // ── Switch main tab ────────────────────────────────────────────────────
-  function switchMainTab(tab) {
-    currentMainTab = tab;
-    const tabs = ["courses", "jobs"];
-    tabs.forEach(t => {
-      const btn = document.getElementById(`tab-${t}`);
+  /* ── Tab Switching ── */
+  function switchTab(tab) {
+    currentTab = tab;
+    ["courses","jobs","quiz"].forEach(t => {
+      document.getElementById(`tab-${t}`).classList.toggle("seg-active", t === tab);
       const panel = document.getElementById(`tabpanel-${t}`);
-      if (t === tab) {
-        btn.className = "main-tab px-4 py-2.5 text-sm font-medium text-white border-b-2 border-[#3b82f6] -mb-px flex items-center gap-2 transition-colors";
-        panel.classList.remove("hidden");
-        panel.classList.add("fade-in");
-      } else {
-        btn.className = "main-tab px-4 py-2.5 text-sm font-medium text-[#71717a] border-b-2 border-transparent -mb-px flex items-center gap-2 hover:text-[#a1a1aa] transition-colors";
-        panel.classList.add("hidden");
-        panel.classList.remove("fade-in");
-      }
+      panel.classList.toggle("hidden", t !== tab);
     });
-    // Update search placeholder
-    document.getElementById("searchInput").placeholder = tab === "courses" ? "Search courses…" : "Search jobs…";
-    document.getElementById("searchInput").value = tab === "courses" ? courseQuery : jobQuery;
-    updateSearchClear();
+    const si = document.getElementById("searchInput");
+    si.placeholder = tab === "courses" ? "Search free courses…" : tab === "jobs" ? "Search roles, companies…" : "Search topics…";
+    si.value = tab === "courses" ? courseQuery : tab === "jobs" ? jobQuery : "";
+    updateClearBtn();
+
+    // Show/hide source chips only for jobs
+    document.getElementById("sourceChips").style.display = tab === "jobs" ? "" : "none";
   }
 
-  // ── Search ─────────────────────────────────────────────────────────────
+  /* ── Search ── */
   function onSearch() {
     const q = document.getElementById("searchInput").value.trim().toLowerCase();
-    if (currentMainTab === "courses") { courseQuery = q; renderCourses(); }
-    else                              { jobQuery = q;    renderJobs();    }
-    updateSearchClear();
+    if (currentTab === "courses") { courseQuery = q; renderCourses(); }
+    else if (currentTab === "jobs") { jobQuery = q; renderJobs(); }
+    updateClearBtn();
   }
-
   function clearSearch() {
     document.getElementById("searchInput").value = "";
-    if (currentMainTab === "courses") { courseQuery = ""; renderCourses(); }
-    else                              { jobQuery = "";    renderJobs();    }
-    updateSearchClear();
+    if (currentTab === "courses") { courseQuery = ""; renderCourses(); }
+    else if (currentTab === "jobs") { jobQuery = ""; renderJobs(); }
+    updateClearBtn();
+  }
+  function updateClearBtn() {
+    document.getElementById("searchClear").classList.toggle("hidden", !document.getElementById("searchInput").value);
+  }
+  function match(item, q) {
+    return [(item.title||""),(item.domain||""),(item.location||"")].some(s => s.toLowerCase().includes(q));
+  }
+  function sortArr(arr, by) {
+    const c = [...arr];
+    if (by === "title") return c.sort((a,b) => (a.title||"").localeCompare(b.title||""));
+    if (by === "domain" || by === "source") return c.sort((a,b) => (a.domain||"").localeCompare(b.domain||""));
+    return c;
   }
 
-  function updateSearchClear() {
-    const val = document.getElementById("searchInput").value;
-    document.getElementById("searchClear").classList.toggle("hidden", !val);
-  }
-
-  // ── Render Courses ─────────────────────────────────────────────────────
+  /* ── Render Courses ── */
   function renderCourses() {
     if (!currentUserData) return;
-    const sortBy = document.getElementById("courseSort").value;
-    let items = (currentUserData.vault || []).filter(i => i.type === "course");
+    let items = (currentUserData.vault||[]).filter(i => i.type === "course");
+    if (courseQuery) items = items.filter(i => match(i, courseQuery));
+    items = sortArr(items, document.getElementById("courseSort").value);
 
-    if (courseQuery) items = items.filter(i => searchMatch(i, courseQuery));
+    const lbl = courseQuery ? `${items.length} result${items.length!==1?"s":""} for "${courseQuery}"` : `${items.length} free courses delivered`;
+    document.getElementById("courses-label").textContent = lbl;
 
-    items = sortItems(items, sortBy);
-
-    const container = document.getElementById("coursesContainer");
-    const empty     = document.getElementById("coursesEmpty");
-    const label     = document.getElementById("courses-label");
-
-    label.textContent = courseQuery
-      ? `${items.length} result${items.length !== 1 ? "s" : ""} for "${courseQuery}"`
-      : `${items.length} course${items.length !== 1 ? "s" : ""} delivered`;
-
-    container.innerHTML = "";
-    if (!items.length) { empty.classList.remove("hidden"); return; }
-    empty.classList.add("hidden");
-
-    items.forEach((item, i) => {
-      container.appendChild(makeCourseCard(item, i));
-    });
+    const c = document.getElementById("coursesContainer");
+    const e = document.getElementById("coursesEmpty");
+    c.innerHTML = "";
+    if (!items.length) { e.classList.remove("hidden"); return; }
+    e.classList.add("hidden");
+    items.forEach((item, i) => c.appendChild(makeCourseRow(item, i)));
   }
 
-  function makeCourseCard(item, idx) {
-    const card = document.createElement("a");
-    card.href = item.url;
-    card.target = "_blank";
-    card.rel = "noopener noreferrer";
-    card.className = "item-card block border border-[#1e2029] rounded-xl bg-[#13151c] p-3.5 group";
-    card.style.animationDelay = `${idx * 30}ms`;
-    card.classList.add("fade-in");
+  function makeCourseRow(item, idx) {
+    const d = document.createElement("div");
+    d.className = "item-row rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group fade-up";
+    d.style.animationDelay = `${idx * 20}ms`;
 
-    card.innerHTML = `
-      <div class="flex items-start justify-between gap-3">
-        <div class="min-w-0 flex-1">
-          <div class="flex items-center gap-2 mb-1">
-            <span class="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded border badge-course">Free</span>
-            <span class="text-[11px] text-[#52525b]">${esc(item.domain)}</span>
-          </div>
-          <p class="text-sm font-medium text-[#e4e4e7] group-hover:text-white truncate leading-snug transition">${esc(item.title)}</p>
-          <p class="text-[11px] text-[#52525b] mt-1">${esc(item.date)}</p>
+    const dom = esc(item.domain || "Learning Hub");
+    const isUdemy = /udemy|tutorialbar|discudemy|coursetegg|learnviral/i.test(dom);
+    const badgeCls = isUdemy ? "pill-rose" : "pill-green";
+    const badgeTxt = isUdemy ? "100% OFF Coupon" : "Free Certificate";
+
+    d.innerHTML = `
+      <div class="min-w-0 flex-1">
+        <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+          <span class="pill ${badgeCls}">${badgeTxt}</span>
+          <span class="text-xs text-slate-400 font-medium">via ${dom}</span>
+          <span class="text-slate-600">·</span>
+          <span class="text-[11px] text-slate-500 mono">${esc(item.date)}</span>
         </div>
-        <span class="text-[#3b82f6] opacity-0 group-hover:opacity-100 transition text-sm mt-0.5 flex-shrink-0">↗</span>
+        <h4 class="text-sm font-semibold text-slate-200 group-hover:text-white transition leading-snug">
+          ${esc(item.title)}
+        </h4>
       </div>
-    `;
-    return card;
+      <a href="${esc(item.url)}" target="_blank" rel="noopener noreferrer" class="btn-claim-green flex-shrink-0 w-full sm:w-auto justify-center">
+        Claim Free ↗
+      </a>`;
+    return d;
   }
 
-  // ── Render Jobs ────────────────────────────────────────────────────────
+  /* ── Render Jobs ── */
   function renderJobs() {
     if (!currentUserData) return;
-    const sortBy = document.getElementById("jobSort").value;
-    let items = (currentUserData.vault || []).filter(i => i.type === "job");
-
+    let items = (currentUserData.vault||[]).filter(i => i.type === "job");
     if (activeJobSource !== "all") items = items.filter(i => i.domain === activeJobSource);
-    if (jobQuery) items = items.filter(i => searchMatch(i, jobQuery));
+    if (jobQuery) items = items.filter(i => match(i, jobQuery));
+    items = sortArr(items, document.getElementById("jobSort").value);
 
-    items = sortItems(items, sortBy);
+    const lbl = jobQuery ? `${items.length} result${items.length!==1?"s":""} for "${jobQuery}"` : `${items.length} active opportunities`;
+    document.getElementById("jobs-label").textContent = lbl;
 
-    const container = document.getElementById("jobsContainer");
-    const empty     = document.getElementById("jobsEmpty");
-    const label     = document.getElementById("jobs-label");
-
-    label.textContent = jobQuery
-      ? `${items.length} result${items.length !== 1 ? "s" : ""} for "${jobQuery}"`
-      : `${items.length} job${items.length !== 1 ? "s" : ""} delivered`;
-
-    container.innerHTML = "";
-    if (!items.length) { empty.classList.remove("hidden"); return; }
-    empty.classList.add("hidden");
-
-    items.forEach((item, i) => {
-      container.appendChild(makeJobCard(item, i));
-    });
-
-    updateSourceChips();
+    const c = document.getElementById("jobsContainer");
+    const e = document.getElementById("jobsEmpty");
+    c.innerHTML = "";
+    if (!items.length) { e.classList.remove("hidden"); return; }
+    e.classList.add("hidden");
+    items.forEach((item, i) => c.appendChild(makeJobRow(item, i)));
+    refreshSourceChips();
   }
 
-  function makeJobCard(item, idx) {
-    const card = document.createElement("a");
-    card.href = item.url;
-    card.target = "_blank";
-    card.rel = "noopener noreferrer";
-    card.className = "item-card block border border-[#1e2029] rounded-xl bg-[#13151c] p-3.5 group";
-    card.style.animationDelay = `${idx * 30}ms`;
-    card.classList.add("fade-in");
+  function makeJobRow(item, idx) {
+    const d = document.createElement("div");
+    d.className = "item-row rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group fade-up";
+    d.style.animationDelay = `${idx * 20}ms`;
 
-    const loc = item.location ? `<span class="inline-flex items-center gap-1"><svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${esc(item.location)}</span>` : "";
-    const sal = item.salary ? `<span>💰 ${esc(item.salary)}</span>` : "";
+    const dom = esc(item.domain || "Job Board");
+    const initLetter = (item.title||"J").trim()[0].toUpperCase();
+    const loc = item.location ? `<span class="inline-flex items-center gap-1 text-slate-500"><svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${esc(item.location)}</span>` : "";
+    const sal = item.salary ? `<span class="text-emerald-400 font-bold mono text-[11px]">💰 ${esc(item.salary)}</span>` : "";
+    const title = esc(item.title);
+    const url = esc(item.url);
 
-    card.innerHTML = `
-      <div class="flex items-start justify-between gap-3">
-        <div class="min-w-0 flex-1">
-          <div class="flex items-center gap-2 mb-1 flex-wrap">
-            <span class="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded border badge-job">Remote</span>
-            <span class="text-[11px] text-[#52525b]">${esc(item.domain)}</span>
-          </div>
-          <p class="text-sm font-medium text-[#e4e4e7] group-hover:text-white truncate leading-snug transition">${esc(item.title)}</p>
-          <div class="flex items-center gap-3 mt-1.5 text-[11px] text-[#52525b] flex-wrap">
-            ${loc}${sal}
-            <span>· ${esc(item.date)}</span>
-          </div>
+    d.innerHTML = `
+      <div class="flex items-start gap-3.5 min-w-0 flex-1">
+        <div class="w-10 h-10 rounded-xl flex-shrink-0 craft-card flex items-center justify-center text-sm font-black text-indigo-300">
+          ${initLetter}
         </div>
-        <span class="text-[#3b82f6] opacity-0 group-hover:opacity-100 transition text-sm mt-0.5 flex-shrink-0">↗</span>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+            <span class="pill pill-blue">${dom}</span>
+            <span class="pill" style="background:rgba(255,255,255,0.03);color:#64748b;border-color:rgba(255,255,255,0.07)">Remote / India</span>
+            <span class="text-slate-600">·</span>
+            <span class="text-[11px] text-slate-500 mono">${esc(item.date)}</span>
+          </div>
+          <h4 class="text-sm font-semibold text-slate-200 group-hover:text-white transition leading-snug mb-1">${title}</h4>
+          <div class="flex items-center gap-3 text-xs flex-wrap">${loc}${sal}</div>
+        </div>
       </div>
-    `;
-    return card;
+      <div class="flex items-center gap-2 flex-shrink-0 self-end sm:self-center">
+        <button onclick="openPitchModal('${title.replace(/'/g,"\\'")}','${dom}')"
+          class="btn-ghost flex items-center gap-1.5 text-xs">
+          🤖 Pitch
+        </button>
+        <a href="${url}" target="_blank" rel="noopener noreferrer" class="btn-apply-blue">
+          Apply ↗
+        </a>
+      </div>`;
+    return d;
   }
 
-  function updateSourceChips() {
-    document.querySelectorAll(".source-chip").forEach(btn => {
-      const active = btn.dataset.src === activeJobSource;
-      btn.className = active
-        ? "source-chip text-[10px] px-2.5 py-1 rounded-full bg-[#182236] text-[#60a5fa] border border-[#1e3455] font-medium transition"
-        : "source-chip text-[10px] px-2.5 py-1 rounded-full bg-[#1a1c24] text-[#71717a] border border-[#262833] hover:text-[#a1a1aa] transition";
+  function refreshSourceChips() {
+    document.querySelectorAll(".source-pill").forEach(btn => {
+      btn.className = btn.dataset.src === activeJobSource ? "source-pill active-job" : "source-pill";
     });
   }
 
-  // ── Settings drawer ────────────────────────────────────────────────────
-  function toggleSettings() {
-    const drawer = document.getElementById("settingsDrawer");
-    const overlay = document.getElementById("settingsOverlay");
-    const isOpen = !drawer.classList.contains("translate-x-full");
-    if (isOpen) closeSettings();
-    else {
-      drawer.classList.remove("translate-x-full");
-      overlay.classList.remove("hidden");
+  /* ── Daily Interview Byte (Quiz) ── */
+  async function loadQuiz() {
+    try {
+      const r = await fetch("/api/portal/daily-question");
+      if (!r.ok) return;
+      const d = await r.json();
+      quizData = d.item;
+      document.getElementById("quizCategoryBadge").textContent = quizData.category;
+      document.getElementById("quizDateBadge").textContent = `Challenge for ${d.date}`;
+      document.getElementById("quizQuestion").textContent = quizData.question;
+
+      const container = document.getElementById("quizOptions");
+      container.innerHTML = "";
+      const answered = localStorage.getItem(`hh_quiz_${d.date}`);
+
+      quizData.options.forEach((opt, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "quiz-opt";
+        btn.innerHTML = `<span><strong class="text-slate-600 mr-2">${"ABCD"[idx]}.</strong> ${esc(opt)}</span>`;
+        btn.onclick = () => handleQuiz(idx, d.date);
+        container.appendChild(btn);
+      });
+
+      if (answered !== null) revealQuiz(parseInt(answered, 10));
+    } catch(e) { console.error("Quiz load error:", e); }
+  }
+
+  function handleQuiz(idx, dateKey) {
+    if (localStorage.getItem(`hh_quiz_${dateKey}`) !== null) return;
+    localStorage.setItem(`hh_quiz_${dateKey}`, idx);
+    if (idx === quizData.answer) {
+      userXP += 50;
+      localStorage.setItem("hh_xp", userXP);
+      updateStreakUI();
+    }
+    revealQuiz(idx);
+  }
+
+  function revealQuiz(selected) {
+    if (!quizData) return;
+    const btns = document.querySelectorAll(".quiz-opt");
+    btns.forEach((btn, idx) => {
+      btn.disabled = true;
+      if (idx === quizData.answer) {
+        btn.classList.add("correct");
+        btn.innerHTML += ` <span class="text-emerald-400 font-bold">✓</span>`;
+      } else if (idx === selected && selected !== quizData.answer) {
+        btn.classList.add("wrong");
+        btn.innerHTML += ` <span class="text-rose-400 font-bold">✗</span>`;
+      }
+    });
+    const exp = document.getElementById("quizExplanation");
+    exp.classList.remove("hidden");
+    const isRight = selected === quizData.answer;
+    exp.className = isRight
+      ? "mt-5 rounded-xl border border-emerald-500/20 bg-emerald-500/08 text-emerald-200 p-4 text-xs leading-relaxed"
+      : "mt-5 rounded-xl border border-amber-500/20 bg-amber-500/08 text-amber-200 p-4 text-xs leading-relaxed";
+    exp.innerHTML = (isRight ? `<strong class="block mb-1">🎉 Correct! +50 XP earned</strong>` : `<strong class="block mb-1">💡 Key Takeaway:</strong>`) + esc(quizData.explanation);
+    exp.style.background = isRight ? "rgba(16,185,129,0.06)" : "rgba(245,158,11,0.06)";
+  }
+
+  /* ── Streak & Checkin ── */
+  function buildWeekDots(days) {
+    const container = document.getElementById("weekDots");
+    container.innerHTML = "";
+    for (let i = 0; i < 7; i++) {
+      const d = document.createElement("div");
+      const filled = i < days;
+      const isToday = i === Math.min(days, 6);
+      d.className = `week-dot ${filled ? "filled" : ""} ${isToday ? "today" : ""}`;
+      container.appendChild(d);
     }
   }
 
+  function updateStreakUI() {
+    document.getElementById("streakDaysBadge").textContent = `Day ${userDays}`;
+    document.getElementById("streakXpDisplay").textContent = userXP;
+    // Update streak level
+    let level = "🌱 Career Seedling";
+    if (userXP >= 500) level = "🚀 Career Rocketeer";
+    else if (userXP >= 300) level = "🎯 Career Sniper";
+    else if (userXP >= 150) level = "⚡ Career Sprinter";
+    document.getElementById("streakLevelTitle").textContent = level;
+
+    const isCheckedIn = lastCheckin === TODAY_STR;
+    const btn = document.getElementById("checkinBtn");
+    if (isCheckedIn) {
+      btn.disabled = true;
+      btn.className = "text-xs font-bold px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 flex items-center gap-1.5 cursor-default";
+      document.getElementById("checkinText").textContent = "✓ Checked-in";
+    }
+  }
+
+  function claimDailyCheckin() {
+    if (lastCheckin === TODAY_STR) return;
+    userDays++; userXP += 25;
+    lastCheckin = TODAY_STR;
+    localStorage.setItem("hh_days", userDays);
+    localStorage.setItem("hh_xp", userXP);
+    localStorage.setItem("hh_last_checkin", TODAY_STR);
+    buildWeekDots(userDays);
+    updateStreakUI();
+  }
+
+  /* ── Countdown ── */
+  function startCountdown() {
+    function tick() {
+      const now = new Date();
+      const eod = new Date(); eod.setHours(23,59,59,999);
+      const diff = Math.max(0, eod - now);
+      document.getElementById("cdH").textContent = String(Math.floor(diff/3600000)).padStart(2,"0");
+      document.getElementById("cdM").textContent = String(Math.floor(diff%3600000/60000)).padStart(2,"0");
+      document.getElementById("cdS").textContent = String(Math.floor(diff%60000/1000)).padStart(2,"0");
+    }
+    tick(); setInterval(tick, 1000);
+  }
+
+  /* ── AI Pitch Modal ── */
+  async function openPitchModal(title, company) {
+    document.getElementById("pitchSubtitle").textContent = `${title} at ${company}`;
+    document.getElementById("pitchLI").value = "Generating pitch…";
+    document.getElementById("pitchEmail").value = "Generating pitch…";
+    document.getElementById("pitchBackdrop").classList.add("open");
+    document.getElementById("pitchModal").classList.add("open");
+    try {
+      const r = await fetch("/api/portal/generate-pitch", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ title, company, user_name: document.getElementById("headerName").textContent || "Candidate" })
+      });
+      const d = await r.json();
+      if (d.success) {
+        document.getElementById("pitchLI").value = d.linkedin_note;
+        document.getElementById("pitchEmail").value = d.cold_email;
+      }
+    } catch { document.getElementById("pitchLI").value = `Hi ${company} Team, I noticed your ${title} opening and would love to connect!`; }
+  }
+
+  function closePitchModal() {
+    document.getElementById("pitchBackdrop").classList.remove("open");
+    document.getElementById("pitchModal").classList.remove("open");
+  }
+
+  function copyText(elId, noticeId) {
+    navigator.clipboard.writeText(document.getElementById(elId).value);
+    const n = document.getElementById(noticeId);
+    const o = n.textContent; n.textContent = "✓ Copied!";
+    setTimeout(() => { n.textContent = o; }, 2000);
+  }
+
+  /* ── Settings Drawer ── */
+  function toggleSettings() {
+    const d = document.getElementById("settingsDrawer");
+    const o = document.getElementById("settingsOverlay");
+    const isOpen = d.classList.contains("open");
+    if (isOpen) closeSettings();
+    else { d.classList.add("open"); o.classList.remove("hidden"); }
+  }
   function closeSettings() {
-    document.getElementById("settingsDrawer").classList.add("translate-x-full");
+    document.getElementById("settingsDrawer").classList.remove("open");
     document.getElementById("settingsOverlay").classList.add("hidden");
   }
 
-  let selectedJobSources = [];
-  let selectedCourseSources = [];
-
-  const ALL_JOB_SOURCES = {
-    "linkedin": "LinkedIn",
-    "naukri": "Naukri",
-    "indeed_india": "Indeed India",
-    "remotive": "Remotive",
-    "arbeitnow": "Arbeitnow",
-    "jobicy": "Jobicy",
-    "glassdoor": "Glassdoor",
-    "adzuna_india": "Adzuna"
-  };
-
-  const ALL_COURSE_SOURCES = {
-    "udemy_coupons": "Udemy 100% OFF",
-    "swayam_nptel": "Swayam / NPTEL",
-    "freecodecamp": "freeCodeCamp",
-    "cloud_certs": "Google / MS Cloud",
-    "geeksforgeeks": "GeeksForGeeks"
-  };
+  function toggleDigest() {
+    const cb = document.getElementById("settingActive");
+    const tr = document.getElementById("digestToggle");
+    cb.checked = !cb.checked;
+    tr.classList.toggle("on", cb.checked);
+  }
 
   function renderSettings(sub) {
     if (!sub) return;
-    document.getElementById("settingActive").checked = Boolean(sub.active);
-    const all = Array.from(new Set([...(sub.keywords || []), ...(sub.job_searches || [])]));
-    document.getElementById("settingKeywords").value = all.join(", ");
-
-    selectedJobSources = sub.job_sources && sub.job_sources.length
-      ? [...sub.job_sources]
-      : Object.keys(ALL_JOB_SOURCES);
-
-    selectedCourseSources = sub.course_sources && sub.course_sources.length
-      ? [...sub.course_sources]
-      : Object.keys(ALL_COURSE_SOURCES);
-
+    const isActive = Boolean(sub.active);
+    document.getElementById("settingActive").checked = isActive;
+    document.getElementById("digestToggle").classList.toggle("on", isActive);
+    const kws = [...new Set([...(sub.keywords||[]), ...(sub.job_searches||[])])];
+    document.getElementById("settingKeywords").value = kws.join(", ");
+    selectedJobSources = sub.job_sources?.length ? [...sub.job_sources] : Object.keys(ALL_JOB_SOURCES);
+    selectedCourseSources = sub.course_sources?.length ? [...sub.course_sources] : Object.keys(ALL_COURSE_SOURCES);
     renderSourcePills();
     document.getElementById("saveNotice").style.opacity = "0";
   }
 
   function renderSourcePills() {
-    // Job sources
-    const jobContainer = document.getElementById("jobSourcesContainer");
-    if (jobContainer) {
-      jobContainer.innerHTML = "";
-      Object.entries(ALL_JOB_SOURCES).forEach(([key, label]) => {
-        const active = selectedJobSources.includes(key);
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = active
-          ? "text-[11px] px-2.5 py-1 rounded-full font-medium transition bg-[#1d4ed8] text-white border border-[#3b82f6]"
-          : "text-[11px] px-2.5 py-1 rounded-full font-medium transition bg-[#181a22] text-[#71717a] border border-[#262833] hover:text-[#a1a1aa]";
-        btn.textContent = (active ? "✓ " : "+ ") + label;
-        btn.onclick = () => {
-          if (selectedJobSources.includes(key)) {
-            if (selectedJobSources.length > 1) {
-              selectedJobSources = selectedJobSources.filter(k => k !== key);
-            }
-          } else {
-            selectedJobSources.push(key);
-          }
-          renderSourcePills();
-        };
-        jobContainer.appendChild(btn);
-      });
-    }
+    const jc = document.getElementById("jobSourcesContainer");
+    jc.innerHTML = "";
+    Object.entries(ALL_JOB_SOURCES).forEach(([k,v]) => {
+      const on = selectedJobSources.includes(k);
+      const btn = document.createElement("button");
+      btn.className = on ? "source-pill active-job" : "source-pill";
+      btn.textContent = (on ? "✓ " : "+ ") + v;
+      btn.onclick = () => {
+        if (on) { if (selectedJobSources.length>1) selectedJobSources = selectedJobSources.filter(x=>x!==k); }
+        else selectedJobSources.push(k);
+        renderSourcePills();
+      };
+      jc.appendChild(btn);
+    });
 
-    // Course sources
-    const courseContainer = document.getElementById("courseSourcesContainer");
-    if (courseContainer) {
-      courseContainer.innerHTML = "";
-      Object.entries(ALL_COURSE_SOURCES).forEach(([key, label]) => {
-        const active = selectedCourseSources.includes(key);
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = active
-          ? "text-[11px] px-2.5 py-1 rounded-full font-medium transition bg-[#047857] text-white border border-[#10b981]"
-          : "text-[11px] px-2.5 py-1 rounded-full font-medium transition bg-[#181a22] text-[#71717a] border border-[#262833] hover:text-[#a1a1aa]";
-        btn.textContent = (active ? "✓ " : "+ ") + label;
-        btn.onclick = () => {
-          if (selectedCourseSources.includes(key)) {
-            if (selectedCourseSources.length > 1) {
-              selectedCourseSources = selectedCourseSources.filter(k => k !== key);
-            }
-          } else {
-            selectedCourseSources.push(key);
-          }
-          renderSourcePills();
-        };
-        courseContainer.appendChild(btn);
-      });
-    }
-  }
-
-  async function saveSimpleSettings() {
-    const btn    = document.getElementById("saveBtn");
-    const notice = document.getElementById("saveNotice");
-    btn.disabled = true;
-    btn.textContent = "Saving…";
-    try {
-      const kw = document.getElementById("settingKeywords").value.split(",").map(k => k.trim()).filter(Boolean);
-      const active = document.getElementById("settingActive").checked;
-      const res = await fetch("/api/portal/user", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: currentEmail,
-          keywords: kw,
-          job_searches: kw,
-          active,
-          job_sources: selectedJobSources,
-          course_sources: selectedCourseSources
-        }),
-      });
-      if (!res.ok) throw new Error("Failed");
-      notice.style.opacity = "1";
-      setTimeout(() => notice.style.opacity = "0", 3000);
-      await loadUserProfile(currentEmail);
-    } catch (err) { alert("Error: " + err.message); }
-    finally { btn.disabled = false; btn.textContent = "Save"; }
-  }
-
-  async function changePassword() {
-    const oldPw = document.getElementById("oldPw").value;
-    const newPw = document.getElementById("newPw").value;
-    const msgEl = document.getElementById("pwMsg");
-    const btn   = document.getElementById("pwBtn");
-    btn.disabled = true; btn.textContent = "Updating…";
-    try {
-      const res = await fetch("/api/portal/auth/change-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ old_password: oldPw, new_password: newPw }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        msgEl.textContent = "Password changed!";
-        msgEl.className = "text-xs px-3 py-2 rounded-lg border text-emerald-400 bg-[#1a2e22] border-[#1e4028]";
-        document.getElementById("oldPw").value = "";
-        document.getElementById("newPw").value = "";
-      } else {
-        msgEl.textContent = data.error || "Failed.";
-        msgEl.className = "text-xs px-3 py-2 rounded-lg border text-red-400 bg-[#2a1414] border-[#4a2020]";
-      }
-      msgEl.classList.remove("hidden");
-      setTimeout(() => msgEl.classList.add("hidden"), 4000);
-    } catch {
-      msgEl.textContent = "Network error.";
-      msgEl.className = "text-xs px-3 py-2 rounded-lg border text-red-400 bg-[#2a1414] border-[#4a2020]";
-      msgEl.classList.remove("hidden");
-    } finally { btn.disabled = false; btn.textContent = "Update Password"; }
-  }
-
-  // ── Helpers ────────────────────────────────────────────────────────────
-  function searchMatch(item, q) {
-    return `${item.title} ${item.domain} ${item.location || ""} ${item.salary || ""}`.toLowerCase().includes(q);
-  }
-
-  function sortItems(items, by) {
-    return [...items].sort((a, b) => {
-      if (by === "title")  return (a.title  || "").localeCompare(b.title  || "");
-      if (by === "domain") return (a.domain || "").localeCompare(b.domain || "");
-      if (by === "source") return (a.domain || "").localeCompare(b.domain || "");
-      // date (default newest first)
-      return String(b.date || "").localeCompare(String(a.date || ""));
+    const cc = document.getElementById("courseSourcesContainer");
+    cc.innerHTML = "";
+    Object.entries(ALL_COURSE_SOURCES).forEach(([k,v]) => {
+      const on = selectedCourseSources.includes(k);
+      const btn = document.createElement("button");
+      btn.className = on ? "source-pill active-course" : "source-pill";
+      btn.textContent = (on ? "✓ " : "+ ") + v;
+      btn.onclick = () => {
+        if (on) { if (selectedCourseSources.length>1) selectedCourseSources = selectedCourseSources.filter(x=>x!==k); }
+        else selectedCourseSources.push(k);
+        renderSourcePills();
+      };
+      cc.appendChild(btn);
     });
   }
 
-  function esc(str) {
-    if (!str) return "";
-    return String(str)
-      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+  async function saveSettings() {
+    const btn = document.getElementById("saveBtn");
+    const notice = document.getElementById("saveNotice");
+    const kws = val("settingKeywords").split(",").map(s=>s.trim()).filter(Boolean);
+    btn.disabled = true; btn.textContent = "Saving…";
+    try {
+      const r = await fetch("/api/portal/user", {
+        method:"PUT", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({
+          email: currentEmail,
+          keywords: kws, job_searches: kws,
+          job_sources: selectedJobSources, course_sources: selectedCourseSources,
+          active: document.getElementById("settingActive").checked
+        })
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || "Save failed");
+      currentUserData.subscriber = d.subscriber;
+      renderStatus(d.subscriber);
+      notice.style.opacity = "1";
+      setTimeout(() => { notice.style.opacity = "0"; }, 2500);
+    } catch(e) { alert("Save error: " + e.message); }
+    finally { btn.disabled = false; btn.textContent = "Save Changes"; }
   }
+
+  async function changePassword() {
+    const oldPw = val("oldPw"), newPw = val("newPw");
+    const msg = document.getElementById("pwMsg");
+    const btn = document.getElementById("pwBtn");
+    msg.classList.add("hidden");
+    if (!oldPw || !newPw) { showMsg(msg, "Please fill both password fields.", "rose"); return; }
+    btn.disabled = true; btn.textContent = "Updating…";
+    try {
+      const r = await fetch("/api/portal/auth/change-password", {
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ old_password: oldPw, new_password: newPw })
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || "Failed");
+      showMsg(msg, "✓ Password updated!", "green");
+      document.getElementById("oldPw").value = "";
+      document.getElementById("newPw").value = "";
+    } catch(e) { showMsg(msg, e.message, "rose"); }
+    finally { btn.disabled = false; btn.textContent = "Update Password"; }
+  }
+
+  function showMsg(el, text, color) {
+    el.textContent = text;
+    el.className = color === "green"
+      ? "text-xs px-3 py-2 rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-300"
+      : "text-xs px-3 py-2 rounded-xl border border-rose-500/20 bg-rose-500/10 text-rose-300";
+    el.classList.remove("hidden");
+  }
+
+  /* ── Helpers ── */
+  function esc(s) {
+    return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+  function val(id) { return document.getElementById(id)?.value || ""; }
+  function show(id, type="block") { const el=document.getElementById(id); el.classList.remove("hidden"); if(type!=="block") el.classList.add(type); }
+  function hide(id) { const el=document.getElementById(id); el.classList.add("hidden"); ["flex","grid"].forEach(c=>el.classList.remove(c)); }
 </script>
+
 </body>
 </html>

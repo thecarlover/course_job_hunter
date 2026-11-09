@@ -1,14 +1,28 @@
 services:
   - type: web
-    name: course-job-hunter-admin
+    name: course-job-hunter
     runtime: python
+    plan: free
+    pythonVersion: "3.11"
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn admin:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: ADMIN_PASSWORD
-        value: hunter2026
+        sync: false          # set via Render dashboard (do NOT hardcode in prod)
+      - key: EMAIL
+        sync: false
+      - key: APP_PASSWORD
+        sync: false
+      - key: PORTAL_SECRET_KEY
+        generateValue: true  # Render auto-generates a secure random secret
       - key: SUPABASE_URL
-        value: https://totcwrqgyrdwuylgyccb.supabase.co
+        sync: false
       - key: SUPABASE_KEY
-        value: sb_publishable_i8emK6yLcbCARlWWyc1X1Q_PSJRgeZ6
-
+        sync: false
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: SAMEORIGIN
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff

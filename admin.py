@@ -798,6 +798,120 @@ async def get_portal_user(email: str = ""):
     })
 
 
+@app.get("/api/portal/daily-question")
+async def get_daily_question():
+    """Return the interactive Daily Interview Question of the Day based on the current day."""
+    import datetime
+    day_of_year = datetime.date.today().timetuple().tm_yday
+
+    questions = [
+        {
+            "id": 1,
+            "category": "Python & Backend",
+            "question": "In Python, what is the key difference between `deepcopy` and shallow `copy`?",
+            "options": [
+                "Shallow copy copies arbitrary nested objects recursively, while deepcopy does not",
+                "Deep copy creates a new compound object and recursively inserts copies of child objects",
+                "Shallow copy is thread-safe, whereas deepcopy causes GIL deadlocks",
+                "There is no difference; deepcopy is just an alias for performance optimization"
+            ],
+            "answer": 1,
+            "explanation": "`copy.deepcopy()` constructs a brand-new compound object and recursively copies all nested objects found inside, avoiding shared mutation."
+        },
+        {
+            "id": 2,
+            "category": "System Design",
+            "question": "Which algorithm is most commonly used in distributed rate limiters (like Cloudflare or Redis)?",
+            "options": [
+                "Token Bucket / Sliding Window Counter",
+                "Dijkstra's Shortest Path",
+                "Consistent Hashing Ring",
+                "Raft Consensus"
+            ],
+            "answer": 0,
+            "explanation": "Token Bucket and Sliding Window Counter allow burst handling while enforcing strict request rates across distributed Redis nodes."
+        },
+        {
+            "id": 3,
+            "category": "Cloud & DevOps",
+            "question": "What happens when a Kubernetes Pod exceeds its configured memory limit?",
+            "options": [
+                "The Pod is throttled by CPU cgroups without termination",
+                "The Pod is killed immediately with an OOMKilled (Exit Code 137) status",
+                "The node swaps pod memory to disk automatically",
+                "Kubernetes provisions an additional replica automatically"
+            ],
+            "answer": 1,
+            "explanation": "When a container consumes more memory than its limit, the Linux kernel OOM Killer immediately terminates it with Exit Code 137."
+        },
+        {
+            "id": 4,
+            "category": "Databases & SQL",
+            "question": "Why is indexing every column in a high-traffic PostgreSQL table considered bad practice?",
+            "options": [
+                "PostgreSQL enforces a hard limit of only 5 indexes per table",
+                "Indexes degrade write/insert/update performance and consume substantial RAM/disk",
+                "B-tree indexes cause permanent table locks during SELECT queries",
+                "Queries with WHERE clauses fail if more than two indexes exist"
+            ],
+            "answer": 1,
+            "explanation": "Every INSERT/UPDATE must write to all indexes, slowing writes and bloating the buffer cache. Only index query predicate columns."
+        },
+        {
+            "id": 5,
+            "category": "Security & Architecture",
+            "question": "What is the primary vulnerability prevented by using `HttpOnly` and `SameSite=Lax` cookies?",
+            "options": [
+                "SQL Injection and buffer overflows",
+                "Cross-Site Scripting (XSS) cookie theft and Cross-Site Request Forgery (CSRF)",
+                "DDoS attacks and TCP SYN flooding",
+                "DNS Spoofing and man-in-the-middle attacks"
+            ],
+            "answer": 1,
+            "explanation": "`HttpOnly` blocks JavaScript `document.cookie` access (stopping XSS token theft), while `SameSite=Lax/Strict` blocks cross-site request forging."
+        }
+    ]
+
+    selected = questions[day_of_year % len(questions)]
+    return JSONResponse({
+        "success": True,
+        "date": datetime.date.today().isoformat(),
+        "item": selected
+    })
+
+
+@app.post("/api/portal/generate-pitch")
+async def generate_pitch(payload: Dict[str, Any]):
+    """Generate a high-converting, tailored 1-click cold outreach pitch for a job role."""
+    title = (payload.get("title") or "Software Engineer").strip()
+    company = (payload.get("company") or "Hiring Team").strip()
+    user_name = (payload.get("user_name") or "Candidate").strip()
+
+    linkedin_note = (
+        f"Hi {company} Team, I noticed your opening for {title} and was impressed by your team's mission. "
+        f"With hands-on experience in building scalable systems and automation, I'd love to connect and share "
+        f"how my background aligns with your current priorities. Best, {user_name}"
+    )
+
+    cold_email = (
+        f"Subject: Application & Quick Introduction – {title} ({user_name})\n\n"
+        f"Hi {company} Hiring Team,\n\n"
+        f"I came across the {title} role and immediately resonated with the impact your team is creating. "
+        f"I bring deep hands-on expertise in full-stack architecture, API integration, and cloud-native solutions, "
+        f"and have a proven track record of shipping reliable, performant features.\n\n"
+        f"I would welcome 10 minutes to discuss how my skill set can accelerate your current milestones.\n\n"
+        f"Portfolio & Resume: [Insert Link]\n"
+        f"LinkedIn: [Insert Profile]\n\n"
+        f"Best regards,\n{user_name}"
+    )
+
+    return JSONResponse({
+        "success": True,
+        "linkedin_note": linkedin_note,
+        "cold_email": cold_email
+    })
+
+
 @app.put("/api/portal/user")
 async def update_portal_user(payload: Dict[str, Any]):
     """Allow member to update their own keywords, search queries, locations, source APIs, and vacation mode."""
