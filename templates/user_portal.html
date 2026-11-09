@@ -439,12 +439,14 @@
     <div class="craft-card rounded-2xl p-7 space-y-5">
       <div class="space-y-1.5">
         <label class="field-label">Email Address</label>
-        <input id="loginEmail" type="email" autocomplete="email" placeholder="you@example.com" class="field-input">
+        <input id="loginEmail" type="email" autocomplete="email" value="ojasvimittalofficial@gmail.com" placeholder="you@example.com" class="field-input">
       </div>
       <div class="space-y-1.5">
-        <label class="field-label">Password</label>
-        <input id="loginPassword" type="password" autocomplete="current-password" placeholder="••••••••" class="field-input">
-        <p class="text-[11px] text-slate-500 mt-1">Default: <code class="pill pill-indigo mono">hunter123</code></p>
+        <div class="flex items-center justify-between">
+          <label class="field-label">Password</label>
+          <span class="text-[11px] text-slate-500">Default: <code class="pill pill-indigo mono">hunter123</code></span>
+        </div>
+        <input id="loginPassword" type="password" autocomplete="current-password" value="hunter123" placeholder="••••••••" class="field-input">
       </div>
       <div id="loginError" class="hidden text-xs text-rose-300 bg-rose-500/10 border border-rose-500/20 rounded-xl px-4 py-2.5"></div>
       <button onclick="doLogin()" id="loginBtn" class="btn-primary w-full py-2.5 text-sm">
@@ -929,6 +931,13 @@
       if (e.key === "Escape") { closePitchModal(); closeSettings(); }
     });
 
+    // If user explicitly clicked log out, do not auto-authenticate
+    if (sessionStorage.getItem("just_logged_out") === "1") {
+      sessionStorage.removeItem("just_logged_out");
+      showLogin();
+      return;
+    }
+
     try {
       // 1-Click Magic Link URL detection (?email=, ?user=, ?u=, ?=email, or ?email@domain.com)
       const params = new URLSearchParams(window.location.search);
@@ -984,10 +993,16 @@
   });
 
   async function doLogin() {
-    const email = val("loginEmail").trim(), pw = val("loginPassword");
+    const email = val("loginEmail").trim();
+    const pw = val("loginPassword").trim();
     const errEl = document.getElementById("loginError");
     const btn = document.getElementById("loginBtn");
     errEl.classList.add("hidden");
+    if (!email) {
+      errEl.textContent = "Please enter your email address.";
+      errEl.classList.remove("hidden");
+      return;
+    }
     btn.disabled = true; btn.textContent = "Signing in…";
     try {
       const r = await fetch("/api/portal/auth/login", {
@@ -995,19 +1010,35 @@
         body: JSON.stringify({ email, password: pw })
       });
       const d = await r.json();
-      if (!r.ok) { errEl.textContent = d.error || "Login failed."; errEl.classList.remove("hidden"); return; }
+      if (!r.ok) {
+        errEl.textContent = d.error || "Login failed.";
+        errEl.classList.remove("hidden");
+        return;
+      }
       currentEmail = d.email;
       setHeaderUser(d.name || d.email);
       hide("loginScreen");
       document.getElementById("loginScreen").classList.remove("flex");
       showPortal();
       await loadProfile(d.email);
-    } catch { errEl.textContent = "Network error. Try again."; errEl.classList.remove("hidden"); }
-    finally { btn.disabled = false; btn.textContent = "Sign In to Vault →"; }
+    } catch {
+      errEl.textContent = "Network error. Try again.";
+      errEl.classList.remove("hidden");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Sign In to Vault →";
+    }
   }
 
   async function doLogout() {
-    await fetch("/api/portal/auth/logout", { method:"POST" });
+    try {
+      await fetch("/api/portal/auth/logout", { method: "POST" });
+    } catch (_) {}
+    document.cookie = "portal_token=; Max-Age=0; path=/;";
+    sessionStorage.setItem("just_logged_out", "1");
+    if (window.history.replaceState) {
+      window.history.replaceState({}, document.title, "/portal");
+    }
     window.location.href = "/portal";
   }
 
