@@ -1,13 +1,8 @@
 """
-Course & Job Hunter — Modern Craftwork Design System
-=====================================================
-A high-converting, editorial-grade dashboard built with Craftwork design principles.
-Features:
-- Instant 1-Click Magic Login via email URL query parameters (?user=...)
-- Obsidian dark surfaces with layered micro-borders and ambient depth
-- Minimalist typography (Inter + JetBrains Mono) without emoji clutter
-- Refined Bento KPI grid with live streak, verified free certs, and active roles
-- Sleek interactive cards with direct apply actions and 1-click outreach pitches
+Course & Job Hunter — Personal Career Radar
+============================================
+A dedicated, single-user opportunity vault and career radar.
+Tailored exclusively for the subscriber's personal job hunt and certification tracking.
 """
 
 import contextlib
@@ -27,10 +22,10 @@ import streamlit as st
 # PAGE CONFIGURATION
 # ─────────────────────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="Hunter Hub — Opportunity Radar",
+    page_title="Hunter Radar — Personal Opportunity Vault",
     page_icon="🎯",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
 # ── Sync Streamlit Secrets ───────────────────────────────────────────────────
@@ -54,17 +49,15 @@ notifier.load_dotenv()
 
 BASE_DIR        = os.path.dirname(os.path.abspath(__file__))
 RECIPIENTS_FILE = os.path.join(BASE_DIR, "recipients.json")
-SEEN_FILE       = os.path.join(BASE_DIR, "seen.json")
-ADMIN_PASSWORD  = (os.environ.get("ADMIN_PASSWORD") or "hunter2026").strip()
 
 # ─────────────────────────────────────────────────────────────────────────────
-# CRAFTWORK BESPOKE DESIGN STYLES (No AI-clutter, clean typography)
+# CRAFTWORK BESPOKE DESIGN (Editorial, minimal, production-grade)
 # ─────────────────────────────────────────────────────────────────────────────
 CRAFTWORK_DESIGN = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-/* Reset and Base */
+/* Base canvas */
 html, body, [class*="css"], [data-testid="stAppViewContainer"], .stApp {
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
     background-color: #08090d !important;
@@ -74,49 +67,14 @@ html, body, [class*="css"], [data-testid="stAppViewContainer"], .stApp {
 
 #MainMenu, footer, header { visibility: hidden !important; }
 .block-container {
-    padding: 1.5rem 2.2rem 4rem !important;
-    max-width: 1180px !important;
+    padding: 1.8rem 2.5rem 4rem !important;
+    max-width: 1140px !important;
 }
 
-/* Custom Scrollbar */
+/* Scrollbar */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: #08090d; }
 ::-webkit-scrollbar-thumb { background: #1c202e; border-radius: 99px; }
-::-webkit-scrollbar-thumb:hover { background: #2d3448; }
-
-/* Sidebar */
-[data-testid="stSidebar"] {
-    background: #0b0d14 !important;
-    border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
-}
-[data-testid="stSidebar"] .block-container {
-    padding: 1.5rem 1rem !important;
-}
-
-/* Sidebar Radio Pills */
-[data-testid="stSidebar"] .stRadio > div {
-    gap: 4px !important;
-}
-[data-testid="stSidebar"] .stRadio > div > label {
-    background: transparent !important;
-    border: 1px solid transparent !important;
-    border-radius: 10px !important;
-    padding: 9px 12px !important;
-    color: #8b949e !important;
-    font-size: 13px !important;
-    font-weight: 500 !important;
-    transition: all 0.15s ease !important;
-}
-[data-testid="stSidebar"] .stRadio > div > label:hover {
-    background: rgba(255, 255, 255, 0.04) !important;
-    color: #f0f6fc !important;
-}
-[data-testid="stSidebar"] .stRadio > div > label[data-checked="true"] {
-    background: rgba(99, 102, 241, 0.12) !important;
-    border-color: rgba(99, 102, 241, 0.3) !important;
-    color: #a5b4fc !important;
-    font-weight: 600 !important;
-}
 
 /* Tabs */
 .stTabs [data-baseweb="tab-list"] {
@@ -125,11 +83,12 @@ html, body, [class*="css"], [data-testid="stAppViewContainer"], .stApp {
     border-radius: 12px !important;
     padding: 4px !important;
     gap: 4px !important;
+    margin-bottom: 16px !important;
 }
 .stTabs [data-baseweb="tab"] {
     border-radius: 8px !important;
-    padding: 8px 18px !important;
-    font-size: 12px !important;
+    padding: 8px 20px !important;
+    font-size: 13px !important;
     font-weight: 600 !important;
     color: #8b949e !important;
     border: none !important;
@@ -147,7 +106,7 @@ html, body, [class*="css"], [data-testid="stAppViewContainer"], .stApp {
 .stButton > button {
     background: #4f46e5 !important;
     color: #ffffff !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
     border-radius: 10px !important;
     font-weight: 600 !important;
     font-size: 12px !important;
@@ -157,24 +116,18 @@ html, body, [class*="css"], [data-testid="stAppViewContainer"], .stApp {
 }
 .stButton > button:hover {
     background: #4338ca !important;
-    border-color: rgba(255, 255, 255, 0.25) !important;
     transform: translateY(-1px) !important;
-}
-.stButton > button:active {
-    transform: translateY(0) !important;
 }
 
 /* Inputs */
 .stTextInput > div > div > input,
 .stTextArea > div > div > textarea,
-.stSelectbox > div > div > div,
-.stNumberInput > div > div > input {
+.stSelectbox > div > div > div {
     background: #0f121d !important;
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
     border-radius: 10px !important;
     color: #f1f5f9 !important;
     font-size: 12px !important;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3) !important;
 }
 .stTextInput > div > div > input:focus,
 .stTextArea > div > div > textarea:focus {
@@ -182,47 +135,22 @@ html, body, [class*="css"], [data-testid="stAppViewContainer"], .stApp {
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
 }
 
-/* Expanders */
-.stExpander > details {
-    background: #0f121d !important;
-    border: 1px solid rgba(255, 255, 255, 0.06) !important;
-    border-radius: 14px !important;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
-}
-.stExpander > details > summary {
-    font-weight: 600 !important;
-    color: #e2e8f0 !important;
-    font-size: 13px !important;
-}
-
-/* Code & tags */
-.stCode, code {
-    font-family: 'JetBrains Mono', monospace !important;
-    background: #141724 !important;
+/* Multiselect tags */
+[data-baseweb="tag"] {
+    background: rgba(99, 102, 241, 0.18) !important;
+    border: 1px solid rgba(99, 102, 241, 0.3) !important;
+    border-radius: 99px !important;
     color: #a5b4fc !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    border-radius: 6px !important;
-    font-size: 11px !important;
 }
-
-/* Alert Boxes */
-.stSuccess, .stInfo, .stWarning, .stError {
-    border-radius: 12px !important;
-    font-size: 12px !important;
-}
-.stSuccess { background: rgba(16, 185, 129, 0.08) !important; border: 1px solid rgba(16, 185, 129, 0.2) !important; color: #6ee7b7 !important; }
-.stInfo    { background: rgba(99, 102, 241, 0.08) !important; border: 1px solid rgba(99, 102, 241, 0.2) !important; color: #a5b4fc !important; }
-.stWarning { background: rgba(245, 158, 11, 0.08) !important; border: 1px solid rgba(245, 158, 11, 0.2) !important; color: #fcd34d !important; }
-.stError   { background: rgba(244, 63, 94, 0.08) !important; border: 1px solid rgba(244, 63, 94, 0.2) !important; color: #fda4af !important; }
 </style>
 """
 st.markdown(CRAFTWORK_DESIGN, unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────────────────────────────────────
-# DATA HELPERS
+# LOAD DEDICATED SUBSCRIBER
 # ─────────────────────────────────────────────────────────────────────────────
 
-def load_subscribers() -> List[Dict[str, Any]]:
+def get_subscribers() -> List[Dict[str, Any]]:
     if not os.path.exists(RECIPIENTS_FILE):
         return []
     try:
@@ -238,18 +166,35 @@ def save_subscribers(subs: List[Dict[str, Any]]) -> None:
         f.write("\n")
 
 
-def _hash_pw(pw: str) -> str:
-    return "sha256:" + hashlib.sha256(pw.encode()).hexdigest()
+# Determine the single subscriber for this app instance
+all_subscribers = get_subscribers()
+if not all_subscribers:
+    st.error("No subscribers configured in recipients.json.")
+    st.stop()
 
+# Priority: URL ?user=email -> EMAIL env var -> First subscriber
+target_email = ""
+try:
+    target_email = st.query_params.get("user") or st.query_params.get("email") or ""
+except Exception:
+    pass
 
-def _verify_pw(sub: Dict[str, Any], pw: str) -> bool:
-    stored = sub.get("portal_password", "")
-    if not stored:
-        return pw == "hunter2026" or pw == "hunter123"
-    if stored.startswith("sha256:"):
-        return stored == _hash_pw(pw)
-    return stored == pw
+if not target_email:
+    target_email = os.environ.get("EMAIL", "").strip().lower()
 
+sub_idx = 0
+for idx, s in enumerate(all_subscribers):
+    if target_email and s.get("email", "").strip().lower() == target_email.strip().lower():
+        sub_idx = idx
+        break
+
+user = all_subscribers[sub_idx]
+user_email = user.get("email", "").strip().lower()
+user_name = user.get("name") or user_email.split("@")[0].title()
+
+# ─────────────────────────────────────────────────────────────────────────────
+# VAULT OPPORTUNITIES DATA
+# ─────────────────────────────────────────────────────────────────────────────
 
 def classify_item(url: str, meta: Optional[Dict] = None) -> str:
     if meta and meta.get("type"):
@@ -272,688 +217,292 @@ def derive_title(url: str, meta: Optional[Dict] = None) -> str:
         return url
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# SESSION STATE & 1-CLICK MAGIC LOGIN AUTO-AUTHENTICATION
-# ─────────────────────────────────────────────────────────────────────────────
-if "portal_logged_in" not in st.session_state:
-    st.session_state.portal_logged_in = False
-if "portal_email" not in st.session_state:
-    st.session_state.portal_email = ""
-if "portal_name" not in st.session_state:
-    st.session_state.portal_name = ""
-if "xp" not in st.session_state:
-    st.session_state.xp = 350
-if "streak_days" not in st.session_state:
-    st.session_state.streak_days = 7
-if "last_checkin" not in st.session_state:
-    st.session_state.last_checkin = ""
-if "quiz_answered" not in st.session_state:
-    st.session_state.quiz_answered = {}
-if "pitch_job" not in st.session_state:
-    st.session_state.pitch_job = None
+seen_dict = main.load_seen_dict()
+user_seen = seen_dict.get(user_email, {}) if isinstance(seen_dict, dict) else {}
 
-# ✨ MAGIC 1-CLICK URL LOGIN:
-# If user clicks from email (?user=email@example.com), auto-authenticate!
-try:
-    url_user = st.query_params.get("user") or st.query_params.get("email")
-    if url_user and not st.session_state.portal_logged_in:
-        all_subs = load_subscribers()
-        matched = next((s for s in all_subs if s.get("email", "").strip().lower() == str(url_user).strip().lower()), None)
-        if matched:
-            st.session_state.portal_logged_in = True
-            st.session_state.portal_email = matched["email"].strip().lower()
-            st.session_state.portal_name = matched.get("name") or str(url_user).split("@")[0].title()
-except Exception:
-    pass
+vault_items = []
+for url, meta in user_seen.items():
+    if not url or str(url).startswith("__"):
+        continue
+    m = meta if isinstance(meta, dict) else {}
+    vault_items.append({
+        "url": url,
+        "title": derive_title(url, m),
+        "type": m.get("type") or classify_item(url, m),
+        "date": m.get("date", ""),
+        "domain": urllib.parse.urlparse(url).netloc.replace("www.", ""),
+        "location": m.get("location"),
+        "salary": m.get("salary"),
+    })
 
+vault_items.sort(key=lambda x: str(x.get("date", "")), reverse=True)
+courses = [it for it in vault_items if it["type"] == "course"]
+jobs    = [it for it in vault_items if it["type"] == "job"]
+est_tuition = max(len(courses) * 85, 290)
+
+# Streak state in session
+if "user_streak" not in st.session_state:
+    st.session_state.user_streak = 7
+if "user_xp" not in st.session_state:
+    st.session_state.user_xp = 350
+if "pitch_active" not in st.session_state:
+    st.session_state.pitch_active = None
 
 # ─────────────────────────────────────────────────────────────────────────────
-# CRAFTWORK HTML CARD COMPONENTS (Bespoke styling, zero AI-clutter)
+# HEADER & BENTO STATS
 # ─────────────────────────────────────────────────────────────────────────────
 
-def render_bento_grid(streak_days: int, xp: int, courses_count: int, jobs_count: int, est_saved: int, is_active: bool) -> str:
-    """Renders a sleek, high-contrast Bento Grid without cartoon emojis."""
-    active_color = "#10b981" if is_active else "#f59e0b"
-    active_label = "Radar Active" if is_active else "Radar Paused"
+is_active = bool(user.get("active", True))
+status_color = "#10b981" if is_active else "#f59e0b"
+status_text  = "Radar Active (Daily 8:00 AM IST)" if is_active else "Radar Paused"
 
-    week_dots = "".join([
-        f'<div style="width:7px;height:7px;border-radius:50%;background:{"#f59e0b" if i < streak_days else "#1f2438"};"></div>'
-        for i in range(7)
-    ])
-
-    return f"""
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;margin-bottom:20px;">
-        
-        <!-- Bento 1: Daily Momentum -->
-        <div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,0.4);position:relative;overflow:hidden;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                <span style="font-size:10px;font-weight:700;color:#f59e0b;letter-spacing:0.08em;text-transform:uppercase;">Daily Momentum</span>
-                <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(245,158,11,0.12);color:#fcd34d;border:1px solid rgba(245,158,11,0.25);">DAY {streak_days}</span>
-            </div>
-            <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:4px;">
-                <span style="font-size:28px;font-weight:800;color:#ffffff;line-height:1;">{xp}</span>
-                <span style="font-size:12px;font-weight:700;color:#64748b;">XP · Level 3</span>
-            </div>
-            <div style="font-size:12px;color:#94a3b8;margin-bottom:16px;">Top 5% active learner streak this week.</div>
-            <div style="display:flex;align-items:center;gap:6px;border-top:1px solid rgba(255,255,255,0.05);padding-top:12px;">
-                {week_dots}
-                <span style="font-size:11px;color:#64748b;margin-left:auto;font-weight:500;">7-Day History</span>
-            </div>
+st.markdown(f"""
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:16px;">
+    <div>
+        <div style="display:flex;align-items:center;gap:10px;">
+            <div style="font-size:22px;font-weight:800;color:#ffffff;letter-spacing:-0.02em;">{user_name}'s Career Radar</div>
+            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(16,185,129,0.12);color:{status_color};border:1px solid rgba(16,185,129,0.25);">
+                {status_text}
+            </span>
         </div>
-
-        <!-- Bento 2: Opportunity Velocity -->
-        <div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,0.4);">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                <span style="font-size:10px;font-weight:700;color:#6366f1;letter-spacing:0.08em;text-transform:uppercase;">Active Inventory</span>
-                <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(99,102,241,0.12);color:#a5b4fc;border:1px solid rgba(99,102,241,0.25);">Live Verified</span>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
-                <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:8px 12px;">
-                    <div style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;">Free Courses</div>
-                    <div style="font-size:20px;font-weight:800;color:#ffffff;margin-top:2px;">{courses_count}</div>
-                </div>
-                <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:8px 12px;">
-                    <div style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;">Curated Jobs</div>
-                    <div style="font-size:20px;font-weight:800;color:#ffffff;margin-top:2px;">{jobs_count}</div>
-                </div>
-            </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,0.05);padding-top:10px;">
-                <span style="font-size:11px;color:#94a3b8;">Est. Tuition Unlocked</span>
-                <span style="font-size:13px;font-weight:700;color:#10b981;font-family:'JetBrains Mono',monospace;">${est_saved}+ USD</span>
-            </div>
-        </div>
-
-        <!-- Bento 3: System Status -->
-        <div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,0.4);">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                <span style="font-size:10px;font-weight:700;color:#10b981;letter-spacing:0.08em;text-transform:uppercase;">Digest Automation</span>
-                <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(16,185,129,0.12);color:{active_color};border:1px solid rgba(16,185,129,0.25);">{active_label}</span>
-            </div>
-            <div style="font-size:14px;font-weight:700;color:#ffffff;margin-bottom:4px;">Next Dispatch ~8:00 AM IST</div>
-            <div style="font-size:12px;color:#94a3b8;line-height:1.5;margin-bottom:14px;">LinkedIn, Naukri, and Udemy feeds scanned every morning at sunrise.</div>
-            <div style="border-top:1px solid rgba(255,255,255,0.05);padding-top:10px;display:flex;align-items:center;gap:6px;">
-                <span style="width:6px;height:6px;border-radius:50%;background:#10b981;"></span>
-                <span style="font-size:11px;color:#64748b;">Supabase Cloud Database connected</span>
-            </div>
-        </div>
-
-    </div>
-    """
-
-
-def render_opportunity_card(item: Dict) -> str:
-    """Renders a sleek editorial opportunity card without generic emoji spam."""
-    is_course = item.get("type") == "course"
-    title     = item.get("title", "Untitled")
-    url       = item.get("url", "#")
-    domain    = item.get("domain", "")
-    date      = item.get("date", "")
-    location  = item.get("location") or ""
-    salary    = item.get("salary") or ""
-
-    if is_course:
-        badge_style = "background:rgba(16,185,129,0.1);color:#6ee7b7;border:1px solid rgba(16,185,129,0.25);"
-        badge_text  = "100% FREE CERTIFICATE"
-        action_btn  = f'<a href="{url}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;background:#059669;color:#ffffff;font-size:11px;font-weight:700;text-decoration:none;box-shadow:0 1px 2px rgba(0,0,0,0.3);white-space:nowrap;">Claim Course ↗</a>'
-    else:
-        badge_style = "background:rgba(99,102,241,0.1);color:#a5b4fc;border:1px solid rgba(99,102,241,0.25);"
-        badge_text  = domain.upper() if domain else "JOB BOARD"
-        action_btn  = f'<a href="{url}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;background:#4f46e5;color:#ffffff;font-size:11px;font-weight:700;text-decoration:none;box-shadow:0 1px 2px rgba(0,0,0,0.3);white-space:nowrap;">Apply ↗</a>'
-
-    meta_tags = []
-    if not is_course:
-        meta_tags.append(f'<span style="color:#8b949e;">via {domain}</span>')
-    if location:
-        meta_tags.append(f'<span style="color:#8b949e;">📍 {location}</span>')
-    if salary:
-        meta_tags.append(f'<span style="color:#10b981;font-weight:600;font-family:JetBrains Mono,monospace;">{salary}</span>')
-    if date:
-        meta_tags.append(f'<span style="color:#475569;font-family:JetBrains Mono,monospace;">{date}</span>')
-
-    meta_str = " · ".join(meta_tags) if meta_tags else ""
-
-    return f"""
-    <div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px 20px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:16px;box-shadow:0 2px 8px rgba(0,0,0,0.3);">
-        <div style="min-width:0;flex:1;">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-                <span style="font-size:9px;font-weight:700;letter-spacing:0.06em;padding:2px 8px;border-radius:99px;{badge_style}">{badge_text}</span>
-            </div>
-            <div style="font-size:14px;font-weight:700;color:#f0f6fc;line-height:1.4;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{title}</div>
-            <div style="font-size:11px;display:flex;gap:8px;flex-wrap:wrap;">{meta_str}</div>
-        </div>
-        <div style="flex-shrink:0;">{action_btn}</div>
-    </div>
-    """
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# NAVIGATION DISPATCH
-# ─────────────────────────────────────────────────────────────────────────────
-with st.sidebar:
-    st.markdown("""
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:4px 0;">
-        <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#4f46e5,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 4px 12px rgba(79,70,229,0.3);">🎯</div>
-        <div>
-            <div style="font-size:13px;font-weight:800;color:#ffffff;letter-spacing:-0.01em;">Hunter Hub</div>
-            <div style="font-size:10px;color:#64748b;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;">Career Radar</div>
+        <div style="font-size:12px;color:#64748b;margin-top:4px;">
+            Targeting: {", ".join(user.get('keywords', [])[:5])} · Verified daily pipeline
         </div>
     </div>
-    """, unsafe_allow_html=True)
+    <div style="text-align:right;">
+        <div style="font-size:11px;color:#64748b;font-family:'JetBrains Mono',monospace;">{user_email}</div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
-    nav_page = st.radio(
-        "Navigation",
-        [
-            "Opportunity Vault",
-            "Digest Engine",
-            "Subscribers",
-            "Source Health",
-            "Market Trends",
-            "Database Inspector",
-        ],
-        index=0,
-        label_visibility="collapsed",
-    )
+# Bespoke Bento Grid
+bento_html = f"""
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin-bottom:24px;">
 
-    st.markdown("<hr style='margin:16px 0;border-color:rgba(255,255,255,0.06);'>", unsafe_allow_html=True)
-    if db.is_supabase_enabled():
-        st.markdown('<div style="font-size:11px;color:#10b981;font-weight:600;">● Supabase Cloud Active</div>', unsafe_allow_html=True)
-    else:
-        st.markdown('<div style="font-size:11px;color:#64748b;font-weight:600;">● Local Storage Mode</div>', unsafe_allow_html=True)
-
-
-# ═════════════════════════════════════════════════════════════════════════════
-# PAGE 1: OPPORTUNITY VAULT (MEMBER PORTAL)
-# ═════════════════════════════════════════════════════════════════════════════
-if nav_page == "Opportunity Vault":
-
-    # ── LOGIN SCREEN (If not auto-logged in via query param) ───────────────────
-    if not st.session_state.portal_logged_in:
-        c1, c2, c3 = st.columns([1, 1.2, 1])
-        with c2:
-            st.markdown("""
-            <div style="text-align:center;margin:40px 0 24px;">
-                <div style="font-size:32px;margin-bottom:8px;">🎯</div>
-                <div style="font-size:20px;font-weight:800;color:#ffffff;">Hunter Member Portal</div>
-                <div style="font-size:12px;color:#8b949e;margin-top:4px;">Sign in to inspect your tailored digest archive.</div>
+    <!-- Bento 1: Opportunity Pipeline -->
+    <div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,0.4);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <span style="font-size:10px;font-weight:700;color:#6366f1;letter-spacing:0.08em;text-transform:uppercase;">Active Inventory</span>
+            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(99,102,241,0.12);color:#a5b4fc;border:1px solid rgba(99,102,241,0.25);">Live Verified</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+            <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:10px 14px;">
+                <div style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;">Curated Jobs</div>
+                <div style="font-size:22px;font-weight:800;color:#ffffff;margin-top:2px;">{len(jobs)}</div>
             </div>
-            """, unsafe_allow_html=True)
-
-            with st.form("login_box"):
-                u_email = st.text_input("Subscriber Email", placeholder="you@example.com", key="login_box_email")
-                u_pass  = st.text_input("Password", type="password", placeholder="••••••••", key="login_box_pw")
-                st.markdown('<div style="font-size:11px;color:#475569;margin-bottom:12px;">Default account password: <code>hunter2026</code></div>', unsafe_allow_html=True)
-                login_submit = st.form_submit_button("Sign In →", use_container_width=True)
-
-            if login_submit:
-                subs = load_subscribers()
-                matched = next((s for s in subs if s.get("email","").strip().lower() == u_email.strip().lower()), None)
-                if not matched:
-                    st.error("No account found for this email address.")
-                elif not _verify_pw(matched, u_pass):
-                    st.error("Incorrect password.")
-                else:
-                    st.session_state.portal_logged_in = True
-                    st.session_state.portal_email = matched["email"].strip().lower()
-                    st.session_state.portal_name = matched.get("name") or u_email.split("@")[0].title()
-                    st.rerun()
-
-        st.stop()
-
-    # ── AUTHENTICATED PORTAL VIEW ────────────────────────────────────────────
-    cur_email = st.session_state.portal_email
-    cur_name  = st.session_state.portal_name
-    subs = load_subscribers()
-    sub  = next((s for s in subs if s.get("email","").strip().lower() == cur_email), None) or {}
-
-    # Header Row
-    top_col1, top_col2 = st.columns([6, 1])
-    with top_col1:
-        st.markdown(f"""
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-            <div style="width:40px;height:40px;border-radius:10px;background:#1e2235;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#818cf8;">{cur_name[0].upper()}</div>
-            <div>
-                <div style="font-size:18px;font-weight:800;color:#ffffff;line-height:1.2;">{cur_name}'s Opportunity Radar</div>
-                <div style="font-size:11px;color:#64748b;margin-top:2px;">{cur_email}</div>
+            <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:10px 14px;">
+                <div style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;">Free Courses</div>
+                <div style="font-size:22px;font-weight:800;color:#ffffff;margin-top:2px;">{len(courses)}</div>
             </div>
         </div>
-        """, unsafe_allow_html=True)
-    with top_col2:
-        if st.button("Sign Out", key="top_signout_btn"):
-            st.session_state.portal_logged_in = False
-            st.rerun()
-
-    # Fetch Vault Items
-    seen_dict = main.load_seen_dict()
-    raw_history = seen_dict.get(cur_email, {}) if isinstance(seen_dict, dict) else {}
-    vault_items = []
-    for url, meta in raw_history.items():
-        if not url or str(url).startswith("__"):
-            continue
-        m = meta if isinstance(meta, dict) else {}
-        vault_items.append({
-            "url": url,
-            "title": derive_title(url, m),
-            "type": m.get("type") or classify_item(url, m),
-            "date": m.get("date", ""),
-            "domain": urllib.parse.urlparse(url).netloc.replace("www.", ""),
-            "location": m.get("location"),
-            "salary": m.get("salary"),
-        })
-    vault_items.sort(key=lambda x: str(x.get("date", "")), reverse=True)
-
-    courses = [it for it in vault_items if it["type"] == "course"]
-    jobs    = [it for it in vault_items if it["type"] == "job"]
-    est_saved = max(len(courses) * 85, 290)
-
-    # Render Bento Grid
-    st.markdown(render_bento_grid(
-        streak_days=st.session_state.streak_days,
-        xp=st.session_state.xp,
-        courses_count=len(courses),
-        jobs_count=len(jobs),
-        est_saved=est_saved,
-        is_active=bool(sub.get("active", True))
-    ), unsafe_allow_html=True)
-
-    # Main Segmented Tabs
-    tab_courses, tab_jobs, tab_quiz, tab_pitch, tab_settings = st.tabs([
-        f"Free Courses ({len(courses)})",
-        f"Job Pipeline ({len(jobs)})",
-        "Daily Skill Byte (+50 XP)",
-        "Outreach Pitch",
-        "Radar Preferences",
-    ])
-
-    # ── TAB: COURSES ──────────────────────────────────────────────────────────
-    with tab_courses:
-        c_search, c_sort = st.columns([4, 1])
-        with c_search:
-            cq = st.text_input("Search courses", placeholder="Filter by title or learning platform…", label_visibility="collapsed", key="v_course_query")
-        with c_sort:
-            cs = st.selectbox("Sort", ["Newest First", "Alphabetical", "Platform"], label_visibility="collapsed", key="v_course_sort")
-
-        filtered_c = courses
-        if cq:
-            q = cq.strip().lower()
-            filtered_c = [c for c in courses if q in c["title"].lower() or q in c["domain"].lower()]
-        if cs == "Alphabetical":
-            filtered_c = sorted(filtered_c, key=lambda x: x["title"])
-        elif cs == "Platform":
-            filtered_c = sorted(filtered_c, key=lambda x: x["domain"])
-
-        if not filtered_c:
-            st.markdown("""
-            <div style="text-align:center;padding:50px 20px;color:#475569;">
-                <div style="font-size:32px;margin-bottom:8px;">📚</div>
-                <div style="font-size:13px;font-weight:600;color:#64748b;">No matching courses delivered yet</div>
-                <div style="font-size:11px;margin-top:2px;">Your morning digest scans Swayam, NPTEL, and Udemy daily.</div>
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            cards_html = "".join(render_opportunity_card(c) for c in filtered_c)
-            st.markdown(cards_html, unsafe_allow_html=True)
-
-    # ── TAB: JOBS ─────────────────────────────────────────────────────────────
-    with tab_jobs:
-        j_search, j_sort = st.columns([4, 1])
-        with j_search:
-            jq = st.text_input("Search jobs", placeholder="Filter by role, company, or location…", label_visibility="collapsed", key="v_job_query")
-        with j_sort:
-            js = st.selectbox("Sort", ["Newest First", "Alphabetical", "Source Board"], label_visibility="collapsed", key="v_job_sort")
-
-        filtered_j = jobs
-        if jq:
-            q = jq.strip().lower()
-            filtered_j = [j for j in jobs if q in j["title"].lower() or q in j["domain"].lower() or q in (j.get("location") or "").lower()]
-        if js == "Alphabetical":
-            filtered_j = sorted(filtered_j, key=lambda x: x["title"])
-        elif js == "Source Board":
-            filtered_j = sorted(filtered_j, key=lambda x: x["domain"])
-
-        if not filtered_j:
-            st.markdown("""
-            <div style="text-align:center;padding:50px 20px;color:#475569;">
-                <div style="font-size:32px;margin-bottom:8px;">💼</div>
-                <div style="font-size:13px;font-weight:600;color:#64748b;">No matching jobs in pipeline</div>
-                <div style="font-size:11px;margin-top:2px;">Live jobs from LinkedIn, Naukri, and Remotive appear here after digest runs.</div>
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            for idx_j, j_item in enumerate(filtered_j):
-                col_card, col_action = st.columns([6, 1])
-                with col_card:
-                    st.markdown(render_opportunity_card(j_item), unsafe_allow_html=True)
-                with col_action:
-                    st.markdown("<div style='height:24px;'></div>", unsafe_allow_html=True)
-                    u_hash = hashlib.sha256(j_item.get("url", str(idx_j)).encode()).hexdigest()[:8]
-                    if st.button("AI Pitch ↗", key=f"btn_pitch_{idx_j}_{u_hash}", use_container_width=True):
-                        st.session_state.pitch_job = j_item
-                        st.rerun()
-
-    # ── TAB: DAILY SKILL BYTE ─────────────────────────────────────────────────
-    with tab_quiz:
-        today_date = datetime.date.today().isoformat()
-        quiz_data = [
-            {
-                "cat": "System Design",
-                "q": "Which data structure is primarily used in distributed sliding-window rate limiters?",
-                "opts": ["Sliding Window Counter / Redis Sorted Set", "Dijkstra's Shortest Path", "B+ Tree Index", "Consistent Hashing Ring"],
-                "ans": 0,
-                "exp": "Redis Sorted Sets (ZSET) with microsecond timestamps allow millisecond sliding window evaluation with O(log N) purge."
-            },
-            {
-                "cat": "Backend & Cloud",
-                "q": "What happens when a container exceeds its memory limit in Kubernetes?",
-                "opts": ["CPU is throttled without terminating", "Linux kernel OOM Killer terminates container with Exit Code 137", "Node swaps RAM to NVMe disk", "A replica pod is created automatically"],
-                "ans": 1,
-                "exp": "When container cgroups exceed memory limit, Linux OOM killer immediately terminates the process with Exit Code 137."
-            }
-        ]
-        q_item = quiz_data[datetime.date.today().timetuple().tm_yday % len(quiz_data)]
-        answered_idx = st.session_state.quiz_answered.get(today_date)
-
-        st.markdown(f"""
-        <div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:20px;margin-bottom:16px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(99,102,241,0.12);color:#a5b4fc;border:1px solid rgba(99,102,241,0.25);">{q_item['cat']}</span>
-                <span style="font-size:11px;font-weight:700;color:#f59e0b;">+50 XP Reward</span>
-            </div>
-            <div style="font-size:15px;font-weight:700;color:#ffffff;line-height:1.5;">{q_item['q']}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,0.05);padding-top:10px;">
+            <span style="font-size:11px;color:#94a3b8;">Est. Tuition Unlocked</span>
+            <span style="font-size:13px;font-weight:700;color:#10b981;font-family:'JetBrains Mono',monospace;">${est_tuition}+ USD</span>
         </div>
-        """, unsafe_allow_html=True)
+    </div>
 
-        for opt_idx, opt_text in enumerate(q_item["opts"]):
-            if answered_idx is not None:
-                is_correct = opt_idx == q_item["ans"]
-                chosen     = opt_idx == answered_idx
-                border_clr = "#10b981" if is_correct else ("#f43f5e" if chosen else "rgba(255,255,255,0.06)")
-                bg_clr     = "rgba(16,185,129,0.08)" if is_correct else ("rgba(244,63,94,0.08)" if chosen else "#0f121d")
-                status_txt = " ✓ Correct" if is_correct else (" ✗" if chosen else "")
-                st.markdown(f"""
-                <div style="background:{bg_clr};border:1px solid {border_clr};border-radius:10px;padding:12px 16px;margin-bottom:8px;font-size:12px;color:#e2e8f0;">
-                    <strong>{chr(65+opt_idx)}.</strong> {opt_text}{status_txt}
-                </div>
-                """, unsafe_allow_html=True)
-            else:
-                if st.button(f"{chr(65+opt_idx)}. {opt_text}", key=f"q_btn_{opt_idx}", use_container_width=True):
-                    st.session_state.quiz_answered[today_date] = opt_idx
-                    if opt_idx == q_item["ans"]:
-                        st.session_state.xp += 50
-                    st.rerun()
+    <!-- Bento 2: Daily Momentum -->
+    <div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,0.4);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <span style="font-size:10px;font-weight:700;color:#f59e0b;letter-spacing:0.08em;text-transform:uppercase;">Daily Momentum</span>
+            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(245,158,11,0.12);color:#fcd34d;border:1px solid rgba(245,158,11,0.25);">Day {st.session_state.user_streak}</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:4px;">
+            <span style="font-size:28px;font-weight:800;color:#ffffff;line-height:1;">{st.session_state.user_xp}</span>
+            <span style="font-size:12px;font-weight:700;color:#64748b;">XP · Career Sniper</span>
+        </div>
+        <div style="font-size:12px;color:#94a3b8;margin-bottom:14px;">Active habit loop maintaining daily application cadence.</div>
+        <div style="display:flex;align-items:center;gap:6px;border-top:1px solid rgba(255,255,255,0.05);padding-top:10px;">
+            <div style="width:7px;height:7px;border-radius:50%;background:#f59e0b;"></div>
+            <div style="width:7px;height:7px;border-radius:50%;background:#f59e0b;"></div>
+            <div style="width:7px;height:7px;border-radius:50%;background:#f59e0b;"></div>
+            <div style="width:7px;height:7px;border-radius:50%;background:#f59e0b;"></div>
+            <div style="width:7px;height:7px;border-radius:50%;background:#f59e0b;"></div>
+            <div style="width:7px;height:7px;border-radius:50%;background:#f59e0b;"></div>
+            <div style="width:7px;height:7px;border-radius:50%;background:#f59e0b;"></div>
+            <span style="font-size:11px;color:#64748b;margin-left:auto;font-weight:500;">7-Day History</span>
+        </div>
+    </div>
 
-        if answered_idx is not None:
-            st.info(f"💡 **Takeaway:** {q_item['exp']}")
+    <!-- Bento 3: Automation Status -->
+    <div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,0.4);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+            <span style="font-size:10px;font-weight:700;color:#10b981;letter-spacing:0.08em;text-transform:uppercase;">Automation Schedule</span>
+            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(16,185,129,0.12);color:#6ee7b7;border:1px solid rgba(16,185,129,0.25);">Connected</span>
+        </div>
+        <div style="font-size:15px;font-weight:700;color:#ffffff;margin-bottom:4px;">Daily Digest ~8:00 AM IST</div>
+        <div style="font-size:12px;color:#94a3b8;line-height:1.5;margin-bottom:14px;">LinkedIn, Naukri, and Udemy coupon feeds are scanned automatically.</div>
+        <div style="border-top:1px solid rgba(255,255,255,0.05);padding-top:10px;display:flex;align-items:center;gap:6px;">
+            <span style="width:6px;height:6px;border-radius:50%;background:#10b981;"></span>
+            <span style="font-size:11px;color:#64748b;">PostgreSQL seen-link deduplication active</span>
+        </div>
+    </div>
 
-    # ── TAB: OUTREACH PITCH ───────────────────────────────────────────────────
-    with tab_pitch:
-        p_job = st.session_state.pitch_job
-        p_title = p_job.get("title", "") if p_job else ""
-        p_comp  = p_job.get("domain", "") if p_job else ""
+</div>
+"""
+st.markdown(bento_html, unsafe_allow_html=True)
 
+# ─────────────────────────────────────────────────────────────────────────────
+# WORKSPACE TABS (Clean, dedicated)
+# ─────────────────────────────────────────────────────────────────────────────
+
+tab_jobs, tab_courses, tab_config = st.tabs([
+    f"Curated Jobs ({len(jobs)})",
+    f"Free Certifications ({len(courses)})",
+    "Targeting & Source Preferences",
+])
+
+# ── TAB 1: CURATED JOBS ──────────────────────────────────────────────────────
+with tab_jobs:
+    j_col1, j_col2 = st.columns([4, 1])
+    with j_col1:
+        jq = st.text_input("Filter Jobs", placeholder="Search role title, company, or tech stack…", label_visibility="collapsed", key="personal_jq")
+    with j_col2:
+        js = st.selectbox("Sort", ["Newest First", "Alphabetical", "Platform"], label_visibility="collapsed", key="personal_js")
+
+    filtered_jobs = jobs
+    if jq:
+        q = jq.strip().lower()
+        filtered_jobs = [j for j in jobs if q in j["title"].lower() or q in j["domain"].lower() or q in (j.get("location") or "").lower()]
+    if js == "Alphabetical":
+        filtered_jobs = sorted(filtered_jobs, key=lambda x: x["title"])
+    elif js == "Platform":
+        filtered_jobs = sorted(filtered_jobs, key=lambda x: x["domain"])
+
+    if not filtered_jobs:
         st.markdown("""
-        <div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:18px;margin-bottom:16px;">
-            <div style="font-size:13px;font-weight:700;color:#ffffff;margin-bottom:2px;">Tailored Recruiter Outreach Generator</div>
-            <div style="font-size:11px;color:#8b949e;">Generate a high-converting 300-character LinkedIn note and email application.</div>
+        <div style="text-align:center;padding:50px 20px;color:#64748b;">
+            <div style="font-size:14px;font-weight:600;color:#94a3b8;">No matching job openings right now.</div>
+            <div style="font-size:11px;margin-top:4px;">Next automated crawler run will bring fresh matches.</div>
         </div>
         """, unsafe_allow_html=True)
-
-        col_p1, col_p2 = st.columns(2)
-        with col_p1:
-            inp_role = st.text_input("Target Role", value=p_title, placeholder="e.g. Senior Backend Engineer", key="outreach_role_inp")
-        with col_p2:
-            inp_comp = st.text_input("Company / Platform", value=p_comp, placeholder="e.g. Stripe", key="outreach_comp_inp")
-
-        if st.button("Generate Cold Outreach Note", key="btn_outreach_gen", use_container_width=True):
-            if not inp_role:
-                st.error("Please provide the target role.")
-            else:
-                ln_note = (
-                    f"Hi {inp_comp or 'Team'}, I noticed your opening for {inp_role} and wanted to reach out. "
-                    f"With hands-on experience building reliable, scalable systems and shipping production features, "
-                    f"I would love to connect and share how my background aligns with your roadmap. Best, {cur_name}"
-                )
-                em_pitch = (
-                    f"Subject: Application & Quick Introduction — {inp_role} | {cur_name}\n\n"
-                    f"Hi {inp_comp or 'Hiring Team'},\n\n"
-                    f"I came across the {inp_role} opening and was immediately drawn to your product milestones.\n\n"
-                    f"I bring proven experience in scalable architecture, API design, and system optimization, "
-                    f"with a track record of delivering measurable outcomes.\n\n"
-                    f"Would love 10 minutes to discuss how my skill set can accelerate your current milestones.\n\n"
-                    f"Portfolio: [Insert URL]\nLinkedIn: [Insert URL]\n\nBest regards,\n{cur_name}"
-                )
-
-                st.markdown('<div style="font-size:11px;font-weight:700;color:#8b949e;text-transform:uppercase;margin:14px 0 4px;">LinkedIn Connection Note (Under 300 Chars)</div>', unsafe_allow_html=True)
-                st.code(ln_note, language=None)
-
-                st.markdown('<div style="font-size:11px;font-weight:700;color:#8b949e;text-transform:uppercase;margin:14px 0 4px;">Full Application Email</div>', unsafe_allow_html=True)
-                st.code(em_pitch, language=None)
-
-    # ── TAB: RADAR PREFERENCES ────────────────────────────────────────────────
-    with tab_settings:
-        with st.form("settings_form_user"):
-            st.markdown('<div style="font-size:13px;font-weight:700;color:#ffffff;margin-bottom:8px;">Radar Customization</div>', unsafe_allow_html=True)
-            u_active = st.checkbox("Daily morning digest active (~8:00 AM IST)", value=bool(sub.get("active", True)), key="u_active_cb")
-
-            kws_str = ", ".join(list({*sub.get("keywords", []), *sub.get("job_searches", [])}))
-            u_kws   = st.text_area("Target Topics & Keywords (comma-separated)", value=kws_str, key="u_kws_area")
-
-            all_jobs = list(getattr(config, "AVAILABLE_JOB_SOURCES", {}).keys())
-            all_crse = list(getattr(config, "AVAILABLE_COURSE_PLATFORMS", {}).keys())
-            cur_j    = [s for s in (sub.get("job_sources") or all_jobs) if s in all_jobs]
-            cur_c    = [c for c in (sub.get("course_sources") or all_crse) if c in all_crse]
-
-            u_sel_jobs = st.multiselect("Connected Job Boards", all_jobs, default=cur_j, format_func=lambda k: getattr(config, "AVAILABLE_JOB_SOURCES", {}).get(k, k), key="u_jobs_ms")
-            u_sel_crse = st.multiselect("Connected Course Platforms", all_crse, default=cur_c, format_func=lambda k: getattr(config, "AVAILABLE_COURSE_PLATFORMS", {}).get(k, k), key="u_crse_ms")
-
-            if st.form_submit_button("Save Radar Settings", use_container_width=True):
-                target_idx = next((i for i, s in enumerate(subs) if s.get("email","").strip().lower() == cur_email), None)
-                if target_idx is not None:
-                    parsed_kws = [k.strip() for k in u_kws.split(",") if k.strip()]
-                    subs[target_idx]["active"]         = bool(u_active)
-                    subs[target_idx]["keywords"]       = parsed_kws
-                    subs[target_idx]["job_searches"]   = parsed_kws
-                    subs[target_idx]["job_sources"]    = u_sel_jobs
-                    subs[target_idx]["course_sources"] = u_sel_crse
-                    save_subscribers(subs)
-                    st.success("✓ Radar preferences saved!")
-
-
-# ═════════════════════════════════════════════════════════════════════════════
-# PAGE 2: DIGEST ENGINE
-# ═════════════════════════════════════════════════════════════════════════════
-elif nav_page == "Digest Engine":
-    st.markdown("""
-    <div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:20px;margin-bottom:20px;">
-        <div style="font-size:18px;font-weight:800;color:#ffffff;margin-bottom:4px;">Digest Harvester Pipeline</div>
-        <div style="font-size:12px;color:#8b949e;">Run the harvester live to scan RSS feeds, query job boards, and generate personalized email digests.</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    all_subs = load_subscribers()
-    sub_opts = ["ALL Subscribers"] + [s.get("email") for s in all_subs if s.get("email")]
-
-    col_m, col_t = st.columns(2)
-    with col_m:
-        run_mode = st.radio("Pipeline Mode", ["Dry Run (Simulation — No emails dispatched)", "Live Run (Deliver real emails)"], key="de_pipeline_mode")
-        is_dry = "Dry Run" in run_mode
-    with col_t:
-        target_sub = st.selectbox("Recipient Filter", sub_opts, key="de_recipient_filter")
-        inc_weekly = st.checkbox("Include Weekly Tech Demand Report", key="de_inc_weekly")
-
-    if not is_dry:
-        st.warning("⚠️ Live mode sends real emails via Gmail SMTP.")
-        admin_auth = st.text_input("Admin Password", type="password", key="de_admin_auth")
     else:
-        admin_auth = ""
+        for idx, job_entry in enumerate(filtered_jobs):
+            col_c, col_b = st.columns([6, 1])
+            with col_c:
+                dom = job_entry.get("domain", "").upper() or "JOB"
+                loc = f" · 📍 {job_entry['location']}" if job_entry.get("location") else ""
+                sal = f" · 💰 {job_entry['salary']}" if job_entry.get("salary") else ""
+                d_str = f" · {job_entry['date']}" if job_entry.get("date") else ""
 
-    if st.button("Start Pipeline Execution", key="de_run_pipeline_btn", use_container_width=True):
-        if not is_dry and admin_auth != ADMIN_PASSWORD:
-            st.error("Admin authentication failed. Live run aborted.")
-        else:
-            recipients = None
-            if target_sub != "ALL Subscribers":
-                recipients = [s for s in all_subs if s.get("email") == target_sub]
+                card_content = f"""
+                <div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px 20px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+                    <div style="min-width:0;flex:1;">
+                        <div style="margin-bottom:6px;">
+                            <span style="font-size:9px;font-weight:700;letter-spacing:0.06em;padding:2px 8px;border-radius:99px;background:rgba(99,102,241,0.1);color:#a5b4fc;border:1px solid rgba(99,102,241,0.25);">{dom}</span>
+                            <span style="font-size:9px;color:#64748b;margin-left:6px;font-weight:600;">VERIFIED OPPORTUNITY</span>
+                        </div>
+                        <div style="font-size:14px;font-weight:700;color:#f0f6fc;line-height:1.4;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{job_entry['title']}</div>
+                        <div style="font-size:11px;color:#8b949e;">via {job_entry['domain']}{loc}{sal}{d_str}</div>
+                    </div>
+                    <a href="{job_entry['url']}" target="_blank" style="padding:7px 14px;border-radius:8px;background:#4f46e5;color:#ffffff;font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap;">Apply ↗</a>
+                </div>
+                """
+                st.markdown(card_content, unsafe_allow_html=True)
+            with col_b:
+                st.markdown("<div style='height:24px;'></div>", unsafe_allow_html=True)
+                url_hash = hashlib.sha256(job_entry.get("url", str(idx)).encode()).hexdigest()[:8]
+                if st.button("AI Pitch", key=f"pitch_act_{idx}_{url_hash}", use_container_width=True):
+                    st.session_state.pitch_active = job_entry
 
-            buf = io.StringIO()
-            with st.spinner("Harvesting opportunities across all feeds…"):
-                with contextlib.redirect_stdout(buf):
-                    try:
-                        main.run(dry_run=is_dry, weekly=inc_weekly, target_recipients=recipients)
-                    except Exception as err:
-                        print(f"[Execution Error]: {err}")
+        # AI Pitch Generator Tray (If user clicked Pitch)
+        if st.session_state.pitch_active:
+            p_job = st.session_state.pitch_active
+            st.markdown("<hr style='margin:20px 0;border-color:rgba(255,255,255,0.06);'>", unsafe_allow_html=True)
+            st.markdown(f"""
+            <div style="background:#141724;border:1px solid rgba(99,102,241,0.3);border-radius:12px;padding:16px 20px;margin-bottom:14px;">
+                <div style="font-size:13px;font-weight:700;color:#ffffff;">1-Click Outreach Pitch for: {p_job['title']}</div>
+                <div style="font-size:11px;color:#8b949e;">Copy and paste directly into your LinkedIn connection note or email outreach.</div>
+            </div>
+            """, unsafe_allow_html=True)
 
-            st.success("✓ Pipeline executed successfully!")
-            st.markdown('<div style="font-size:11px;font-weight:700;color:#8b949e;text-transform:uppercase;margin:12px 0 6px;">Execution Log</div>', unsafe_allow_html=True)
-            st.code(buf.getvalue() or "No logs produced.", language="text")
+            ln_text = (
+                f"Hi {p_job['domain'].title()} Hiring Team, I noticed your opening for {p_job['title']} and wanted to reach out. "
+                f"With hands-on experience building reliable, scalable systems and executing against roadmap priorities, "
+                f"I would love to connect and share how my background aligns with your team's goals. Best, {user_name}"
+            )
+            st.code(ln_text, language=None)
+            if st.button("Close Pitch Generator", key="close_pitch_btn"):
+                st.session_state.pitch_active = None
+                st.rerun()
 
+# ── TAB 2: FREE CERTIFICATIONS ───────────────────────────────────────────────
+with tab_courses:
+    c_col1, c_col2 = st.columns([4, 1])
+    with c_col1:
+        cq = st.text_input("Filter Courses", placeholder="Search course topic, Python, AI, AWS, Excel…", label_visibility="collapsed", key="personal_cq")
+    with c_col2:
+        cs = st.selectbox("Sort Courses", ["Newest First", "Alphabetical", "Platform"], label_visibility="collapsed", key="personal_cs")
 
-# ═════════════════════════════════════════════════════════════════════════════
-# PAGE 3: SUBSCRIBERS
-# ═════════════════════════════════════════════════════════════════════════════
-elif nav_page == "Subscribers":
+    filtered_courses = courses
+    if cq:
+        q = cq.strip().lower()
+        filtered_courses = [c for c in courses if q in c["title"].lower() or q in c["domain"].lower()]
+    if cs == "Alphabetical":
+        filtered_courses = sorted(filtered_courses, key=lambda x: x["title"])
+    elif cs == "Platform":
+        filtered_courses = sorted(filtered_courses, key=lambda x: x["domain"])
+
+    if not filtered_courses:
+        st.markdown("""
+        <div style="text-align:center;padding:50px 20px;color:#64748b;">
+            <div style="font-size:14px;font-weight:600;color:#94a3b8;">No matching free courses right now.</div>
+            <div style="font-size:11px;margin-top:4px;">100% OFF coupons drop daily at ~8:00 AM IST.</div>
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        for c in filtered_courses:
+            dom = c.get("domain", "")
+            d_str = f" · {c['date']}" if c.get("date") else ""
+            c_html = f"""
+            <div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px 20px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+                <div style="min-width:0;flex:1;">
+                    <div style="margin-bottom:6px;">
+                        <span style="font-size:9px;font-weight:700;letter-spacing:0.06em;padding:2px 8px;border-radius:99px;background:rgba(16,185,129,0.1);color:#6ee7b7;border:1px solid rgba(16,185,129,0.25);">100% FREE</span>
+                        <span style="font-size:9px;color:#64748b;margin-left:6px;font-weight:600;">COUPON APPLIED</span>
+                    </div>
+                    <div style="font-size:14px;font-weight:700;color:#f0f6fc;line-height:1.4;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{c['title']}</div>
+                    <div style="font-size:11px;color:#8b949e;">via {dom}{d_str}</div>
+                </div>
+                <a href="{c['url']}" target="_blank" style="padding:7px 14px;border-radius:8px;background:#059669;color:#ffffff;font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap;">Claim Free ↗</a>
+            </div>
+            """
+            st.markdown(c_html, unsafe_allow_html=True)
+
+# ── TAB 3: PERSONAL PREFERENCES ─────────────────────────────────────────────
+with tab_config:
     st.markdown("""
-    <div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:20px;margin-bottom:20px;">
-        <div style="font-size:18px;font-weight:800;color:#ffffff;margin-bottom:4px;">Subscriber Management</div>
-        <div style="font-size:12px;color:#8b949e;">Configure member accounts, keyword targeting, and delivery limits.</div>
+    <div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:18px 20px;margin-bottom:16px;">
+        <div style="font-size:14px;font-weight:700;color:#ffffff;margin-bottom:2px;">Personal Career Targeting</div>
+        <div style="font-size:11px;color:#8b949e;">Manage your target roles, keyword matchers, and source board subscriptions.</div>
     </div>
     """, unsafe_allow_html=True)
 
-    subscribers = load_subscribers()
+    with st.form("personal_pref_form"):
+        u_active = st.checkbox("Daily morning email digest active (~8:00 AM IST)", value=bool(user.get("active", True)), key="pref_active_cb")
+        st.caption("Toggle off for vacation mode — your streak and historical vault are preserved.")
 
-    with st.expander("➕ Add New Member"):
-        with st.form("sub_add_form", clear_on_submit=True):
-            f1, f2 = st.columns(2)
-            with f1:
-                n_name  = st.text_input("Name", placeholder="e.g. Ojasvi", key="n_name_inp")
-                n_email = st.text_input("Email", placeholder="e.g. ojasvi@gmail.com", key="n_email_inp")
-            with f2:
-                n_max   = st.number_input("Max Daily Items", 1, 50, 15, key="n_max_inp")
-                n_act   = st.checkbox("Active", value=True, key="n_act_cb")
-            n_kw  = st.text_area("Keywords (Course match)", "python, ai, devops, product management", key="n_kw_inp")
-            n_job = st.text_area("Job Searches", "remote python, product manager", key="n_job_inp")
+        raw_kws = ", ".join(list({*user.get("keywords", []), *user.get("job_searches", [])}))
+        u_kws = st.text_area("Target Keywords & Roles (comma-separated)", value=raw_kws, placeholder="python, product management, automation, devops…", key="pref_kws_area")
 
-            if st.form_submit_button("Add Member →", use_container_width=True):
-                if not n_name.strip() or not n_email.strip():
-                    st.error("Name and email are required.")
-                elif any(s.get("email","").lower() == n_email.strip().lower() for s in subscribers):
-                    st.error("Subscriber already exists.")
-                else:
-                    subscribers.append({
-                        "name": n_name.strip(), "email": n_email.strip().lower(),
-                        "active": n_act, "max_items": int(n_max),
-                        "keywords": [k.strip() for k in n_kw.split(",") if k.strip()],
-                        "job_searches": [j.strip() for j in n_job.split(",") if j.strip()],
-                        "course_feeds": [], "welcome_sent": False,
-                    })
-                    save_subscribers(subscribers)
-                    st.success(f"✓ Added {n_name}!")
-                    st.rerun()
+        all_jobs = list(getattr(config, "AVAILABLE_JOB_SOURCES", {}).keys())
+        all_crse = list(getattr(config, "AVAILABLE_COURSE_PLATFORMS", {}).keys())
 
-    st.markdown(f'<div style="font-size:12px;font-weight:700;color:#8b949e;margin:16px 0 8px;">Active Members ({len(subscribers)})</div>', unsafe_allow_html=True)
-    for idx_s, s_item in enumerate(subscribers):
-        status_dot = "🟢" if s_item.get("active", True) else "⏸️"
-        with st.expander(f"{status_dot} {s_item.get('name','?')} ({s_item.get('email')})"):
-            with st.form(f"sub_edit_form_{idx_s}"):
-                c_e1, c_e2 = st.columns(2)
-                with c_e1:
-                    e_name = st.text_input("Name", value=s_item.get("name",""), key=f"e_name_{idx_s}")
-                    e_act  = st.checkbox("Active", value=s_item.get("active", True), key=f"e_act_{idx_s}")
-                    e_max  = st.number_input("Max Items", 1, 50, s_item.get("max_items", 15), key=f"e_max_{idx_s}")
-                with c_e2:
-                    e_kw  = st.text_area("Keywords", value=", ".join(s_item.get("keywords", [])), key=f"e_kw_{idx_s}")
-                    e_job = st.text_area("Job Searches", value=", ".join(s_item.get("job_searches", [])), key=f"e_job_{idx_s}")
+        cur_jobs = [j for j in (user.get("job_sources") or all_jobs) if j in all_jobs]
+        cur_crse = [c for c in (user.get("course_sources") or all_crse) if c in all_crse]
 
-                if st.form_submit_button("Save Subscriber Changes"):
-                    subscribers[idx_s].update({
-                        "name": e_name.strip(), "active": bool(e_act), "max_items": int(e_max),
-                        "keywords": [k.strip() for k in e_kw.split(",") if k.strip()],
-                        "job_searches": [j.strip() for j in e_job.split(",") if j.strip()],
-                    })
-                    save_subscribers(subscribers)
-                    st.success("✓ Updated!")
-                    st.rerun()
+        u_jobs = st.multiselect("Active Job Boards", all_jobs, default=cur_jobs, format_func=lambda k: getattr(config, "AVAILABLE_JOB_SOURCES", {}).get(k, k), key="pref_jobs_ms")
+        u_crse = st.multiselect("Active Course Providers", all_crse, default=cur_crse, format_func=lambda k: getattr(config, "AVAILABLE_COURSE_PLATFORMS", {}).get(k, k), key="pref_crse_ms")
 
+        save_btn = st.form_submit_button("Save Preferences", use_container_width=True)
 
-# ═════════════════════════════════════════════════════════════════════════════
-# PAGE 4: SOURCE HEALTH
-# ═════════════════════════════════════════════════════════════════════════════
-elif nav_page == "Source Health":
-    st.markdown("""
-    <div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:20px;margin-bottom:20px;">
-        <div style="font-size:18px;font-weight:800;color:#ffffff;margin-bottom:4px;">Platform Connectivity Inspector</div>
-        <div style="font-size:12px;color:#8b949e;">Verify live connectivity to RSS feeds, Udemy scrapers, and Job APIs.</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    if st.button("Run Live Connectivity Health Check", key="sh_live_check_btn", use_container_width=True):
-        feeds = getattr(config, "COURSE_FEEDS", [])
-        st.markdown(f'<div style="font-size:12px;font-weight:700;color:#8b949e;margin:16px 0 8px;">Course RSS Feeds ({len(feeds)})</div>', unsafe_allow_html=True)
-        for f_url in feeds:
-            try:
-                res = requests.get(f_url, headers={"User-Agent": "Mozilla/5.0"}, timeout=6)
-                if res.status_code == 200:
-                    st.success(f"● {f_url}")
-                else:
-                    st.warning(f"▲ {f_url} (HTTP {res.status_code})")
-            except Exception as e:
-                st.error(f"■ {f_url} ({e})")
-
-        st.markdown('<div style="font-size:12px;font-weight:700;color:#8b949e;margin:16px 0 8px;">Job Board Integrations</div>', unsafe_allow_html=True)
-        job_targets = [
-            ("LinkedIn Jobs (Guest)", "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=python&location=India&f_WT=2&start=0"),
-            ("Naukri.com (India)", "https://www.naukri.com/python-jobs"),
-            ("Remotive Remote API", "https://remotive.com/api/remote-jobs?limit=2"),
-            ("Jobicy API", "https://jobicy.com/api/v2/remote-jobs?count=2"),
-            ("Arbeitnow API", "https://www.arbeitnow.com/api/job-board-api"),
-        ]
-        for name_j, url_j in job_targets:
-            try:
-                r = requests.get(url_j, headers={"User-Agent": "Mozilla/5.0"}, timeout=8)
-                if r.status_code in (200, 201):
-                    st.success(f"● {name_j} — Operational")
-                else:
-                    st.warning(f"▲ {name_j} — HTTP {r.status_code}")
-            except Exception as err:
-                st.error(f"■ {name_j} — {err}")
-
-
-# ═════════════════════════════════════════════════════════════════════════════
-# PAGE 5: MARKET TRENDS
-# ═════════════════════════════════════════════════════════════════════════════
-elif nav_page == "Market Trends":
-    st.markdown("""
-    <div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:20px;margin-bottom:20px;">
-        <div style="font-size:18px;font-weight:800;color:#ffffff;margin-bottom:4px;">Weekly Tech &amp; Skill Demand Report</div>
-        <div style="font-size:12px;color:#8b949e;">Derived from all opportunities tracked across the past 7 days.</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    seen_dict = main.load_seen_dict()
-    report_md = main.generate_weekly_insights(seen_dict, days=7)
-    st.markdown(report_md)
-
-
-# ═════════════════════════════════════════════════════════════════════════════
-# PAGE 6: DATABASE INSPECTOR
-# ═════════════════════════════════════════════════════════════════════════════
-elif nav_page == "Database Inspector":
-    st.markdown("""
-    <div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:20px;margin-bottom:20px;">
-        <div style="font-size:18px;font-weight:800;color:#ffffff;margin-bottom:4px;">Supabase Cloud Database Inspector</div>
-        <div style="font-size:12px;color:#8b949e;">Inspect seen links stored in PostgreSQL for zero-duplicate guarantees.</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    seen_dict = main.load_seen_dict()
-    total_links = sum(len(v) for v in seen_dict.values() if isinstance(v, dict))
-
-    m1, m2, m3 = st.columns(3)
-    m1.metric("Opportunities Tracked", f"{total_links:,}")
-    m2.metric("Subscribers in DB", len(seen_dict))
-    m3.metric("Storage Backend", "Supabase PostgreSQL" if db.is_supabase_enabled() else "Local JSON")
-
-    st.markdown("<hr style='margin:16px 0;border-color:rgba(255,255,255,0.06);'>", unsafe_allow_html=True)
-    for email_key, items in seen_dict.items():
-        if isinstance(items, dict):
-            with st.expander(f"📁 {email_key} ({len(items)} items tracked)"):
-                st.json(items)
+    if save_btn:
+        parsed_kws = [k.strip() for k in u_kws.split(",") if k.strip()]
+        all_subscribers[sub_idx]["active"]         = bool(u_active)
+        all_subscribers[sub_idx]["keywords"]       = parsed_kws
+        all_subscribers[sub_idx]["job_searches"]   = parsed_kws
+        all_subscribers[sub_idx]["job_sources"]    = u_jobs
+        all_subscribers[sub_idx]["course_sources"] = u_crse
+        save_subscribers(all_subscribers)
+        st.success("✓ Personal radar preferences updated successfully!")
+        st.rerun()
