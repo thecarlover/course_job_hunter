@@ -146,6 +146,57 @@ html, body, [class*="css"], [data-testid="stAppViewContainer"], .stApp {
 """
 st.markdown(CRAFTWORK_DESIGN, unsafe_allow_html=True)
 
+def render_html(html_str: str) -> None:
+    """Safely render HTML without CommonMark 4-space code block conversion."""
+    cleaned = "\n".join(line.strip() for line in html_str.strip().splitlines())
+    st.markdown(cleaned, unsafe_allow_html=True)
+
+
+def make_job_card_html(job_entry: Dict) -> str:
+    dom = (job_entry.get("domain") or "JOB").upper()
+    loc = f" · 📍 {job_entry['location']}" if job_entry.get("location") else ""
+    sal = f" · 💰 {job_entry['salary']}" if job_entry.get("salary") else ""
+    d_str = f" · {job_entry['date']}" if job_entry.get("date") else ""
+    title = str(job_entry.get("title", "Untitled")).replace("<", "&lt;").replace(">", "&gt;")
+    url = job_entry.get("url", "#")
+    domain = job_entry.get("domain", "")
+
+    return (
+        f'<div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px 20px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:16px;">'
+        f'<div style="min-width:0;flex:1;">'
+        f'<div style="margin-bottom:6px;">'
+        f'<span style="font-size:9px;font-weight:700;letter-spacing:0.06em;padding:2px 8px;border-radius:99px;background:rgba(99,102,241,0.1);color:#a5b4fc;border:1px solid rgba(99,102,241,0.25);">{dom}</span>'
+        f'<span style="font-size:9px;color:#64748b;margin-left:6px;font-weight:600;">VERIFIED OPPORTUNITY</span>'
+        f'</div>'
+        f'<div style="font-size:14px;font-weight:700;color:#f0f6fc;line-height:1.4;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{title}</div>'
+        f'<div style="font-size:11px;color:#8b949e;">via {domain}{loc}{sal}{d_str}</div>'
+        f'</div>'
+        f'<a href="{url}" target="_blank" style="padding:7px 14px;border-radius:8px;background:#4f46e5;color:#ffffff;font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap;">Apply ↗</a>'
+        f'</div>'
+    )
+
+
+def make_course_card_html(c: Dict) -> str:
+    dom = c.get("domain", "")
+    d_str = f" · {c['date']}" if c.get("date") else ""
+    title = str(c.get("title", "Untitled")).replace("<", "&lt;").replace(">", "&gt;")
+    url = c.get("url", "#")
+
+    return (
+        f'<div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px 20px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:16px;">'
+        f'<div style="min-width:0;flex:1;">'
+        f'<div style="margin-bottom:6px;">'
+        f'<span style="font-size:9px;font-weight:700;letter-spacing:0.06em;padding:2px 8px;border-radius:99px;background:rgba(16,185,129,0.1);color:#6ee7b7;border:1px solid rgba(16,185,129,0.25);">100% FREE</span>'
+        f'<span style="font-size:9px;color:#64748b;margin-left:6px;font-weight:600;">COUPON APPLIED</span>'
+        f'</div>'
+        f'<div style="font-size:14px;font-weight:700;color:#f0f6fc;line-height:1.4;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{title}</div>'
+        f'<div style="font-size:11px;color:#8b949e;">via {dom}{d_str}</div>'
+        f'</div>'
+        f'<a href="{url}" target="_blank" style="padding:7px 14px;border-radius:8px;background:#059669;color:#ffffff;font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap;">Claim Free ↗</a>'
+        f'</div>'
+    )
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # LOAD DEDICATED SUBSCRIBER
 # ─────────────────────────────────────────────────────────────────────────────
@@ -256,7 +307,7 @@ is_active = bool(user.get("active", True))
 status_color = "#10b981" if is_active else "#f59e0b"
 status_text  = "Radar Active (Daily 8:00 AM IST)" if is_active else "Radar Paused"
 
-st.markdown(f"""
+render_html(f"""
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:16px;">
     <div>
         <div style="display:flex;align-items:center;gap:10px;">
@@ -273,74 +324,75 @@ st.markdown(f"""
         <div style="font-size:11px;color:#64748b;font-family:'JetBrains Mono',monospace;">{user_email}</div>
     </div>
 </div>
-""", unsafe_allow_html=True)
+""")
 
-# Bespoke Bento Grid
-bento_html = f"""
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin-bottom:24px;">
+# Bento Grid via native Streamlit columns (no CommonMark indentation escape bugs)
+b1, b2, b3 = st.columns(3)
 
-    <!-- Bento 1: Opportunity Pipeline -->
-    <div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,0.4);">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-            <span style="font-size:10px;font-weight:700;color:#6366f1;letter-spacing:0.08em;text-transform:uppercase;">Active Inventory</span>
-            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(99,102,241,0.12);color:#a5b4fc;border:1px solid rgba(99,102,241,0.25);">Live Verified</span>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
-            <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:10px 14px;">
-                <div style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;">Curated Jobs</div>
-                <div style="font-size:22px;font-weight:800;color:#ffffff;margin-top:2px;">{len(jobs)}</div>
-            </div>
-            <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:10px 14px;">
-                <div style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;">Free Courses</div>
-                <div style="font-size:22px;font-weight:800;color:#ffffff;margin-top:2px;">{len(courses)}</div>
-            </div>
-        </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,0.05);padding-top:10px;">
-            <span style="font-size:11px;color:#94a3b8;">Est. Tuition Unlocked</span>
-            <span style="font-size:13px;font-weight:700;color:#10b981;font-family:'JetBrains Mono',monospace;">${est_tuition}+ USD</span>
-        </div>
-    </div>
+with b1:
+    st.markdown(
+        f'<div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:18px 20px;box-shadow:0 8px 24px rgba(0,0,0,0.4);">'
+        f'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">'
+        f'<span style="font-size:10px;font-weight:700;color:#6366f1;letter-spacing:0.08em;text-transform:uppercase;">Active Inventory</span>'
+        f'<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(99,102,241,0.12);color:#a5b4fc;border:1px solid rgba(99,102,241,0.25);">Live Verified</span>'
+        f'</div>'
+        f'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">'
+        f'<div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:8px 12px;">'
+        f'<div style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;">Curated Jobs</div>'
+        f'<div style="font-size:22px;font-weight:800;color:#ffffff;margin-top:2px;">{len(jobs)}</div>'
+        f'</div>'
+        f'<div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:8px 12px;">'
+        f'<div style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;">Free Courses</div>'
+        f'<div style="font-size:22px;font-weight:800;color:#ffffff;margin-top:2px;">{len(courses)}</div>'
+        f'</div>'
+        f'</div>'
+        f'<div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,0.05);padding-top:10px;">'
+        f'<span style="font-size:11px;color:#94a3b8;">Est. Tuition Unlocked</span>'
+        f'<span style="font-size:13px;font-weight:700;color:#10b981;font-family:JetBrains Mono,monospace;">${est_tuition}+ USD</span>'
+        f'</div>'
+        f'</div>',
+        unsafe_allow_html=True
+    )
 
-    <!-- Bento 2: Daily Momentum -->
-    <div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,0.4);">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-            <span style="font-size:10px;font-weight:700;color:#f59e0b;letter-spacing:0.08em;text-transform:uppercase;">Daily Momentum</span>
-            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(245,158,11,0.12);color:#fcd34d;border:1px solid rgba(245,158,11,0.25);">Day {st.session_state.user_streak}</span>
-        </div>
-        <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:4px;">
-            <span style="font-size:28px;font-weight:800;color:#ffffff;line-height:1;">{st.session_state.user_xp}</span>
-            <span style="font-size:12px;font-weight:700;color:#64748b;">XP · Career Sniper</span>
-        </div>
-        <div style="font-size:12px;color:#94a3b8;margin-bottom:14px;">Active habit loop maintaining daily application cadence.</div>
-        <div style="display:flex;align-items:center;gap:6px;border-top:1px solid rgba(255,255,255,0.05);padding-top:10px;">
-            <div style="width:7px;height:7px;border-radius:50%;background:#f59e0b;"></div>
-            <div style="width:7px;height:7px;border-radius:50%;background:#f59e0b;"></div>
-            <div style="width:7px;height:7px;border-radius:50%;background:#f59e0b;"></div>
-            <div style="width:7px;height:7px;border-radius:50%;background:#f59e0b;"></div>
-            <div style="width:7px;height:7px;border-radius:50%;background:#f59e0b;"></div>
-            <div style="width:7px;height:7px;border-radius:50%;background:#f59e0b;"></div>
-            <div style="width:7px;height:7px;border-radius:50%;background:#f59e0b;"></div>
-            <span style="font-size:11px;color:#64748b;margin-left:auto;font-weight:500;">7-Day History</span>
-        </div>
-    </div>
+with b2:
+    dots_html = "".join([f'<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#f59e0b;margin-right:5px;"></span>' for _ in range(7)])
+    st.markdown(
+        f'<div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:18px 20px;box-shadow:0 8px 24px rgba(0,0,0,0.4);">'
+        f'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">'
+        f'<span style="font-size:10px;font-weight:700;color:#f59e0b;letter-spacing:0.08em;text-transform:uppercase;">Daily Momentum</span>'
+        f'<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(245,158,11,0.12);color:#fcd34d;border:1px solid rgba(245,158,11,0.25);">Day {st.session_state.user_streak}</span>'
+        f'</div>'
+        f'<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:4px;">'
+        f'<span style="font-size:26px;font-weight:800;color:#ffffff;line-height:1;">{st.session_state.user_xp}</span>'
+        f'<span style="font-size:12px;font-weight:700;color:#64748b;">XP · Career Sniper</span>'
+        f'</div>'
+        f'<div style="font-size:12px;color:#94a3b8;margin-bottom:12px;">Active habit loop maintaining daily cadence.</div>'
+        f'<div style="display:flex;align-items:center;border-top:1px solid rgba(255,255,255,0.05);padding-top:10px;">'
+        f'{dots_html}'
+        f'<span style="font-size:11px;color:#64748b;margin-left:auto;font-weight:500;">7-Day History</span>'
+        f'</div>'
+        f'</div>',
+        unsafe_allow_html=True
+    )
 
-    <!-- Bento 3: Automation Status -->
-    <div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:20px;box-shadow:0 8px 24px rgba(0,0,0,0.4);">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-            <span style="font-size:10px;font-weight:700;color:#10b981;letter-spacing:0.08em;text-transform:uppercase;">Automation Schedule</span>
-            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(16,185,129,0.12);color:#6ee7b7;border:1px solid rgba(16,185,129,0.25);">Connected</span>
-        </div>
-        <div style="font-size:15px;font-weight:700;color:#ffffff;margin-bottom:4px;">Daily Digest ~8:00 AM IST</div>
-        <div style="font-size:12px;color:#94a3b8;line-height:1.5;margin-bottom:14px;">LinkedIn, Naukri, and Udemy coupon feeds are scanned automatically.</div>
-        <div style="border-top:1px solid rgba(255,255,255,0.05);padding-top:10px;display:flex;align-items:center;gap:6px;">
-            <span style="width:6px;height:6px;border-radius:50%;background:#10b981;"></span>
-            <span style="font-size:11px;color:#64748b;">PostgreSQL seen-link deduplication active</span>
-        </div>
-    </div>
+with b3:
+    st.markdown(
+        f'<div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:18px 20px;box-shadow:0 8px 24px rgba(0,0,0,0.4);">'
+        f'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">'
+        f'<span style="font-size:10px;font-weight:700;color:#10b981;letter-spacing:0.08em;text-transform:uppercase;">Automation Schedule</span>'
+        f'<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(16,185,129,0.12);color:#6ee7b7;border:1px solid rgba(16,185,129,0.25);">Connected</span>'
+        f'</div>'
+        f'<div style="font-size:15px;font-weight:700;color:#ffffff;margin-bottom:4px;">Daily Digest ~8:00 AM IST</div>'
+        f'<div style="font-size:12px;color:#94a3b8;line-height:1.5;margin-bottom:12px;">LinkedIn, Naukri, and Udemy feeds scanned daily.</div>'
+        f'<div style="display:flex;align-items:center;gap:6px;border-top:1px solid rgba(255,255,255,0.05);padding-top:10px;">'
+        f'<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#10b981;"></span>'
+        f'<span style="font-size:11px;color:#64748b;">PostgreSQL seen-link deduplication active</span>'
+        f'</div>'
+        f'</div>',
+        unsafe_allow_html=True
+    )
 
-</div>
-"""
-st.markdown(bento_html, unsafe_allow_html=True)
+st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # WORKSPACE TABS (Clean, dedicated)
@@ -370,35 +422,17 @@ with tab_jobs:
         filtered_jobs = sorted(filtered_jobs, key=lambda x: x["domain"])
 
     if not filtered_jobs:
-        st.markdown("""
+        render_html("""
         <div style="text-align:center;padding:50px 20px;color:#64748b;">
             <div style="font-size:14px;font-weight:600;color:#94a3b8;">No matching job openings right now.</div>
             <div style="font-size:11px;margin-top:4px;">Next automated crawler run will bring fresh matches.</div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
     else:
         for idx, job_entry in enumerate(filtered_jobs):
             col_c, col_b = st.columns([6, 1])
             with col_c:
-                dom = job_entry.get("domain", "").upper() or "JOB"
-                loc = f" · 📍 {job_entry['location']}" if job_entry.get("location") else ""
-                sal = f" · 💰 {job_entry['salary']}" if job_entry.get("salary") else ""
-                d_str = f" · {job_entry['date']}" if job_entry.get("date") else ""
-
-                card_content = f"""
-                <div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px 20px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
-                    <div style="min-width:0;flex:1;">
-                        <div style="margin-bottom:6px;">
-                            <span style="font-size:9px;font-weight:700;letter-spacing:0.06em;padding:2px 8px;border-radius:99px;background:rgba(99,102,241,0.1);color:#a5b4fc;border:1px solid rgba(99,102,241,0.25);">{dom}</span>
-                            <span style="font-size:9px;color:#64748b;margin-left:6px;font-weight:600;">VERIFIED OPPORTUNITY</span>
-                        </div>
-                        <div style="font-size:14px;font-weight:700;color:#f0f6fc;line-height:1.4;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{job_entry['title']}</div>
-                        <div style="font-size:11px;color:#8b949e;">via {job_entry['domain']}{loc}{sal}{d_str}</div>
-                    </div>
-                    <a href="{job_entry['url']}" target="_blank" style="padding:7px 14px;border-radius:8px;background:#4f46e5;color:#ffffff;font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap;">Apply ↗</a>
-                </div>
-                """
-                st.markdown(card_content, unsafe_allow_html=True)
+                st.markdown(make_job_card_html(job_entry), unsafe_allow_html=True)
             with col_b:
                 st.markdown("<div style='height:24px;'></div>", unsafe_allow_html=True)
                 url_hash = hashlib.sha256(job_entry.get("url", str(idx)).encode()).hexdigest()[:8]
@@ -409,12 +443,12 @@ with tab_jobs:
         if st.session_state.pitch_active:
             p_job = st.session_state.pitch_active
             st.markdown("<hr style='margin:20px 0;border-color:rgba(255,255,255,0.06);'>", unsafe_allow_html=True)
-            st.markdown(f"""
+            render_html(f"""
             <div style="background:#141724;border:1px solid rgba(99,102,241,0.3);border-radius:12px;padding:16px 20px;margin-bottom:14px;">
                 <div style="font-size:13px;font-weight:700;color:#ffffff;">1-Click Outreach Pitch for: {p_job['title']}</div>
                 <div style="font-size:11px;color:#8b949e;">Copy and paste directly into your LinkedIn connection note or email outreach.</div>
             </div>
-            """, unsafe_allow_html=True)
+            """)
 
             ln_text = (
                 f"Hi {p_job['domain'].title()} Hiring Team, I noticed your opening for {p_job['title']} and wanted to reach out. "
@@ -444,39 +478,24 @@ with tab_courses:
         filtered_courses = sorted(filtered_courses, key=lambda x: x["domain"])
 
     if not filtered_courses:
-        st.markdown("""
+        render_html("""
         <div style="text-align:center;padding:50px 20px;color:#64748b;">
             <div style="font-size:14px;font-weight:600;color:#94a3b8;">No matching free courses right now.</div>
             <div style="font-size:11px;margin-top:4px;">100% OFF coupons drop daily at ~8:00 AM IST.</div>
         </div>
-        """, unsafe_allow_html=True)
+        """)
     else:
         for c in filtered_courses:
-            dom = c.get("domain", "")
-            d_str = f" · {c['date']}" if c.get("date") else ""
-            c_html = f"""
-            <div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px 20px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
-                <div style="min-width:0;flex:1;">
-                    <div style="margin-bottom:6px;">
-                        <span style="font-size:9px;font-weight:700;letter-spacing:0.06em;padding:2px 8px;border-radius:99px;background:rgba(16,185,129,0.1);color:#6ee7b7;border:1px solid rgba(16,185,129,0.25);">100% FREE</span>
-                        <span style="font-size:9px;color:#64748b;margin-left:6px;font-weight:600;">COUPON APPLIED</span>
-                    </div>
-                    <div style="font-size:14px;font-weight:700;color:#f0f6fc;line-height:1.4;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{c['title']}</div>
-                    <div style="font-size:11px;color:#8b949e;">via {dom}{d_str}</div>
-                </div>
-                <a href="{c['url']}" target="_blank" style="padding:7px 14px;border-radius:8px;background:#059669;color:#ffffff;font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap;">Claim Free ↗</a>
-            </div>
-            """
-            st.markdown(c_html, unsafe_allow_html=True)
+            st.markdown(make_course_card_html(c), unsafe_allow_html=True)
 
 # ── TAB 3: PERSONAL PREFERENCES ─────────────────────────────────────────────
 with tab_config:
-    st.markdown("""
+    render_html("""
     <div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:18px 20px;margin-bottom:16px;">
         <div style="font-size:14px;font-weight:700;color:#ffffff;margin-bottom:2px;">Personal Career Targeting</div>
         <div style="font-size:11px;color:#8b949e;">Manage your target roles, keyword matchers, and source board subscriptions.</div>
     </div>
-    """, unsafe_allow_html=True)
+    """)
 
     with st.form("personal_pref_form"):
         u_active = st.checkbox("Daily morning email digest active (~8:00 AM IST)", value=bool(user.get("active", True)), key="pref_active_cb")
