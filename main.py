@@ -585,6 +585,10 @@ def build_html_digest(
     today_label = datetime.now(timezone.utc).strftime("%B %d, %Y")
     reply_email = sender_email or notifier.get_sender_email() or "ojasvimittalofficial@gmail.com"
     hub_url = portal_url or os.environ.get("PORTAL_BASE_URL") or "http://localhost:8000/portal"
+    
+    # 1-Click Magic Login Link (Zero Password Friction)
+    encoded_email = urllib.parse.quote(recipient_email)
+    hub_magic_url = f"{hub_url}?user={encoded_email}" if "?" not in hub_url else f"{hub_url}&user={encoded_email}"
 
     courses = [it for it in items if it.get("type") == "course"]
     jobs = [it for it in items if it.get("type") == "job"]
@@ -806,8 +810,8 @@ def build_html_digest(
                     <div style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin-bottom: 12px;">
                       Search every opportunity found for you, manage topics, or update preferences.
                     </div>
-                    <a href="{hub_url}" target="_blank" style="display: inline-block; background-color: #2563eb; color: #ffffff; font-size: 12px; font-weight: 600; text-decoration: none; padding: 7px 18px; border-radius: 6px;">
-                      Open Member Hub ↗
+                    <a href="{hub_magic_url}" target="_blank" style="display: inline-block; background-color: #4f46e5; color: #ffffff; font-size: 12px; font-weight: 700; text-decoration: none; padding: 9px 22px; border-radius: 8px; box-shadow: 0 2px 8px rgba(79,70,229,0.35);">
+                      Open Vault (1-Click Magic Login) ↗
                     </a>
                   </td>
                 </tr>
