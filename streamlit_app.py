@@ -71,11 +71,23 @@ CRAFTWORK_CSS = """
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-html, body, [class*="css"] {
-    font-family: 'Inter', sans-serif !important;
+/* ── Force dark base everywhere ── */
+html, body { background-color: #07080d !important; color: #f1f5f9 !important; }
+[class*="css"], [data-testid], .stApp, .main, .main > div,
+.element-container, .stMarkdown, .stForm,
+div[data-testid="stAppViewContainer"],
+div[data-testid="stAppViewBlockContainer"],
+div[data-testid="block-container"],
+div[data-testid="stVerticalBlock"],
+section[data-testid="stSidebar"] ~ div {
     background-color: #07080d !important;
     color: #f1f5f9 !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
 }
+
+/* App container */
+.stApp { background: #07080d !important; }
+.main .block-container { background: #07080d !important; }
 
 /* Hide default Streamlit chrome */
 #MainMenu, footer, header { visibility: hidden; }
@@ -85,13 +97,26 @@ html, body, [class*="css"] {
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 99px; }
 
-/* Sidebar */
-[data-testid="stSidebar"] {
+/* Sidebar — force dark */
+[data-testid="stSidebar"],
+[data-testid="stSidebar"] > div,
+[data-testid="stSidebar"] .css-1lcbmhc,
+[data-testid="stSidebar"] .css-17eq0hr {
     background: linear-gradient(180deg, #09111d 0%, #07080d 100%) !important;
     border-right: 1px solid rgba(255,255,255,0.07) !important;
 }
 [data-testid="stSidebar"] * { color: #94a3b8 !important; }
 [data-testid="stSidebar"] .stRadio > label { color: #f1f5f9 !important; }
+[data-testid="stSidebar"] p, [data-testid="stSidebar"] span { color: #94a3b8 !important; }
+
+/* Top header bar — hide white bar */
+[data-testid="stHeader"] { background: #07080d !important; border-bottom: 1px solid rgba(255,255,255,0.05) !important; }
+[data-testid="stToolbar"] { background: #07080d !important; }
+
+/* All white backgrounds → dark */
+div[class*="stBlock"], div[class*="st-"], section { background-color: transparent !important; }
+div[data-testid="stHorizontalBlock"] { background: transparent !important; }
+div[data-testid="column"] { background: transparent !important; }
 
 /* Metric cards */
 [data-testid="stMetricValue"] { color: #f1f5f9 !important; font-weight: 800 !important; }
