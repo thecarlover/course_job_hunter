@@ -973,48 +973,63 @@ def test_portal_user_sources_config():
 
 
 def test_email_query_redirection_and_magic_login():
-    """Test 1-click magic redirection with ?email=, ?user=, and ?=email query parameters."""
+    """Test secure 1-click magic redirection and member authentication."""
     from fastapi.testclient import TestClient
-    from admin import app, extract_email_from_query
+    from admin import app, extract_email_from_query, create_magic_token, verify_magic_token
 
     client = TestClient(app)
+    email = "ojasvimittalofficial@gmail.com"
+    valid_sig = create_magic_token(email)
 
     # 1. Test helper extractor
     assert extract_email_from_query({"email": "test@example.com"}) == "test@example.com"
     assert extract_email_from_query({"user": "user@test.org"}) == "user@test.org"
     assert extract_email_from_query({"": "bare@test.org"}) == "bare@test.org"
-    assert extract_email_from_query({"unknown@domain.com": ""}) == "unknown@domain.com"
     assert extract_email_from_query({}) is None
 
-    # 2. GET / with ?email= redirects to /portal?email= and sets portal_token cookie
-    res = client.get("/?email=ojasvimittalofficial@gmail.com", follow_redirects=False)
+    # 2. GET / with valid signed magic link redirects to /portal?email= and sets portal_token cookie
+    res = client.get(f"/?email={email}&magic={valid_sig}", follow_redirects=False)
     assert res.status_code == 303
     assert "/portal?email=" in res.headers["location"]
     assert "portal_token" in res.cookies
 
-    # 3. GET / with ?user= also redirects
-    res_user = client.get("/?user=ojasvimittalofficial@gmail.com", follow_redirects=False)
-    assert res_user.status_code == 303
-    assert "/portal?email=" in res_user.headers["location"]
-    assert "portal_token" in res_user.cookies
+    # 3. GET / with raw unsigned email does NOT authenticate (member security protection)
+    res_unsigned = client.get(f"/?email={email}", follow_redirects=False)
+    assert res_unsigned.status_code == 200
 
-    # 4. GET / with ?= also redirects
-    res_bare = client.get("/?=ojasvimittalofficial@gmail.com", follow_redirects=False)
-    assert res_bare.status_code == 303
-    assert "/portal?email=" in res_bare.headers["location"]
-
-    # 5. GET /portal?email= returns 200 and sets portal_token cookie
-    res_portal = client.get("/portal?email=ojasvimittalofficial@gmail.com")
+    # 4. GET /portal with valid signed magic link sets cookie
+    res_portal = client.get(f"/portal?email={email}&magic={valid_sig}")
     assert res_portal.status_code == 200
     assert "portal_token" in res_portal.cookies
 
-    # 6. GET /api/portal/auth/magic returns 200 JSON with token
-    res_magic = client.get("/api/portal/auth/magic?email=ojasvimittalofficial@gmail.com")
+    # 5. GET /api/portal/auth/magic with valid signature authenticates
+    res_magic = client.get(f"/api/portal/auth/magic?email={email}&magic={valid_sig}")
     assert res_magic.status_code == 200
-    data = res_magic.json()
-    assert data["success"] is True
-    assert data["email"] == "ojasvimittalofficial@gmail.com"
+    assert res_magic.json()["success"] is True
     assert "portal_token" in res_magic.cookies
+
+    # 6. GET /api/portal/auth/magic with invalid signature rejects with 401
+    res_fake = client.get(f"/api/portal/auth/magic?email={email}&magic=wrongsignature")
+    assert res_fake.status_code == 401
+
+    # 7. Member Password Login works with hunter123
+    res_login = client.post("/api/portal/auth/login", json={"email": email, "password": "hunter123"})
+    assert res_login.status_code == 200
+    assert res_login.json()["success"] is True
+    assert "portal_token" in res_login.cookies
+
+    # 8. Password Login fails with wrong password
+    res_bad = client.post("/api/portal/auth/login", json={"email": email, "password": "wrongpassword"})
+    assert res_bad.status_code == 401
+
+    # 9. Logout clears session cookie completely
+    res_out = client.post("/api/portal/auth/logout")
+    assert res_out.status_code == 200
+    assert "portal_token" in res_out.headers.get("set-cookie", "")
+
+    # 10. Check auth after logout is false
+    me = client.get("/api/portal/auth/me")
+    assert me.json()["authenticated"] is False
 
 
 

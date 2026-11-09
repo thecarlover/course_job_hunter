@@ -11,6 +11,8 @@ and sends individual, customized digests while tracking seen history per recipie
 import argparse
 from collections import Counter
 from datetime import datetime, timezone, timedelta
+import hashlib
+import hmac
 import html
 import json
 import os
@@ -586,9 +588,12 @@ def build_html_digest(
     reply_email = sender_email or notifier.get_sender_email() or "ojasvimittalofficial@gmail.com"
     hub_url = portal_url or os.environ.get("PORTAL_BASE_URL") or "http://localhost:8000/portal"
     
-    # 1-Click Magic Login Link (Zero Password Friction)
+    # 1-Click Secure Magic Login Link (Zero Password Friction, Maximum Member Security)
+    portal_secret = (os.environ.get("PORTAL_SECRET_KEY") or "hunter_portal_secret_2026").strip()
     encoded_email = urllib.parse.quote(recipient_email)
-    hub_magic_url = f"{hub_url}?user={encoded_email}" if "?" not in hub_url else f"{hub_url}&user={encoded_email}"
+    magic_sig = hmac.new(portal_secret.encode("utf-8"), f"magic:{recipient_email.strip().lower()}".encode("utf-8"), hashlib.sha256).hexdigest()[:24]
+    sep = "&" if "?" in hub_url else "?"
+    hub_magic_url = f"{hub_url}{sep}email={encoded_email}&magic={magic_sig}"
 
     courses = [it for it in items if it.get("type") == "course"]
     jobs = [it for it in items if it.get("type") == "job"]

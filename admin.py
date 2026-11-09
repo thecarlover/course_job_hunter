@@ -38,7 +38,6 @@ ADMIN_PASSWORD = (os.environ.get("ADMIN_PASSWORD") or "hunter2026").strip()
 
 # Portal (member) auth — separate from admin auth
 PORTAL_SECRET_KEY = (os.environ.get("PORTAL_SECRET_KEY") or "hunter_portal_secret_2026").strip()
-_PORTAL_SESSIONS: Dict[str, str] = {}  # token → email
 
 app = fastapi.FastAPI(title="Course & Job Hunter Admin Portal")
 
@@ -126,10 +125,9 @@ def _get_subscriber_password(sub: Dict[str, Any]) -> str:
 
 
 def _verify_password(sub: Dict[str, Any], raw_password: str) -> bool:
-    """Verify a plain-text password against the subscriber's stored hash."""
-    # Allow empty/blank password for passwordless sign-in, or standard defaults
-    if not raw_password or raw_password in ["hunter123", "hunter2026", "123456"]:
-        return True
+    """Verify a plain-text password against the subscriber's stored hash or default."""
+    if not raw_password:
+        return False
     expected = _get_subscriber_password(sub)
     candidate = _hash_password(raw_password)
     if hmac.compare_digest(expected, candidate):
@@ -140,16 +138,54 @@ def _verify_password(sub: Dict[str, Any], raw_password: str) -> bool:
 
 
 def _create_portal_token(email: str) -> str:
-    """Generate a secure session token and store the email mapping."""
-    token = secrets.token_hex(32)
-    _PORTAL_SESSIONS[token] = email.strip().lower()
-    return token
+    """Create a tamper-proof cryptographically signed session token: email:timestamp:hmac_sig."""
+    import time
+    ts = str(int(time.time()))
+    payload = f"{email.strip().lower()}:{ts}"
+    sig = hmac.new(PORTAL_SECRET_KEY.encode("utf-8"), payload.encode("utf-8"), hashlib.sha256).hexdigest()
+    return f"{payload}:{sig}"
+
+
+def verify_portal_token(token: str, max_age_seconds: int = 60 * 60 * 24 * 30) -> Optional[str]:
+    """Verify signed token signature and expiration. Return authenticated email, or None."""
+    if not token or ":" not in token:
+        return None
+    parts = token.split(":")
+    if len(parts) != 3:
+        return None
+    email, ts_str, sig = parts
+    payload = f"{email}:{ts_str}"
+    expected_sig = hmac.new(PORTAL_SECRET_KEY.encode("utf-8"), payload.encode("utf-8"), hashlib.sha256).hexdigest()
+    if not hmac.compare_digest(sig, expected_sig):
+        return None
+    try:
+        ts = int(ts_str)
+        import time
+        if time.time() - ts > max_age_seconds:
+            return None  # Expired
+    except ValueError:
+        return None
+    return email.lower()
+
+
+def create_magic_token(email: str) -> str:
+    """Create a secure signature for 1-click email magic links."""
+    payload = f"magic:{email.strip().lower()}"
+    return hmac.new(PORTAL_SECRET_KEY.encode("utf-8"), payload.encode("utf-8"), hashlib.sha256).hexdigest()[:24]
+
+
+def verify_magic_token(email: str, token: str) -> bool:
+    """Verify magic link signature."""
+    if not email or not token:
+        return False
+    expected = create_magic_token(email)
+    return hmac.compare_digest(token.strip(), expected)
 
 
 def _get_portal_email(request: fastapi.Request) -> Optional[str]:
-    """Extract the authenticated portal member's email from the cookie, or None."""
+    """Extract authenticated portal member email from signed cookie."""
     token = request.cookies.get("portal_token", "")
-    return _PORTAL_SESSIONS.get(token)
+    return verify_portal_token(token)
 
 
 # ── Admin auth middleware ─────────────────────────────────────────────────────
@@ -236,13 +272,14 @@ async def get_network_info():
 
 @app.get("/", response_class=HTMLResponse)
 async def serve_dashboard(request: fastapi.Request):
-    """Serve the single-page admin dashboard, or redirect to member portal if email is provided in query."""
+    """Serve the single-page admin dashboard, or redirect to member portal if valid signed email magic link."""
     email = extract_email_from_query(request.query_params)
-    if email:
+    magic = request.query_params.get("magic") or request.query_params.get("sig") or ""
+    if email and magic and verify_magic_token(email, magic):
         token = _create_portal_token(email)
         redirect_url = f"/portal?email={urllib.parse.quote(email)}"
         resp = fastapi.responses.RedirectResponse(url=redirect_url, status_code=303)
-        resp.set_cookie("portal_token", token, httponly=True, samesite="lax", max_age=60 * 60 * 24 * 30)
+        resp.set_cookie("portal_token", token, httponly=True, samesite="lax", max_age=60 * 60 * 24 * 30, path="/")
         return resp
 
     html_path = os.path.join(TEMPLATES_DIR, "admin.html")
@@ -743,19 +780,24 @@ async def serve_user_portal(request: fastapi.Request):
         content = f.read()
 
     resp = HTMLResponse(content)
+    # Check if signed magic link is provided from morning email digest
     email = extract_email_from_query(request.query_params)
-    if email:
+    magic = request.query_params.get("magic") or request.query_params.get("sig") or ""
+    if email and magic and verify_magic_token(email, magic):
         token = _create_portal_token(email)
-        resp.set_cookie("portal_token", token, httponly=True, samesite="lax", max_age=60 * 60 * 24 * 30)
+        resp.set_cookie("portal_token", token, httponly=True, samesite="lax", max_age=60 * 60 * 24 * 30, path="/")
     return resp
 
 
 @app.get("/api/portal/auth/magic")
-async def portal_magic_login(request: fastapi.Request, response: fastapi.Response):
-    """1-Click Magic Login API for query param authentication (?email=, ?user=, ?=email)."""
+async def portal_magic_login(request: fastapi.Request):
+    """1-Click Magic Login API — requires valid cryptographic signature (?email=...&magic=...)."""
     email = extract_email_from_query(request.query_params)
+    magic = request.query_params.get("magic") or request.query_params.get("sig") or ""
     if not email:
         return JSONResponse({"error": "No email parameter provided"}, status_code=400)
+    if not magic or not verify_magic_token(email, magic):
+        return JSONResponse({"error": "Invalid or expired magic link. Please sign in with your password."}, status_code=401)
 
     sub_name = email.split("@")[0].title()
     if os.path.exists(RECIPIENTS_FILE):
@@ -770,7 +812,7 @@ async def portal_magic_login(request: fastapi.Request, response: fastapi.Respons
 
     token = _create_portal_token(email)
     resp = JSONResponse({"success": True, "email": email, "name": sub_name, "token": token})
-    resp.set_cookie("portal_token", token, httponly=True, samesite="lax", max_age=60 * 60 * 24 * 30)
+    resp.set_cookie("portal_token", token, httponly=True, samesite="lax", max_age=60 * 60 * 24 * 30, path="/")
     return resp
 
 
@@ -797,11 +839,18 @@ async def get_portal_subscribers():
 
 
 @app.get("/api/portal/user")
-async def get_portal_user(email: str = ""):
-    """Return personalized subscriber profile, gamified stats, and opportunity vault."""
-    email_clean = (email or "").strip().lower()
+async def get_portal_user(request: fastapi.Request, email: str = ""):
+    """Return personalized subscriber profile, gamified stats, and opportunity vault.
+    Secured: enforces authenticated identity so members cannot view others' vaults.
+    """
+    auth_email = _get_portal_email(request)
+    email_clean = (email or "").strip().lower() or (auth_email or "")
     if not email_clean:
         return JSONResponse({"error": "Email parameter is required"}, status_code=400)
+
+    # Privacy guard: if user is logged in as A, they cannot query B
+    if auth_email and auth_email != email_clean and not is_authenticated(request):
+        return JSONResponse({"error": "Access denied: You can only view your own vault and settings."}, status_code=403)
 
     if not os.path.exists(RECIPIENTS_FILE):
         return JSONResponse({"error": "No subscribers configured"}, status_code=404)
@@ -1087,11 +1136,8 @@ async def portal_me(request: fastapi.Request):
 
 @app.post("/api/portal/auth/logout")
 @app.get("/api/portal/auth/logout")
-async def portal_logout(request: fastapi.Request):
-    """Invalidate portal session."""
-    token = request.cookies.get("portal_token", "")
-    if token:
-        _PORTAL_SESSIONS.pop(token, None)
+async def portal_logout():
+    """Invalidate portal session completely."""
     resp = JSONResponse({"success": True, "logged_out": True})
     resp.delete_cookie("portal_token", path="/")
     resp.set_cookie("portal_token", "", max_age=0, expires=0, path="/")
