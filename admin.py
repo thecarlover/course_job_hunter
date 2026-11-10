@@ -996,33 +996,12 @@ async def get_daily_question():
 
 @app.post("/api/portal/generate-pitch")
 async def generate_pitch(payload: Dict[str, Any]):
-    """Generate a high-converting, tailored 1-click cold outreach pitch for a job role."""
-    title = (payload.get("title") or "Software Engineer").strip()
-    company = (payload.get("company") or "Hiring Team").strip()
-    user_name = (payload.get("user_name") or "Candidate").strip()
-
-    linkedin_note = (
-        f"Hi {company} Team, I noticed your opening for {title} and was impressed by your team's mission. "
-        f"With hands-on experience in building scalable systems and automation, I'd love to connect and share "
-        f"how my background aligns with your current priorities. Best, {user_name}"
-    )
-
-    cold_email = (
-        f"Subject: Application & Quick Introduction – {title} ({user_name})\n\n"
-        f"Hi {company} Hiring Team,\n\n"
-        f"I came across the {title} role and immediately resonated with the impact your team is creating. "
-        f"I bring deep hands-on expertise in full-stack architecture, API integration, and cloud-native solutions, "
-        f"and have a proven track record of shipping reliable, performant features.\n\n"
-        f"I would welcome 10 minutes to discuss how my skill set can accelerate your current milestones.\n\n"
-        f"Portfolio & Resume: [Insert Link]\n"
-        f"LinkedIn: [Insert Profile]\n\n"
-        f"Best regards,\n{user_name}"
-    )
-
+    """AI Pitch Generator endpoint — locked for active development."""
     return JSONResponse({
-        "success": True,
-        "linkedin_note": linkedin_note,
-        "cold_email": cold_email
+        "success": False,
+        "locked": True,
+        "message": "AI 1-Click Outreach Pitch is currently under development and requires a paid subscription.",
+        "status": "under_development"
     })
 
 

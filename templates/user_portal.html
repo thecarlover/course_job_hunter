@@ -776,17 +776,20 @@
 
 
 <!-- ══════════════════════════════════════════════════════════
-     AI PITCH MODAL
+     AI PITCH MODAL (LOCKED · UNDER DEVELOPMENT)
 ══════════════════════════════════════════════════════════════ -->
 <div id="pitchBackdrop" class="modal-backdrop" onclick="closePitchModal()"></div>
 <div id="pitchModal" class="modal-box">
   <div class="craft-card rounded-2xl p-6 space-y-5">
     <div class="flex items-center justify-between border-b border-white/[0.07] pb-4">
       <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl craft-card flex items-center justify-center text-base">🤖</div>
+        <div class="w-10 h-10 rounded-xl craft-card flex items-center justify-center text-lg bg-amber-500/10 border border-amber-500/20 text-amber-400">🔒</div>
         <div>
-          <h4 class="text-sm font-bold text-white">AI 1-Click Pitch</h4>
-          <p id="pitchSubtitle" class="text-[11px] text-slate-400">Tailored recruiter outreach</p>
+          <div class="flex items-center gap-2">
+            <h4 class="text-sm font-bold text-white">AI 1-Click Pitch Generator</h4>
+            <span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30">PAID SUBSCRIPTION</span>
+          </div>
+          <p id="pitchSubtitle" class="text-[11px] text-amber-400/90 font-medium mt-0.5">Feature Locked · Under Active Development</p>
         </div>
       </div>
       <button onclick="closePitchModal()" class="text-slate-500 hover:text-white transition">
@@ -794,30 +797,23 @@
       </button>
     </div>
 
-    <div class="space-y-1.5">
-      <div class="flex items-center justify-between">
-        <span class="field-label">LinkedIn Connection Note</span>
-        <button onclick="copyText('pitchLI','copyLINote')" class="text-[11px] font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition">
-          <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-          <span id="copyLINote">Copy</span>
-        </button>
+    <div class="bg-amber-500/[0.04] border border-amber-500/20 rounded-xl p-4 space-y-2.5">
+      <div class="flex items-center gap-2 text-xs font-semibold text-amber-300">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <span>Feature Under Development</span>
       </div>
-      <textarea id="pitchLI" rows="3" readonly class="field-input resize-none mono text-[11px] leading-relaxed"></textarea>
+      <p class="text-xs text-slate-300 leading-relaxed">
+        We are actively working on AI outreach generation to automatically write tailored LinkedIn connection notes and cold application emails specifically customized to hiring managers.
+      </p>
+      <div class="pt-2 text-[11px] text-slate-400 border-t border-white/[0.05] flex items-center justify-between">
+        <span>Status: <strong class="text-amber-300">Under Development</strong></span>
+        <span>Requirement: <strong class="text-white">Pro Plan Subscription (Coming Soon)</strong></span>
+      </div>
     </div>
 
-    <div class="space-y-1.5">
-      <div class="flex items-center justify-between">
-        <span class="field-label">Cold Application Email</span>
-        <button onclick="copyText('pitchEmail','copyEmailNote')" class="text-[11px] font-bold text-indigo-400 hover:text-indigo-300 flex items-center gap-1 transition">
-          <svg width="11" height="11" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-          <span id="copyEmailNote">Copy</span>
-        </button>
-      </div>
-      <textarea id="pitchEmail" rows="6" readonly class="field-input resize-none mono text-[11px] leading-relaxed"></textarea>
-    </div>
-
-    <div class="flex justify-end pt-1">
-      <button onclick="closePitchModal()" class="btn-ghost">Done</button>
+    <div class="flex items-center justify-between pt-1">
+      <span class="text-[11px] text-slate-500">You will be notified once this feature is live.</span>
+      <button onclick="closePitchModal()" class="btn-primary py-1.5 px-4 text-xs">Got It</button>
     </div>
   </div>
 </div>
@@ -1267,8 +1263,8 @@
       </div>
       <div class="flex items-center gap-2 flex-shrink-0 self-end sm:self-center">
         <button onclick="openPitchModal('${title.replace(/'/g,"\\'")}','${dom}')"
-          class="btn-ghost flex items-center gap-1.5 text-xs">
-          🤖 Pitch
+          class="btn-ghost flex items-center gap-1.5 text-xs text-amber-400/90 hover:text-amber-300 border border-amber-500/20 bg-amber-500/5 hover:bg-amber-500/10 transition" title="Locked · Requires Paid Subscription">
+          🔒 AI Pitch
         </button>
         <a href="${url}" target="_blank" rel="noopener noreferrer" class="btn-apply-blue">
           Apply ↗
@@ -1400,24 +1396,11 @@
     tick(); setInterval(tick, 1000);
   }
 
-  /* ── AI Pitch Modal ── */
-  async function openPitchModal(title, company) {
-    document.getElementById("pitchSubtitle").textContent = `${title} at ${company}`;
-    document.getElementById("pitchLI").value = "Generating pitch…";
-    document.getElementById("pitchEmail").value = "Generating pitch…";
+  /* ── AI Pitch Modal (Locked · Under Development) ── */
+  function openPitchModal(title, company) {
+    document.getElementById("pitchSubtitle").textContent = `${title} (${company}) · Locked`;
     document.getElementById("pitchBackdrop").classList.add("open");
     document.getElementById("pitchModal").classList.add("open");
-    try {
-      const r = await fetch("/api/portal/generate-pitch", {
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({ title, company, user_name: document.getElementById("headerName").textContent || "Candidate" })
-      });
-      const d = await r.json();
-      if (d.success) {
-        document.getElementById("pitchLI").value = d.linkedin_note;
-        document.getElementById("pitchEmail").value = d.cold_email;
-      }
-    } catch { document.getElementById("pitchLI").value = `Hi ${company} Team, I noticed your ${title} opening and would love to connect!`; }
   }
 
   function closePitchModal() {

@@ -511,27 +511,35 @@ with tab_jobs:
             with col_b:
                 st.markdown("<div style='height:24px;'></div>", unsafe_allow_html=True)
                 url_hash = hashlib.sha256(job_entry.get("url", str(idx)).encode()).hexdigest()[:8]
-                if st.button("AI Pitch", key=f"pitch_act_{idx}_{url_hash}", use_container_width=True):
+                if st.button("🔒 AI Pitch", key=f"pitch_act_{idx}_{url_hash}", use_container_width=True, help="Locked: Requires paid subscription (Under Development)"):
                     st.session_state.pitch_active = job_entry
+                    st.toast("🔒 AI Pitch is currently under development and requires a paid subscription.", icon="🔒")
 
-        # AI Pitch Generator Tray (If user clicked Pitch)
+        # AI Pitch Locked Prompt Tray (When user clicks locked AI Pitch)
         if st.session_state.pitch_active:
             p_job = st.session_state.pitch_active
             st.markdown("<hr style='margin:20px 0;border-color:rgba(255,255,255,0.06);'>", unsafe_allow_html=True)
             render_html(f"""
-            <div style="background:#141724;border:1px solid rgba(99,102,241,0.3);border-radius:12px;padding:16px 20px;margin-bottom:14px;">
-                <div style="font-size:13px;font-weight:700;color:#ffffff;">1-Click Outreach Pitch for: {p_job['title']}</div>
-                <div style="font-size:11px;color:#8b949e;">Copy and paste directly into your LinkedIn connection note or email outreach.</div>
+            <div style="background:#141724;border:1px solid rgba(245,158,11,0.35);border-radius:14px;padding:22px 24px;margin-bottom:14px;box-shadow:0 8px 24px rgba(0,0,0,0.4);">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span style="font-size:18px;">🔒</span>
+                        <span style="font-size:13px;font-weight:700;color:#fcd34d;text-transform:uppercase;letter-spacing:0.04em;">Feature Locked · Under Active Development</span>
+                    </div>
+                    <span style="font-size:10px;font-weight:700;padding:2px 10px;border-radius:99px;background:rgba(245,158,11,0.15);color:#fcd34d;border:1px solid rgba(245,158,11,0.3);">PAID SUBSCRIPTION REQUIRED</span>
+                </div>
+                <div style="font-size:15px;font-weight:700;color:#ffffff;margin-bottom:6px;">AI 1-Click Outreach Pitch for {p_job['title']}</div>
+                <div style="font-size:12px;color:#94a3b8;line-height:1.6;margin-bottom:14px;">
+                    We are currently building and fine-tuning specialized outreach models to craft hyper-personalized LinkedIn connection notes and cold emails tailored to hiring managers. This feature is under active development and will be available exclusively with a paid Pro subscription upon release.
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.06);font-size:11px;color:#64748b;">
+                    <span>⚙️ Status: <strong style="color:#fcd34d;">Under Development</strong></span>
+                    <span>·</span>
+                    <span>💎 Plan: <strong style="color:#ffffff;">Pro Subscription (Coming Soon)</strong></span>
+                </div>
             </div>
             """)
-
-            ln_text = (
-                f"Hi {p_job['domain'].title()} Hiring Team, I noticed your opening for {p_job['title']} and wanted to reach out. "
-                f"With hands-on experience building reliable, scalable systems and executing against roadmap priorities, "
-                f"I would love to connect and share how my background aligns with your team's goals. Best, {user_name}"
-            )
-            st.code(ln_text, language=None)
-            if st.button("Close Pitch Generator", key="close_pitch_btn"):
+            if st.button("Dismiss Notification", key="close_pitch_btn"):
                 st.session_state.pitch_active = None
                 st.rerun()
 
