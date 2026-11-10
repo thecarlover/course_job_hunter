@@ -1059,9 +1059,13 @@ st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
 # WORKSPACE TABS (Clean, dedicated)
 # ─────────────────────────────────────────────────────────────────────────────
 
-tab_jobs, tab_courses, tab_config = st.tabs([
+is_ojasvi_pro = bool(user.get("is_pro") or user_email.strip().lower() == "ojasvimittalofficial@gmail.com")
+widget_tab_title = "📱 Phone & Laptop Widgets 💎" if is_ojasvi_pro else "🔒 Widgets (Pro)"
+
+tab_jobs, tab_courses, tab_widgets, tab_config = st.tabs([
     f"Curated Jobs ({len(jobs)})",
     f"Free Certifications ({len(courses)})",
+    widget_tab_title,
     "Targeting & Source Preferences",
 ])
 
@@ -1157,7 +1161,212 @@ with tab_courses:
         for c in filtered_courses:
             st.markdown(make_course_card_html(c), unsafe_allow_html=True)
 
-# ── TAB 3: PERSONAL PREFERENCES ─────────────────────────────────────────────
+# ── TAB 3: PHONE & LAPTOP WIDGETS ───────────────────────────────────────────
+with tab_widgets:
+    if not is_ojasvi_pro:
+        # LOCKED STATE FOR ALL NON-OJASVI SUBSCRIBERS
+        render_html(f"""
+        <div style="background:{T['surface']};border:1px solid rgba(245,158,11,0.3);border-radius:18px;padding:36px 28px;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,0.35);">
+            <div style="width:56px;height:56px;line-height:56px;border-radius:16px;background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);margin:0 auto 16px auto;font-size:26px;">🔒</div>
+            <div style="font-size:18px;font-weight:800;color:{T['text']};letter-spacing:-0.01em;">Phone &amp; Laptop Widgets · Hunter Pro Exclusive</div>
+            <div style="font-size:13px;color:{T['text_dim']};max-width:540px;margin:10px auto 18px auto;line-height:1.6;">
+                Live iPhone home screen widgets, Android KWGT cards, and Mac menu bar radar feeds are available exclusively on the <strong style="color:#ffffff;">Hunter Pro Tier</strong>.
+                This feature is currently under active private rollout.
+            </div>
+            <div style="display:inline-block;padding:6px 16px;border-radius:99px;background:rgba(245,158,11,0.12);color:{T['accent3_tx']};border:1px solid rgba(245,158,11,0.3);font-size:11px;font-weight:700;letter-spacing:0.04em;">
+                🔒 LOCKED · PRO SUBSCRIPTION REQUIRED
+            </div>
+            <div style="font-size:11px;color:{T['text_mute']};margin-top:16px;">
+                Interested in early access? Email <a href="mailto:ojasvimittalofficial@gmail.com?subject=Hunter%20Pro%20Widget%20Waitlist" style="color:{T['accent1_tx']};text-decoration:none;font-weight:600;">ojasvimittalofficial@gmail.com</a>
+            </div>
+        </div>
+        """)
+    else:
+        # UNLOCKED FOR OJASVI (HUNTER PRO)
+        w_token = hmac.new(PORTAL_SECRET_KEY.encode(), f"magic:{user_email.strip().lower()}".encode(), hashlib.sha256).hexdigest()[:24]
+        api_widget_url = f"https://course-job-hunter-latest.onrender.com/api/v1/widget?email={urllib.parse.quote(user_email)}&token={w_token}"
+
+        render_html(f"""
+        <div style="background:{T['surface']};border:1px solid {T['accent1_bd']};border-radius:18px;padding:24px 28px;margin-bottom:20px;box-shadow:0 8px 24px rgba(0,0,0,0.35);">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:10px;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:40px;height:40px;line-height:40px;text-align:center;border-radius:12px;background:{T['accent1_bg']};border:1px solid {T['accent1_bd']};font-size:20px;">📱</div>
+                    <div>
+                        <div style="font-size:17px;font-weight:800;color:{T['text']};">Phone &amp; Laptop Widgets Unlocked</div>
+                        <div style="font-size:12px;color:{T['text_dim']};">Personalized live feed for iPhone Home Screen, Android KWGT, and Mac Menu Bar</div>
+                    </div>
+                </div>
+                <span style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:99px;background:rgba(16,185,129,0.12);color:#6ee7b7;border:1px solid rgba(16,185,129,0.25);">
+                    💎 HUNTER PRO ACTIVE
+                </span>
+            </div>
+            <div style="background:rgba(0,0,0,0.25);border:1px solid {T['border']};border-radius:12px;padding:12px 16px;margin-top:14px;font-family:JetBrains Mono,monospace;font-size:11px;color:{T['text']};word-break:break-all;">
+                <span style="color:{T['text_mute']};">Live Feed URL:</span> {api_widget_url}
+            </div>
+        </div>
+        """)
+
+        # Widget Visual Mockups
+        col_mock_phone, col_mock_laptop = st.columns(2)
+
+        with col_mock_phone:
+            top_job_sample = jobs[0]["title"] if jobs else "Lead Project Manager"
+            top_crse_sample = courses[0]["title"] if courses else "100% OFF Python & Cloud (Udemy)"
+
+            render_html(f"""
+            <div style="background:{T['bg']};border:1px solid {T['border']};border-radius:16px;padding:18px 20px;box-shadow:0 8px 20px rgba(0,0,0,0.4);">
+                <div style="font-size:11px;font-weight:700;color:{T['accent1_tx']};letter-spacing:0.06em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;">
+                    <span>📱 iPhone / Android Medium Widget</span>
+                    <span style="color:#f59e0b;">🔥 Day 7</span>
+                </div>
+                <div style="background:{T['surface']};border:1px solid {T['border']};border-radius:12px;padding:14px;margin-bottom:10px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                        <span style="font-size:9px;font-weight:700;color:#6ee7b7;background:rgba(16,185,129,0.12);padding:1px 6px;border-radius:99px;">TOP JOB MATCH</span>
+                        <span style="font-size:10px;color:{T['text_mute']};">Tap to Apply ↗</span>
+                    </div>
+                    <div style="font-size:12px;font-weight:700;color:{T['text']};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{top_job_sample}</div>
+                </div>
+                <div style="background:{T['surface']};border:1px solid {T['border']};border-radius:12px;padding:14px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                        <span style="font-size:9px;font-weight:700;color:#a5b4fc;background:rgba(99,102,241,0.12);padding:1px 6px;border-radius:99px;">FREE CERTIFICATION</span>
+                        <span style="font-size:10px;color:{T['text_mute']};">100% OFF ↗</span>
+                    </div>
+                    <div style="font-size:12px;font-weight:700;color:{T['text']};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{top_crse_sample}</div>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:10px;border-top:1px solid {T['border']};font-size:10px;color:{T['text_mute']};">
+                    <span>⚡ Auto-syncs daily at 8:00 AM</span>
+                    <span style="color:{T['text']};font-weight:600;">350 XP</span>
+                </div>
+            </div>
+            """)
+
+        with col_mock_laptop:
+            render_html(f"""
+            <div style="background:{T['bg']};border:1px solid {T['border']};border-radius:16px;padding:18px 20px;box-shadow:0 8px 20px rgba(0,0,0,0.4);">
+                <div style="font-size:11px;font-weight:700;color:{T['accent2_tx']};letter-spacing:0.06em;text-transform:uppercase;margin-bottom:12px;">
+                    💻 Mac Menu Bar / Laptop Widget
+                </div>
+                <div style="background:#000000;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:8px 14px;font-family:JetBrains Mono,monospace;font-size:12px;color:#ffffff;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                    <span>🎯 Hunter Radar</span>
+                    <span style="color:#6ee7b7;">{len(jobs)} Jobs · {len(courses)} Free Certs · Day 7 🔥</span>
+                </div>
+                <div style="background:{T['surface']};border:1px solid {T['border']};border-radius:10px;padding:12px;font-size:11px;color:{T['text_dim']};line-height:1.6;">
+                    • <strong>Menu Bar 1-Click:</strong> Always visible at the top of your Mac screen.<br>
+                    • <strong>Instant Links:</strong> Click any job to open the application form.<br>
+                    • <strong>Terminal &amp; Raycast:</strong> Native integration with Raycast launcher.
+                </div>
+                <div style="margin-top:12px;padding-top:10px;border-top:1px solid {T['border']};font-size:10px;color:{T['text_mute']};">
+                    Works on macOS (SwiftBar / xbar) &amp; Windows (Rainmeter / Taskbar)
+                </div>
+            </div>
+            """)
+
+        st.markdown("<div style='height:16px;'></div>", unsafe_allow_html=True)
+
+        # Installation tabs
+        w_t1, w_t2, w_t3 = st.tabs(["📱 iOS Scriptable Widget", "💻 Mac Menu Bar (SwiftBar)", "🤖 Android & Raw JSON"])
+
+        with w_t1:
+            st.markdown("### iOS iPhone / iPad Widget (via Scriptable)")
+            st.caption("Scriptable is a 100% free app on the Apple App Store with zero ads.")
+            st.markdown("""
+            **3-Step Setup:**
+            1. Download **[Scriptable](https://apps.apple.com/app/scriptable/id1405459188)** from the App Store on your iPhone.
+            2. Open Scriptable, tap **+** to create a new script, and paste the code below.
+            3. Go to your iPhone Home Screen -> long-press -> add a **Scriptable** widget (Medium size) and select this script!
+            """)
+
+            scriptable_js = f"""// Hunter Radar iOS Widget (Scriptable)
+// Exclusive to Hunter Pro · Ojasvi
+const FEED_URL = "{api_widget_url}";
+
+async function createWidget() {{
+  let req = new Request(FEED_URL);
+  let data = await req.loadJSON();
+
+  let widget = new ListWidget();
+  widget.backgroundColor = new Color("#08090d");
+
+  // Title row
+  let header = widget.addStack();
+  header.centerAlignContent();
+  let title = header.addText("🎯 Hunter Radar");
+  title.textColor = new Color("#ffffff");
+  title.font = Font.boldSystemFont(13);
+
+  header.addSpacer();
+  let streak = header.addText("🔥 Day " + (data.streak || 7));
+  streak.textColor = new Color("#f59e0b");
+  streak.font = Font.boldSystemFont(11);
+
+  widget.addSpacer(8);
+
+  // Top Job
+  if (data.top_jobs && data.top_jobs.length > 0) {{
+    let job = data.top_jobs[0];
+    let jobLabel = widget.addText("💼 " + job.title);
+    jobLabel.textColor = new Color("#6ee7b7");
+    jobLabel.font = Font.semiboldSystemFont(11);
+    jobLabel.lineLimit = 1;
+    widget.url = job.url;
+  }}
+
+  widget.addSpacer(4);
+
+  // Top Free Course
+  if (data.top_courses && data.top_courses.length > 0) {{
+    let crse = data.top_courses[0];
+    let crseLabel = widget.addText("🎓 " + crse.title);
+    crseLabel.textColor = new Color("#a5b4fc");
+    crseLabel.font = Font.systemFont(10);
+    crseLabel.lineLimit = 1;
+  }}
+
+  widget.addSpacer(6);
+  let footer = widget.addText((data.total_jobs || 0) + " jobs · " + (data.total_courses || 0) + " free certs available");
+  footer.textColor = new Color("#64748b");
+  footer.font = Font.systemFont(9);
+
+  return widget;
+}}
+
+let w = await createWidget();
+if (config.runsInWidget) {{
+  Script.setWidget(w);
+}} else {{
+  w.presentMedium();
+}}
+Script.complete();"""
+            st.code(scriptable_js, language="javascript")
+
+        with w_t2:
+            st.markdown("### macOS Menu Bar Radar (via SwiftBar or xbar)")
+            st.caption("Sits directly in your Mac menu bar, refreshing daily opportunities.")
+            swiftbar_script = f"""#!/bin/bash
+# <xbar.title>Hunter Radar</xbar.title>
+# <xbar.author>Ojasvi</xbar.author>
+# <xbar.desc>Live opportunities radar in your Mac menu bar</xbar.desc>
+
+FEED_URL="{api_widget_url}"
+DATA=$(curl -s "$FEED_URL")
+
+JOBS_COUNT=$(echo "$DATA" | grep -o '"total_jobs":[0-9]*' | cut -d: -f2)
+CRSE_COUNT=$(echo "$DATA" | grep -o '"total_courses":[0-9]*' | cut -d: -f2)
+
+echo "🎯 ${{JOBS_COUNT:-0}} Jobs · ${{CRSE_COUNT:-0}} Certs | color=#6ee7b7"
+echo "---"
+echo "Open Dashboard | href=https://coursejobhunter.streamlit.app"
+echo "Refresh Radar | refresh=true"
+"""
+            st.code(swiftbar_script, language="bash")
+
+        with w_t3:
+            st.markdown("### Android (KWGT) & Direct JSON Feed")
+            st.caption("Use this endpoint with KWGT, Tasker, HTTP Shortcuts, or Raycast.")
+            st.code(f"curl -s '{api_widget_url}'", language="bash")
+            st.markdown(f"**JSON Endpoint URL:** `{api_widget_url}`")
+
+# ── TAB 4: PERSONAL PREFERENCES ─────────────────────────────────────────────
 with tab_config:
     render_html("""
     <div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:18px 20px;margin-bottom:16px;">

@@ -38,7 +38,8 @@
     "course_sources": [
       "udemy_coupons",
       "swayam_nptel"
-    ]
+    ],
+    "is_pro": true
   },
   {
     "name": "Saurabh",

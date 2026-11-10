@@ -1060,6 +1060,38 @@ def test_bcrypt_and_rate_limiting():
     assert streamlit_app.SIGNUP_MAX_ATTEMPTS == 3
 
 
+def test_widget_api_pro_gate():
+    """Test mobile/desktop widget API — exclusive to Ojasvi (Pro), locked for others."""
+    from fastapi.testclient import TestClient
+    from admin import app, create_magic_token
+
+    client = TestClient(app)
+
+    # 1. Unauthenticated widget request returns 401
+    res_unauth = client.get("/api/v1/widget")
+    assert res_unauth.status_code == 401
+
+    # 2. Non-Pro subscriber (Saurabh) returns 403 Locked
+    other_email = "saurabhsinghchamyal@gmail.com"
+    other_token = create_magic_token(other_email)
+    res_other = client.get(f"/api/v1/widget?email={other_email}&token={other_token}")
+    assert res_other.status_code == 403
+    assert res_other.json()["locked"] is True
+    assert "exclusive to Hunter Pro" in res_other.json()["message"]
+
+    # 3. Ojasvi (Pro) returns 200 with full unlocked payload
+    ojasvi_email = "ojasvimittalofficial@gmail.com"
+    ojasvi_token = create_magic_token(ojasvi_email)
+    res_ojasvi = client.get(f"/api/v1/widget?email={ojasvi_email}&token={ojasvi_token}")
+    assert res_ojasvi.status_code == 200
+    data = res_ojasvi.json()
+    assert data["success"] is True
+    assert data["locked"] is False
+    assert data["plan"] == "Hunter Pro"
+    assert "top_jobs" in data
+    assert "top_courses" in data
+
+
 
 
 

@@ -224,6 +224,7 @@ async def auth_middleware(request: fastapi.Request, call_next):
         "/api/portal/auth/login",
         "/api/portal/auth/me",
         "/api/portal/auth/logout",
+        "/api/v1/widget",
     ]
     if path in public_paths or path.startswith("/api/portal/"):
         return await call_next(request)
@@ -1183,6 +1184,98 @@ async def portal_change_password(request: fastapi.Request, payload: Dict[str, An
         f.write("\n")
 
     return JSONResponse({"success": True, "message": "Password changed successfully!"})
+
+
+@app.get("/api/portal/widget")
+@app.get("/api/v1/widget")
+async def get_widget_feed(request: fastapi.Request, email: Optional[str] = None, token: Optional[str] = None):
+    """
+    Mobile & Laptop Widget JSON feed.
+    UNLOCKED ONLY FOR OJASVI (Hunter Pro). Locked for all other subscribers.
+    """
+    resolved_email = None
+    if email and token:
+        if verify_magic_token(email, token):
+            resolved_email = email.strip().lower()
+    elif token:
+        resolved_email = verify_portal_token(token)
+
+    if not resolved_email:
+        resolved_email = _get_portal_email(request)
+
+    if not resolved_email:
+        return JSONResponse({
+            "error": "Authentication required. Provide ?email=...&token=... or session cookie.",
+            "auth_required": True,
+        }, status_code=401)
+
+    subscribers = []
+    if os.path.exists(RECIPIENTS_FILE):
+        try:
+            with open(RECIPIENTS_FILE, "r", encoding="utf-8") as f:
+                subscribers = json.load(f)
+        except Exception:
+            subscribers = []
+
+    sub = next((s for s in subscribers if s.get("email", "").strip().lower() == resolved_email), None)
+
+    # Check if subscriber is Pro (Ojasvi only)
+    is_ojasvi = resolved_email == "ojasvimittalofficial@gmail.com"
+    is_pro = is_ojasvi or (sub and sub.get("is_pro") is True)
+
+    if not is_pro:
+        return JSONResponse({
+            "locked": True,
+            "status": "pro_required",
+            "message": "🔒 Phone & Laptop Widgets are exclusive to Hunter Pro. Currently under active development.",
+            "plan": "Free Member",
+            "upgrade_required": True,
+        }, status_code=403)
+
+    seen_dict = main.load_seen_dict()
+    user_seen = seen_dict.get(resolved_email, {}) if isinstance(seen_dict, dict) else {}
+
+    jobs = []
+    courses = []
+    for url, meta in user_seen.items():
+        if not url or str(url).startswith("__"):
+            continue
+        m = meta if isinstance(meta, dict) else {}
+        item_type = m.get("type", "job")
+        dom = urllib.parse.urlparse(url).netloc.replace("www.", "")
+        entry = {
+            "title": m.get("title") or url,
+            "url": url,
+            "domain": dom,
+            "date": m.get("date", ""),
+            "salary": m.get("salary"),
+            "location": m.get("location"),
+        }
+        if item_type == "course":
+            courses.append(entry)
+        else:
+            jobs.append(entry)
+
+    jobs.sort(key=lambda x: str(x.get("date", "")), reverse=True)
+    courses.sort(key=lambda x: str(x.get("date", "")), reverse=True)
+
+    name = sub.get("name") if sub else resolved_email.split("@")[0].title()
+
+    import datetime
+    return JSONResponse({
+        "success": True,
+        "locked": False,
+        "plan": "Hunter Pro",
+        "user": name,
+        "email": resolved_email,
+        "streak": 7,
+        "xp": 350,
+        "total_jobs": len(jobs),
+        "total_courses": len(courses),
+        "top_jobs": jobs[:3],
+        "top_courses": courses[:2],
+        "updated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+    })
 
 
 if __name__ == "__main__":
