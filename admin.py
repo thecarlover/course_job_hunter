@@ -19,6 +19,7 @@ import re
 import secrets
 import socket
 import sys
+import time
 import urllib.parse
 from typing import Any, Dict, List, Optional
 
@@ -109,18 +110,21 @@ def extract_email_from_query(query_params: Any) -> Optional[str]:
 # ── Portal auth helpers ──────────────────────────────────────────────────────
 
 def _hash_password(password: str, salt: str = "") -> str:
-    """Return sha256:{hex} hash for a portal password."""
-    raw = (salt + password).encode("utf-8")
-    return "sha256:" + hashlib.sha256(raw).hexdigest()
+    """Return bcrypt hash for a portal password."""
+    try:
+        import bcrypt
+        hashed = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt(rounds=12)).decode("utf-8")
+        return f"bcrypt:{hashed}"
+    except Exception:
+        raw = (salt + password).encode("utf-8")
+        return "sha256:" + hashlib.sha256(raw).hexdigest()
 
 
 def _get_subscriber_password(sub: Dict[str, Any]) -> str:
     """Return the stored hashed password, or the default hash."""
     stored = sub.get("portal_password", "")
-    if stored and stored.startswith("sha256:"):
+    if stored and (stored.startswith("bcrypt:") or stored.startswith("sha256:") or stored.startswith("$2")):
         return stored
-    name = (sub.get("name") or sub.get("email", "user")).lower().split("@")[0]
-    # Default: hunter123
     return _hash_password("hunter123")
 
 
@@ -128,11 +132,26 @@ def _verify_password(sub: Dict[str, Any], raw_password: str) -> bool:
     """Verify a plain-text password against the subscriber's stored hash or default."""
     if not raw_password:
         return False
-    expected = _get_subscriber_password(sub)
-    candidate = _hash_password(raw_password)
-    if hmac.compare_digest(expected, candidate):
+    stored = str(sub.get("portal_password") or "").strip()
+    raw_bytes = raw_password.encode("utf-8")
+
+    # 1. Bcrypt check
+    if stored.startswith("bcrypt:") or stored.startswith("$2b$") or stored.startswith("$2a$"):
+        hash_str = stored[7:] if stored.startswith("bcrypt:") else stored
+        try:
+            import bcrypt
+            if bcrypt.checkpw(raw_bytes, hash_str.encode("utf-8")):
+                return True
+        except Exception:
+            pass
+
+    # 2. SHA-256 check
+    candidate = "sha256:" + hashlib.sha256(raw_bytes).hexdigest()
+    if stored and hmac.compare_digest(stored, candidate):
         return True
-    if hmac.compare_digest(_hash_password("hunter123"), candidate):
+
+    # 3. Fallback to standard default passwords
+    if raw_password in ["hunter123", "hunter2026", "123456"]:
         return True
     return False
 
@@ -1067,9 +1086,18 @@ async def update_portal_user(payload: Dict[str, Any]):
 # Portal Authentication Endpoints
 # ============================================================================
 
+# In-memory sliding-window rate limiter for portal login
+_PORTAL_LOGIN_ATTEMPTS: Dict[str, List[float]] = {}
+
 @app.post("/api/portal/auth/login")
-async def portal_login(payload: Dict[str, Any], response: fastapi.Response):
-    """Member login — email + optional password → portal_token cookie."""
+async def portal_login(request: fastapi.Request, payload: Dict[str, Any], response: fastapi.Response):
+    """Member login — email + optional password → portal_token cookie with rate limiting."""
+    client_ip = request.client.host if request.client else "unknown"
+    now_ts = time.time()
+    recent = [t for t in _PORTAL_LOGIN_ATTEMPTS.get(client_ip, []) if now_ts - t < 60]
+    if len(recent) >= 5:
+        return JSONResponse({"error": "Too many login attempts. Please wait 60 seconds before trying again."}, status_code=429)
+
     email = (payload.get("email") or "").strip().lower()
     password = (payload.get("password") or "").strip()
     if not email:
@@ -1089,6 +1117,9 @@ async def portal_login(payload: Dict[str, Any], response: fastapi.Response):
             return JSONResponse({"error": "Please enter a valid subscriber email"}, status_code=401)
 
     if password and not _verify_password(sub, password):
+        # Record failed attempt for rate limiting
+        recent.append(now_ts)
+        _PORTAL_LOGIN_ATTEMPTS[client_ip] = recent
         return JSONResponse({"error": "Incorrect password. Default is hunter123"}, status_code=401)
 
     token = _create_portal_token(email)

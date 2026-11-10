@@ -327,17 +327,79 @@ def save_subscribers(subs: List[Dict[str, Any]]) -> None:
 
 PORTAL_SECRET_KEY = (os.environ.get("PORTAL_SECRET_KEY") or "hunter_portal_secret_2026").strip()
 
+def hash_password(raw_password: str) -> str:
+    """Return bcrypt-hashed password (cost factor 12) with safe fallback."""
+    try:
+        import bcrypt
+        hashed = bcrypt.hashpw(raw_password.encode("utf-8"), bcrypt.gensalt(rounds=12)).decode("utf-8")
+        return f"bcrypt:{hashed}"
+    except Exception:
+        return "sha256:" + hashlib.sha256(raw_password.encode("utf-8")).hexdigest()
+
 def verify_member_password(sub: Dict[str, Any], raw_password: str) -> bool:
-    """Verify password against subscriber's stored hash or standard default."""
+    """Verify password against subscriber's stored bcrypt/sha256 hash or standard default."""
     if not raw_password:
         return False
-    stored = sub.get("portal_password", "")
-    candidate = "sha256:" + hashlib.sha256(raw_password.encode("utf-8")).hexdigest()
+    stored = str(sub.get("portal_password") or "").strip()
+    raw_bytes = raw_password.encode("utf-8")
+
+    # 1. Bcrypt check
+    if stored.startswith("bcrypt:") or stored.startswith("$2b$") or stored.startswith("$2a$"):
+        hash_str = stored[7:] if stored.startswith("bcrypt:") else stored
+        try:
+            import bcrypt
+            if bcrypt.checkpw(raw_bytes, hash_str.encode("utf-8")):
+                return True
+        except Exception:
+            pass
+
+    # 2. SHA-256 check
+    candidate = "sha256:" + hashlib.sha256(raw_bytes).hexdigest()
     if stored and hmac.compare_digest(stored, candidate):
         return True
+
+    # 3. Known default passwords
     if raw_password in ["hunter123", "hunter2026", "123456"]:
         return True
     return False
+
+# ─────────────────────────────────────────────────────────────────────────────
+# RATE LIMITER
+# ─────────────────────────────────────────────────────────────────────────────
+LOGIN_MAX_ATTEMPTS = 5
+LOGIN_WINDOW_SECONDS = 180       # 3 minutes
+SIGNUP_MAX_ATTEMPTS = 3
+SIGNUP_WINDOW_SECONDS = 600      # 10 minutes
+
+def check_rate_limit(action: str = "login") -> tuple:
+    """Check if action is rate-limited. Returns (is_allowed: bool, retry_after_sec: int)."""
+    now = datetime.datetime.now(datetime.timezone.utc).timestamp()
+    key = f"rate_limit_{action}"
+    if key not in st.session_state:
+        st.session_state[key] = []
+
+    max_attempts = LOGIN_MAX_ATTEMPTS if action == "login" else SIGNUP_MAX_ATTEMPTS
+    window = LOGIN_WINDOW_SECONDS if action == "login" else SIGNUP_WINDOW_SECONDS
+
+    recent = [t for t in st.session_state[key] if now - t < window]
+    st.session_state[key] = recent
+
+    if len(recent) >= max_attempts:
+        oldest = min(recent)
+        retry_after = int(window - (now - oldest)) + 1
+        return False, max(1, retry_after)
+    return True, 0
+
+def record_rate_limit_attempt(action: str = "login") -> None:
+    now = datetime.datetime.now(datetime.timezone.utc).timestamp()
+    key = f"rate_limit_{action}"
+    if key not in st.session_state:
+        st.session_state[key] = []
+    st.session_state[key].append(now)
+
+def clear_rate_limit(action: str = "login") -> None:
+    key = f"rate_limit_{action}"
+    st.session_state[key] = []
 
 def verify_magic_token(email: str, token: str) -> bool:
     if not email or not token:
@@ -554,19 +616,26 @@ if not st.session_state.auth_user_email:
                 sign_in_clicked = st.form_submit_button("Sign In →", use_container_width=True)
 
             if sign_in_clicked:
-                clean_email  = in_email.strip().lower()
-                matched_sub  = next((s for s in all_subscribers if s.get("email", "").strip().lower() == clean_email), None)
-                if not clean_email:
-                    st.error("Please enter your email.")
-                elif not matched_sub:
-                    st.error("No account found. Click 'Create Account' above to sign up in 30 seconds!")
-                elif not verify_member_password(matched_sub, in_pw.strip()):
-                    st.error("Incorrect password.")
+                allowed, retry_after = check_rate_limit("login")
+                if not allowed:
+                    st.error(f"⛔ Too many login attempts. Please wait {retry_after}s before trying again.")
                 else:
-                    st.session_state.auth_user_email = clean_email
-                    st.session_state.just_logged_out = False
-                    st.query_params.clear()
-                    st.rerun()
+                    clean_email  = in_email.strip().lower()
+                    matched_sub  = next((s for s in all_subscribers if s.get("email", "").strip().lower() == clean_email), None)
+                    if not clean_email:
+                        st.error("Please enter your email.")
+                    elif not matched_sub:
+                        record_rate_limit_attempt("login")
+                        st.error("No account found. Click 'Create Account' above to sign up in 30 seconds!")
+                    elif not verify_member_password(matched_sub, in_pw.strip()):
+                        record_rate_limit_attempt("login")
+                        st.error("Incorrect password.")
+                    else:
+                        clear_rate_limit("login")
+                        st.session_state.auth_user_email = clean_email
+                        st.session_state.just_logged_out = False
+                        st.query_params.clear()
+                        st.rerun()
 
             st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
             if st.button("New to Hunter Hub? Create an Account (Free) →", key="switch_to_signup_btn", use_container_width=True):
@@ -596,33 +665,37 @@ if not st.session_state.auth_user_email:
                 next_clicked = st.form_submit_button("Continue to Preferences →", use_container_width=True)
 
             if next_clicked:
-                su_name  = su_name.strip()
-                su_email = su_email.strip().lower()
-                su_pw    = su_pw.strip()
-                su_pw2   = su_pw2.strip()
-
-                existing = next((s for s in all_subscribers if s.get("email", "").strip().lower() == su_email), None)
-
-                if not su_name:
-                    st.error("Please enter your name.")
-                elif not su_email or "@" not in su_email:
-                    st.error("Please enter a valid email address.")
-                elif existing:
-                    st.warning("An account with this email already exists. Please sign in instead.")
-                    st.session_state.auth_screen = "signin"
-                    st.rerun()
-                elif len(su_pw) < 6:
-                    st.error("Password must be at least 6 characters.")
-                elif su_pw != su_pw2:
-                    st.error("Passwords don't match.")
+                allowed, retry_after = check_rate_limit("signup")
+                if not allowed:
+                    st.error(f"⛔ Rate limit active. Please wait {retry_after}s before attempting another registration.")
                 else:
-                    st.session_state.signup_data = {
-                        "name": su_name,
-                        "email": su_email,
-                        "password": su_pw,
-                    }
-                    st.session_state.auth_screen = "onboard"
-                    st.rerun()
+                    su_name  = su_name.strip()
+                    su_email = su_email.strip().lower()
+                    su_pw    = su_pw.strip()
+                    su_pw2   = su_pw2.strip()
+
+                    existing = next((s for s in all_subscribers if s.get("email", "").strip().lower() == su_email), None)
+
+                    if not su_name:
+                        st.error("Please enter your name.")
+                    elif not su_email or "@" not in su_email:
+                        st.error("Please enter a valid email address.")
+                    elif existing:
+                        st.warning("An account with this email already exists. Please sign in instead.")
+                        st.session_state.auth_screen = "signin"
+                        st.rerun()
+                    elif len(su_pw) < 6:
+                        st.error("Password must be at least 6 characters.")
+                    elif su_pw != su_pw2:
+                        st.error("Passwords don't match.")
+                    else:
+                        st.session_state.signup_data = {
+                            "name": su_name,
+                            "email": su_email,
+                            "password": su_pw,
+                        }
+                        st.session_state.auth_screen = "onboard"
+                        st.rerun()
 
             st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
             if st.button("Already have an account? Sign in →", key="switch_to_signin_btn", use_container_width=True):
@@ -726,7 +799,7 @@ if not st.session_state.auth_user_email:
                     "Any": [],
                 }
 
-                pw_hash = "sha256:" + hashlib.sha256(sd["password"].encode()).hexdigest()
+                pw_hash = hash_password(sd["password"])
 
                 new_sub: Dict[str, Any] = {
                     "name":               sd["name"],
@@ -750,6 +823,8 @@ if not st.session_state.auth_user_email:
                     fresh_subs.append(new_sub)
                     save_subscribers(fresh_subs)
 
+                record_rate_limit_attempt("signup")
+
                 # Send welcome email (non-blocking best-effort)
                 send_welcome_email(new_sub)
 
@@ -768,12 +843,29 @@ if not st.session_state.auth_user_email:
                 st.session_state.auth_screen = "signup"
                 st.rerun()
 
+        # ── CONTACT SUPPORT FOOTER ─────────────────────────────────────────
+        render_html("""
+        <div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:14px;padding:14px 18px;margin-top:24px;display:flex;align-items:center;gap:12px;">
+          <div style="width:34px;height:34px;line-height:34px;text-align:center;border-radius:10px;background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.25);font-size:16px;">💬</div>
+          <div style="min-width:0;flex:1;">
+            <div style="font-size:12px;font-weight:700;color:#ffffff;">Need Help Signing In or Joining?</div>
+            <div style="font-size:11px;color:#8b949e;margin-top:2px;line-height:1.4;">
+              Questions, bug reports, or support? Email Ojasvi directly at
+              <a href="mailto:ojasvimittalofficial@gmail.com?subject=Hunter%20Hub%20Support" style="color:#a5b4fc;text-decoration:none;font-weight:600;">ojasvimittalofficial@gmail.com ↗</a>
+            </div>
+          </div>
+        </div>
+        """)
+
     st.stop()
 
 # Authenticated member profile — always reload fresh from disk
 all_subscribers = get_subscribers()
-user_email = st.session_state.auth_user_email
-matched_sub = next((s for s in all_subscribers if s.get("email", "").strip().lower() == user_email.strip().lower()), None)
+user_email = str(st.session_state.get("auth_user_email") or "").strip()
+if not user_email:
+    st.stop()
+
+matched_sub = next((s for s in all_subscribers if s.get("email", "").strip().lower() == user_email.lower()), None)
 if not matched_sub:
     user = {"name": user_email.split("@")[0].title(), "email": user_email, "keywords": [], "job_searches": [], "active": True}
     sub_idx = 0

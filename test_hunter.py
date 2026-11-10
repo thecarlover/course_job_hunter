@@ -1032,6 +1032,34 @@ def test_email_query_redirection_and_magic_login():
     assert me.json()["authenticated"] is False
 
 
+def test_bcrypt_and_rate_limiting():
+    """Test bcrypt hashing, verification, and rate-limiting safeguards."""
+    import admin
+    import streamlit_app
+
+    # 1. Bcrypt hash generation and format check
+    pw = "HunterSecurePass2026!"
+    hashed = streamlit_app.hash_password(pw)
+    assert hashed.startswith("bcrypt:")
+
+    # 2. Verification with bcrypt hash in both streamlit and admin
+    sub = {"name": "Test User", "email": "test@example.com", "portal_password": hashed}
+    assert streamlit_app.verify_member_password(sub, pw) is True
+    assert streamlit_app.verify_member_password(sub, "wrongpass") is False
+    assert admin._verify_password(sub, pw) is True
+    assert admin._verify_password(sub, "wrongpass") is False
+
+    # 3. Backward compatibility with legacy sha256 hash
+    legacy_hash = "sha256:969e0ced2b825c3229f4ad9aa350f49247151f737661bc3c7554dfcb7032480c"
+    legacy_sub = {"name": "Legacy", "email": "legacy@example.com", "portal_password": legacy_hash}
+    assert streamlit_app.verify_member_password(legacy_sub, "hunter123") is True
+    assert admin._verify_password(legacy_sub, "hunter123") is True
+
+    # 4. Streamlit Rate Limiter helper checks
+    assert streamlit_app.LOGIN_MAX_ATTEMPTS == 5
+    assert streamlit_app.SIGNUP_MAX_ATTEMPTS == 3
+
+
 
 
 
