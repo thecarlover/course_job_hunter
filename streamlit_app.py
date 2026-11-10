@@ -345,17 +345,141 @@ def verify_magic_token(email: str, token: str) -> bool:
     expected = hmac.new(PORTAL_SECRET_KEY.encode("utf-8"), f"magic:{email.strip().lower()}".encode("utf-8"), hashlib.sha256).hexdigest()[:24]
     return hmac.compare_digest(token.strip(), expected)
 
+
+def make_magic_link(email: str) -> str:
+    sig = hmac.new(PORTAL_SECRET_KEY.encode(), f"magic:{email.strip().lower()}".encode(), hashlib.sha256).hexdigest()[:24]
+    base = "https://coursejobhunter.streamlit.app"
+    return f"{base}?email={urllib.parse.quote(email)}&magic={sig}"
+
+
+def send_welcome_email(sub: Dict) -> None:
+    """Send a beautiful welcome email to a newly signed-up subscriber."""
+    try:
+        name  = sub.get("name", "Friend")
+        email = sub.get("email", "")
+        kws   = sub.get("keywords", [])
+        link  = make_magic_link(email)
+
+        kw_pills = "".join(
+            f'<span style="display:inline-block;background:#1e2235;border:1px solid rgba(99,102,241,0.3);'
+            f'color:#a5b4fc;border-radius:99px;font-size:11px;font-weight:600;padding:3px 10px;margin:3px 3px 0 0;">'
+            f'{k}</span>'
+            for k in kws[:8]
+        )
+
+        html_body = f"""<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Welcome to Hunter Hub!</title></head>
+<body style="margin:0;padding:0;background:#04050a;font-family:'Segoe UI',Arial,sans-serif;">
+<div style="display:none;max-height:0;overflow:hidden;">Welcome to Hunter Hub! Your personal career radar starts tomorrow at 8 AM IST 🎯&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;</div>
+<table cellpadding="0" cellspacing="0" width="100%" style="background:#04050a;padding:32px 16px;">
+<tr><td align="center">
+<table cellpadding="0" cellspacing="0" width="560" style="max-width:560px;">
+<tr><td align="center" style="padding-bottom:20px;">
+  <span style="display:inline-block;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);
+    color:#6ee7b7;border-radius:99px;font-size:11px;font-weight:700;padding:5px 16px;letter-spacing:0.06em;text-transform:uppercase;">
+    ✅ &nbsp;You're In — Welcome to Hunter Hub
+  </span>
+</td></tr>
+<tr><td style="background:#0d101c;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:36px;text-align:center;">
+  <div style="width:60px;height:60px;line-height:60px;border-radius:16px;background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3);margin:0 auto 20px auto;font-size:28px;">🎯</div>
+  <h1 style="margin:0 0 8px 0;font-size:26px;font-weight:800;color:#ffffff;letter-spacing:-0.02em;line-height:1.2;">
+    Welcome aboard,<br><span style="color:#a5b4fc;">{name}</span>!
+  </h1>
+  <p style="margin:0 0 20px 0;font-size:14px;color:#8b949e;line-height:1.6;">
+    Your personal <strong style="color:#ffffff;">Career Radar</strong> is now active.
+    Starting <strong style="color:#10b981;">tomorrow at 8:00 AM IST</strong>, you'll receive a daily
+    digest of curated jobs and 100% FREE certifications — matched to your exact targets.
+  </p>
+  {'<div style="margin-bottom:24px;text-align:left;"><div style="font-size:10px;font-weight:700;color:#64748b;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">YOUR TARGETS</div>' + kw_pills + '</div>' if kw_pills else ''}
+  <a href="{link}" style="display:inline-block;background:#4f46e5;color:#ffffff;text-decoration:none;
+    font-size:14px;font-weight:700;padding:14px 32px;border-radius:12px;
+    box-shadow:0 4px 20px rgba(79,70,229,0.4);">
+    Open My Dashboard &nbsp;↗
+  </a>
+  <p style="margin:14px 0 0 0;font-size:11px;color:#475569;">One-click access · no password needed from this link</p>
+</td></tr>
+<tr><td style="height:20px;"></td></tr>
+<tr><td style="background:#0d101c;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:28px 32px;">
+  <div style="font-size:11px;font-weight:700;color:#f59e0b;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:14px;">🔥 &nbsp;What to Expect Every Morning</div>
+  <table cellpadding="0" cellspacing="0" width="100%">
+    <tr><td style="padding-bottom:12px;">
+      <table cellpadding="0" cellspacing="0"><tr>
+        <td width="28" style="font-size:12px;font-weight:800;color:#fcd34d;vertical-align:top;padding-top:1px;">1.</td>
+        <td style="font-size:13px;color:#94a3b8;line-height:1.5;"><strong style="color:#e2e8f0;">Curated Job Listings</strong> — fresh openings from LinkedIn, Naukri, Remotive & more</td>
+      </tr></table>
+    </td></tr>
+    <tr><td style="padding-bottom:12px;">
+      <table cellpadding="0" cellspacing="0"><tr>
+        <td width="28" style="font-size:12px;font-weight:800;color:#fcd34d;vertical-align:top;padding-top:1px;">2.</td>
+        <td style="font-size:13px;color:#94a3b8;line-height:1.5;"><strong style="color:#e2e8f0;">100% OFF Udemy Coupons</strong> — free certifications matched to your skills</td>
+      </tr></table>
+    </td></tr>
+    <tr><td>
+      <table cellpadding="0" cellspacing="0"><tr>
+        <td width="28" style="font-size:12px;font-weight:800;color:#fcd34d;vertical-align:top;padding-top:1px;">3.</td>
+        <td style="font-size:13px;color:#94a3b8;line-height:1.5;"><strong style="color:#e2e8f0;">Personal Dashboard</strong> — browse your full vault, pick a colour theme, track your streak</td>
+      </tr></table>
+    </td></tr>
+  </table>
+</td></tr>
+<tr><td style="height:28px;"></td></tr>
+<tr><td align="center" style="padding-bottom:32px;">
+  <div style="font-size:11px;color:#334155;line-height:1.8;">
+    You're receiving this because you just signed up for <strong style="color:#475569;">Hunter Hub</strong>.<br>
+    Daily digests arrive at 8:00 AM IST · You can update your preferences inside the dashboard.<br>
+    <a href="{link}" style="color:#6366f1;text-decoration:none;">Open Dashboard</a>
+  </div>
+</td></tr>
+</table></td></tr></table>
+</body></html>"""
+
+        plain_body = f"""Welcome to Hunter Hub, {name}! 🎯
+
+Your personal Career Radar is now active.
+Starting tomorrow at 8:00 AM IST, you'll get a daily digest of curated jobs + free certifications.
+
+Open your dashboard (one-click, no password):
+{link}
+
+What to expect every morning:
+1. Curated job listings matched to your keywords
+2. 100% OFF Udemy coupons for your skill areas
+3. Your personal vault, streak tracker & XP
+
+Happy hunting!
+The Hunter Hub Bot 🎯
+"""
+        notifier.send(
+            text=plain_body,
+            to_email=email,
+            subject=f"🎯 Welcome to Hunter Hub, {name}! Your Career Radar is Active",
+            html=html_body,
+        )
+    except Exception as exc:
+        print(f"[Welcome Email] Failed for {sub.get('email')}: {exc}")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# SUBSCRIBER STATE
+# ─────────────────────────────────────────────────────────────────────────────
+
 # Determine subscribers
 all_subscribers = get_subscribers()
-if not all_subscribers:
-    st.error("No subscribers configured in recipients.json.")
-    st.stop()
 
 # Track active authenticated session
 if "auth_user_email" not in st.session_state:
     st.session_state.auth_user_email = None
 if "just_logged_out" not in st.session_state:
     st.session_state.just_logged_out = False
+if "auth_screen" not in st.session_state:
+    qp_mode = str(st.query_params.get("mode") or st.query_params.get("action") or st.query_params.get("tab") or "").lower()
+    if qp_mode in ["signup", "register", "join", "new"]:
+        st.session_state.auth_screen = "signup"
+    else:
+        st.session_state.auth_screen = "signin"   # "signin" | "signup" | "onboard"
+if "signup_data" not in st.session_state:
+    st.session_state.signup_data = {}
 
 # Auto-login via signed email magic link if user did not explicitly log out
 if not st.session_state.auth_user_email and not st.session_state.just_logged_out:
@@ -367,46 +491,287 @@ if not st.session_state.auth_user_email and not st.session_state.just_logged_out
             break
     param_magic = str(st.query_params.get("magic") or st.query_params.get("sig") or "").strip()
     if param_email and param_magic and verify_magic_token(param_email, param_magic):
+        # Reload subscribers list in case new user signed up
+        all_subscribers = get_subscribers()
         st.session_state.auth_user_email = param_email
 
-# If not authenticated, render the Craftwork Sign-In Screen
+# ─────────────────────────────────────────────────────────────────────────────
+# AUTH SCREENS (Sign In / Sign Up / Onboarding)
+# ─────────────────────────────────────────────────────────────────────────────
 if not st.session_state.auth_user_email:
-    _, col_login, _ = st.columns([1, 2, 1])
-    with col_login:
-        st.markdown("<div style='height:40px;'></div>", unsafe_allow_html=True)
+    # Reload fresh subscriber list
+    all_subscribers = get_subscribers()
+
+    _, col_auth, _ = st.columns([1, 2, 1])
+    with col_auth:
+        st.markdown("<div style='height:32px;'></div>", unsafe_allow_html=True)
+
+        # ── LOGO / BRAND ───────────────────────────────────────────────────
         render_html("""
-        <div style="background:#0f121d;border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:32px 28px;text-align:center;box-shadow:0 12px 36px rgba(0,0,0,0.5);">
-            <div style="width:52px;height:52px;line-height:52px;border-radius:14px;background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3);margin:0 auto 14px auto;font-size:24px;">🎯</div>
-            <div style="font-size:22px;font-weight:800;color:#ffffff;letter-spacing:-0.02em;">Hunter Hub</div>
-            <div style="font-size:12px;color:#94a3b8;margin-top:4px;">Sign in to unlock your personal career radar and opportunity vault</div>
+        <div style="text-align:center;margin-bottom:24px;">
+          <div style="width:56px;height:56px;line-height:56px;border-radius:16px;
+            background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3);
+            margin:0 auto 12px auto;font-size:26px;">🎯</div>
+          <div style="font-size:24px;font-weight:800;color:#ffffff;letter-spacing:-0.02em;">Hunter Hub</div>
+          <div style="font-size:12px;color:#94a3b8;margin-top:4px;">
+            Daily jobs &amp; free certifications — personalised for you
+          </div>
         </div>
         """)
-        st.markdown("<div style='height:16px;'></div>", unsafe_allow_html=True)
 
-        with st.form("st_login_card_form"):
-            default_login_email = str(st.query_params.get("email") or st.query_params.get("user") or "").strip()
-            in_email = st.text_input("Subscriber Email", value=default_login_email, placeholder="e.g. name@domain.com")
-            in_pw = st.text_input("Password", type="password", placeholder="Enter password (default: hunter123)")
-            sign_in_clicked = st.form_submit_button("Sign In to Vault →", use_container_width=True)
+        # ── TAB TOGGLE ─────────────────────────────────────────────────────
+        tc1, tc2 = st.columns(2)
+        with tc1:
+            btn_signin_label = "● Sign In" if st.session_state.auth_screen == "signin" else "Sign In"
+            if st.button(btn_signin_label, key="auth_tab_signin", use_container_width=True):
+                st.session_state.auth_screen = "signin"
+                st.rerun()
+        with tc2:
+            btn_signup_label = "● Create Account" if st.session_state.auth_screen in ["signup", "onboard"] else "Create Account"
+            if st.button(btn_signup_label, key="auth_tab_signup", use_container_width=True):
+                st.session_state.auth_screen = "signup"
+                st.rerun()
 
-        if sign_in_clicked:
-            clean_email = in_email.strip().lower()
-            matched_sub = next((s for s in all_subscribers if s.get("email", "").strip().lower() == clean_email), None)
-            if not clean_email:
-                st.error("Please enter your registered subscriber email.")
-            elif not matched_sub:
-                st.error("No subscriber account found for that email address.")
-            elif not verify_member_password(matched_sub, in_pw.strip()):
-                st.error("Incorrect password. Please verify your credentials.")
-            else:
-                st.session_state.auth_user_email = clean_email
+        st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
+
+        # ══════════════════════════════════════════════════════════════════
+        # SCREEN 1 — SIGN IN
+        # ══════════════════════════════════════════════════════════════════
+        if st.session_state.auth_screen == "signin":
+            render_html("""
+            <div style="background:#0f121d;border:1px solid rgba(255,255,255,0.08);
+              border-radius:16px;padding:24px 24px 8px 24px;">
+              <div style="font-size:14px;font-weight:700;color:#ffffff;margin-bottom:4px;">Welcome back</div>
+              <div style="font-size:11px;color:#64748b;margin-bottom:16px;">Sign in to your career vault</div>
+            </div>
+            """)
+            st.markdown("<div style='height:2px;'></div>", unsafe_allow_html=True)
+
+            with st.form("st_login_card_form"):
+                default_login_email = str(st.query_params.get("email") or st.query_params.get("user") or "").strip()
+                in_email = st.text_input("Email", value=default_login_email, placeholder="your@email.com")
+                in_pw    = st.text_input("Password", type="password", placeholder="Enter your password")
+                sign_in_clicked = st.form_submit_button("Sign In →", use_container_width=True)
+
+            if sign_in_clicked:
+                clean_email  = in_email.strip().lower()
+                matched_sub  = next((s for s in all_subscribers if s.get("email", "").strip().lower() == clean_email), None)
+                if not clean_email:
+                    st.error("Please enter your email.")
+                elif not matched_sub:
+                    st.error("No account found. Click 'Create Account' above to sign up in 30 seconds!")
+                elif not verify_member_password(matched_sub, in_pw.strip()):
+                    st.error("Incorrect password.")
+                else:
+                    st.session_state.auth_user_email = clean_email
+                    st.session_state.just_logged_out = False
+                    st.query_params.clear()
+                    st.rerun()
+
+            st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+            if st.button("New to Hunter Hub? Create an Account (Free) →", key="switch_to_signup_btn", use_container_width=True):
+                st.session_state.auth_screen = "signup"
+                st.rerun()
+
+        # ══════════════════════════════════════════════════════════════════
+        # SCREEN 2 — CREATE ACCOUNT (Step 1: basics)
+        # ══════════════════════════════════════════════════════════════════
+        elif st.session_state.auth_screen == "signup":
+            render_html("""
+            <div style="background:#0f121d;border:1px solid rgba(16,185,129,0.2);
+              border-radius:16px;padding:20px 24px 8px 24px;">
+              <div style="font-size:14px;font-weight:700;color:#ffffff;margin-bottom:2px;">Create your free account</div>
+              <div style="font-size:11px;color:#64748b;margin-bottom:4px;">
+                Step 1 of 2 — Basic info
+              </div>
+            </div>
+            """)
+            st.markdown("<div style='height:2px;'></div>", unsafe_allow_html=True)
+
+            with st.form("signup_step1_form"):
+                su_name  = st.text_input("Full Name", placeholder="e.g. Priya Sharma")
+                su_email = st.text_input("Email", placeholder="priya@gmail.com")
+                su_pw    = st.text_input("Create Password", type="password", placeholder="Min 6 characters")
+                su_pw2   = st.text_input("Confirm Password", type="password", placeholder="Repeat password")
+                next_clicked = st.form_submit_button("Continue to Preferences →", use_container_width=True)
+
+            if next_clicked:
+                su_name  = su_name.strip()
+                su_email = su_email.strip().lower()
+                su_pw    = su_pw.strip()
+                su_pw2   = su_pw2.strip()
+
+                existing = next((s for s in all_subscribers if s.get("email", "").strip().lower() == su_email), None)
+
+                if not su_name:
+                    st.error("Please enter your name.")
+                elif not su_email or "@" not in su_email:
+                    st.error("Please enter a valid email address.")
+                elif existing:
+                    st.warning("An account with this email already exists. Please sign in instead.")
+                    st.session_state.auth_screen = "signin"
+                    st.rerun()
+                elif len(su_pw) < 6:
+                    st.error("Password must be at least 6 characters.")
+                elif su_pw != su_pw2:
+                    st.error("Passwords don't match.")
+                else:
+                    st.session_state.signup_data = {
+                        "name": su_name,
+                        "email": su_email,
+                        "password": su_pw,
+                    }
+                    st.session_state.auth_screen = "onboard"
+                    st.rerun()
+
+            st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+            if st.button("Already have an account? Sign in →", key="switch_to_signin_btn", use_container_width=True):
+                st.session_state.auth_screen = "signin"
+                st.rerun()
+
+        # ══════════════════════════════════════════════════════════════════
+        # SCREEN 3 — ONBOARDING (Step 2: preferences)
+        # ══════════════════════════════════════════════════════════════════
+        elif st.session_state.auth_screen == "onboard":
+            sd = st.session_state.signup_data
+            render_html(f"""
+            <div style="background:#0f121d;border:1px solid rgba(99,102,241,0.25);
+              border-radius:16px;padding:20px 24px 8px 24px;">
+              <div style="font-size:14px;font-weight:700;color:#ffffff;margin-bottom:2px;">
+                Set up your radar, {sd.get('name','').split()[0]} 🎯
+              </div>
+              <div style="font-size:11px;color:#64748b;">
+                Step 2 of 2 — Your targets &amp; preferences
+              </div>
+            </div>
+            """)
+            st.markdown("<div style='height:2px;'></div>", unsafe_allow_html=True)
+
+            all_jobs_map  = getattr(config, "AVAILABLE_JOB_SOURCES", {})
+            all_crse_map  = getattr(config, "AVAILABLE_COURSE_PLATFORMS", {})
+
+            # Interest area quick-pick chips
+            INTEREST_PRESETS = {
+                "💻 Software Dev":    ["python", "developer", "software engineer", "backend", "frontend"],
+                "🤖 AI / ML":         ["machine learning", "ai", "data science", "nlp", "deep learning"],
+                "📊 Data & Analytics":["data analyst", "sql", "power bi", "tableau", "excel"],
+                "🛡️ Cybersecurity":   ["cybersecurity", "security", "ethical hacking", "compliance", "SIEM"],
+                "📦 Product & PM":    ["product management", "product manager", "agile", "scrum", "roadmap"],
+                "🎨 Design / UX":     ["ui", "ux", "figma", "canva", "graphic design", "animation"],
+                "☁️ Cloud & DevOps":  ["aws", "azure", "gcp", "devops", "kubernetes", "terraform"],
+                "📈 Marketing":       ["digital marketing", "seo", "content", "social media", "growth"],
+            }
+
+            st.markdown(
+                f'<div style="font-size:11px;font-weight:700;color:#64748b;letter-spacing:0.06em;'
+                f'text-transform:uppercase;margin-bottom:6px;margin-top:8px;">Quick-Pick Interests</div>',
+                unsafe_allow_html=True,
+            )
+            if "onboard_interests" not in st.session_state:
+                st.session_state.onboard_interests = []
+
+            preset_cols = st.columns(4)
+            for idx, (label, kws) in enumerate(INTEREST_PRESETS.items()):
+                with preset_cols[idx % 4]:
+                    selected = label in st.session_state.onboard_interests
+                    if st.button(label, key=f"preset_{idx}", use_container_width=True,
+                                 help=", ".join(kws[:3])):
+                        if selected:
+                            st.session_state.onboard_interests.remove(label)
+                        else:
+                            st.session_state.onboard_interests.append(label)
+                        st.rerun()
+
+            st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
+
+            with st.form("onboard_form"):
+                extra_kws = st.text_input(
+                    "Additional keywords (comma-separated)",
+                    placeholder="e.g. react, typescript, remote, fintech…",
+                    help="Add anything beyond the quick-picks above",
+                )
+                preferred_location = st.selectbox(
+                    "Preferred Work Mode",
+                    ["Any", "Remote Only", "India / On-site", "Hybrid"],
+                )
+                u_jobs = st.multiselect(
+                    "Job Boards to track",
+                    list(all_jobs_map.keys()),
+                    default=["linkedin", "naukri", "remotive"],
+                    format_func=lambda k: all_jobs_map.get(k, k),
+                )
+                u_crse = st.multiselect(
+                    "Course Platforms to track",
+                    list(all_crse_map.keys()),
+                    default=["udemy_coupons", "swayam_nptel"],
+                    format_func=lambda k: all_crse_map.get(k, k),
+                )
+                max_items = st.slider("Max items per daily digest", 5, 30, 10, step=5)
+                finish_clicked = st.form_submit_button("🚀 Finish & Open Dashboard", use_container_width=True)
+
+            if finish_clicked:
+                sd = st.session_state.signup_data
+
+                # Build keyword list from presets + extra
+                preset_kws: List[str] = []
+                for label in st.session_state.onboard_interests:
+                    preset_kws.extend(INTEREST_PRESETS.get(label, []))
+                extra_list = [k.strip() for k in extra_kws.split(",") if k.strip()]
+                all_kws = list(dict.fromkeys(preset_kws + extra_list))  # dedupe, preserve order
+
+                loc_map = {
+                    "Remote Only": ["remote", "worldwide", "anywhere"],
+                    "India / On-site": ["india", "bangalore", "delhi", "mumbai", "hyderabad"],
+                    "Hybrid": ["hybrid", "india", "remote"],
+                    "Any": [],
+                }
+
+                pw_hash = "sha256:" + hashlib.sha256(sd["password"].encode()).hexdigest()
+
+                new_sub: Dict[str, Any] = {
+                    "name":               sd["name"],
+                    "email":              sd["email"],
+                    "active":             True,
+                    "keywords":           all_kws,
+                    "job_searches":       all_kws,
+                    "preferred_locations":loc_map.get(preferred_location, []),
+                    "job_sources":        u_jobs or ["linkedin", "naukri", "remotive"],
+                    "course_sources":     u_crse or ["udemy_coupons"],
+                    "max_items":          max_items,
+                    "course_feeds":       [],
+                    "portal_password":    pw_hash,
+                    "welcome_sent":       True,
+                }
+
+                # Save to recipients.json
+                fresh_subs = get_subscribers()
+                # Double-check not duplicate
+                if not any(s.get("email", "").strip().lower() == sd["email"] for s in fresh_subs):
+                    fresh_subs.append(new_sub)
+                    save_subscribers(fresh_subs)
+
+                # Send welcome email (non-blocking best-effort)
+                send_welcome_email(new_sub)
+
+                # Clear onboarding state
+                st.session_state.signup_data = {}
+                st.session_state.onboard_interests = []
+                st.session_state.auth_screen = "signin"
                 st.session_state.just_logged_out = False
+
+                # Auto-login
+                st.session_state.auth_user_email = sd["email"]
                 st.query_params.clear()
+                st.rerun()
+
+            if st.button("← Back", key="onboard_back_btn"):
+                st.session_state.auth_screen = "signup"
                 st.rerun()
 
     st.stop()
 
-# Authenticated member profile
+# Authenticated member profile — always reload fresh from disk
+all_subscribers = get_subscribers()
 user_email = st.session_state.auth_user_email
 matched_sub = next((s for s in all_subscribers if s.get("email", "").strip().lower() == user_email.strip().lower()), None)
 if not matched_sub:
