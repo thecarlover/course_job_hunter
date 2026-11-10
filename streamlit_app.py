@@ -52,100 +52,205 @@ BASE_DIR        = os.path.dirname(os.path.abspath(__file__))
 RECIPIENTS_FILE = os.path.join(BASE_DIR, "recipients.json")
 
 # ─────────────────────────────────────────────────────────────────────────────
-# CRAFTWORK BESPOKE DESIGN (Editorial, minimal, production-grade)
+# THEME SYSTEM — 5 Colour Palettes
 # ─────────────────────────────────────────────────────────────────────────────
-CRAFTWORK_DESIGN = """
+
+THEMES: Dict[str, Dict[str, str]] = {
+    "Obsidian": {
+        "bg":        "#08090d",
+        "surface":   "#0f121d",
+        "surface2":  "#1e2235",
+        "border":    "rgba(255,255,255,0.06)",
+        "accent1":   "#6366f1",
+        "accent1_h": "#4338ca",
+        "accent1_bg":"rgba(99,102,241,0.12)",
+        "accent1_bd":"rgba(99,102,241,0.25)",
+        "accent1_tx":"#a5b4fc",
+        "accent2":   "#10b981",
+        "accent2_bg":"rgba(16,185,129,0.12)",
+        "accent2_bd":"rgba(16,185,129,0.25)",
+        "accent2_tx":"#6ee7b7",
+        "accent3":   "#f59e0b",
+        "accent3_bg":"rgba(245,158,11,0.12)",
+        "accent3_bd":"rgba(245,158,11,0.25)",
+        "accent3_tx":"#fcd34d",
+        "text":      "#e2e8f0",
+        "text_dim":  "#8b949e",
+        "text_mute": "#64748b",
+        "scroll_th": "#1c202e",
+        "tab_act":   "#1e2235",
+        "emoji":     "🌑",
+    },
+    "Midnight Rose": {
+        "bg":        "#0d0812",
+        "surface":   "#140d1e",
+        "surface2":  "#231535",
+        "border":    "rgba(255,255,255,0.07)",
+        "accent1":   "#c084fc",
+        "accent1_h": "#a855f7",
+        "accent1_bg":"rgba(192,132,252,0.12)",
+        "accent1_bd":"rgba(192,132,252,0.28)",
+        "accent1_tx":"#e9d5ff",
+        "accent2":   "#f43f5e",
+        "accent2_bg":"rgba(244,63,94,0.12)",
+        "accent2_bd":"rgba(244,63,94,0.25)",
+        "accent2_tx":"#fda4af",
+        "accent3":   "#fb923c",
+        "accent3_bg":"rgba(251,146,60,0.12)",
+        "accent3_bd":"rgba(251,146,60,0.25)",
+        "accent3_tx":"#fed7aa",
+        "text":      "#f0e6ff",
+        "text_dim":  "#a78bca",
+        "text_mute": "#6b5080",
+        "scroll_th": "#2d1545",
+        "tab_act":   "#231535",
+        "emoji":     "🌸",
+    },
+    "Forest Hacker": {
+        "bg":        "#060d08",
+        "surface":   "#0a140c",
+        "surface2":  "#122118",
+        "border":    "rgba(74,222,128,0.08)",
+        "accent1":   "#22c55e",
+        "accent1_h": "#16a34a",
+        "accent1_bg":"rgba(34,197,94,0.1)",
+        "accent1_bd":"rgba(34,197,94,0.25)",
+        "accent1_tx":"#86efac",
+        "accent2":   "#84cc16",
+        "accent2_bg":"rgba(132,204,22,0.1)",
+        "accent2_bd":"rgba(132,204,22,0.25)",
+        "accent2_tx":"#bef264",
+        "accent3":   "#2dd4bf",
+        "accent3_bg":"rgba(45,212,191,0.1)",
+        "accent3_bd":"rgba(45,212,191,0.25)",
+        "accent3_tx":"#99f6e4",
+        "text":      "#dcfce7",
+        "text_dim":  "#6ee7b7",
+        "text_mute": "#4ade80",
+        "scroll_th": "#14301e",
+        "tab_act":   "#122118",
+        "emoji":     "🌿",
+    },
+    "Cyber Amber": {
+        "bg":        "#0c0900",
+        "surface":   "#140f00",
+        "surface2":  "#231a00",
+        "border":    "rgba(251,191,36,0.08)",
+        "accent1":   "#f59e0b",
+        "accent1_h": "#d97706",
+        "accent1_bg":"rgba(245,158,11,0.1)",
+        "accent1_bd":"rgba(245,158,11,0.25)",
+        "accent1_tx":"#fcd34d",
+        "accent2":   "#ef4444",
+        "accent2_bg":"rgba(239,68,68,0.1)",
+        "accent2_bd":"rgba(239,68,68,0.25)",
+        "accent2_tx":"#fca5a5",
+        "accent3":   "#fb923c",
+        "accent3_bg":"rgba(251,146,60,0.1)",
+        "accent3_bd":"rgba(251,146,60,0.25)",
+        "accent3_tx":"#fed7aa",
+        "text":      "#fef9e7",
+        "text_dim":  "#d4a017",
+        "text_mute": "#7c5a00",
+        "scroll_th": "#2d2000",
+        "tab_act":   "#231a00",
+        "emoji":     "⚡",
+    },
+    "Arctic Blue": {
+        "bg":        "#020c18",
+        "surface":   "#041224",
+        "surface2":  "#0a2240",
+        "border":    "rgba(96,165,250,0.08)",
+        "accent1":   "#3b82f6",
+        "accent1_h": "#2563eb",
+        "accent1_bg":"rgba(59,130,246,0.12)",
+        "accent1_bd":"rgba(59,130,246,0.28)",
+        "accent1_tx":"#93c5fd",
+        "accent2":   "#06b6d4",
+        "accent2_bg":"rgba(6,182,212,0.1)",
+        "accent2_bd":"rgba(6,182,212,0.25)",
+        "accent2_tx":"#67e8f9",
+        "accent3":   "#818cf8",
+        "accent3_bg":"rgba(129,140,248,0.1)",
+        "accent3_bd":"rgba(129,140,248,0.25)",
+        "accent3_tx":"#c7d2fe",
+        "text":      "#e0f2fe",
+        "text_dim":  "#7dd3fc",
+        "text_mute": "#1e6fa0",
+        "scroll_th": "#0a2a50",
+        "tab_act":   "#0a2240",
+        "emoji":     "🧊",
+    },
+}
+
+if "theme" not in st.session_state:
+    st.session_state.theme = "Obsidian"
+
+T = THEMES[st.session_state.theme]
+
+def build_css(t: Dict[str, str]) -> str:
+    return f"""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-/* Base canvas */
-html, body, [class*="css"], [data-testid="stAppViewContainer"], .stApp {
+html, body, [class*="css"], [data-testid="stAppViewContainer"], .stApp {{
     font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
-    background-color: #08090d !important;
-    color: #e2e8f0 !important;
+    background-color: {t['bg']} !important;
+    color: {t['text']} !important;
     letter-spacing: -0.01em;
-}
+}}
+#MainMenu, footer, header {{ visibility: hidden !important; }}
+.block-container {{ padding: 1.8rem 2.5rem 4rem !important; max-width: 1140px !important; }}
+::-webkit-scrollbar {{ width: 5px; height: 5px; }}
+::-webkit-scrollbar-track {{ background: {t['bg']}; }}
+::-webkit-scrollbar-thumb {{ background: {t['scroll_th']}; border-radius: 99px; }}
 
-#MainMenu, footer, header { visibility: hidden !important; }
-.block-container {
-    padding: 1.8rem 2.5rem 4rem !important;
-    max-width: 1140px !important;
-}
-
-/* Scrollbar */
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: #08090d; }
-::-webkit-scrollbar-thumb { background: #1c202e; border-radius: 99px; }
-
-/* Tabs */
-.stTabs [data-baseweb="tab-list"] {
-    background: #0f121d !important;
-    border: 1px solid rgba(255, 255, 255, 0.06) !important;
+.stTabs [data-baseweb="tab-list"] {{
+    background: {t['surface']} !important;
+    border: 1px solid {t['border']} !important;
     border-radius: 12px !important;
-    padding: 4px !important;
-    gap: 4px !important;
-    margin-bottom: 16px !important;
-}
-.stTabs [data-baseweb="tab"] {
-    border-radius: 8px !important;
-    padding: 8px 20px !important;
-    font-size: 13px !important;
-    font-weight: 600 !important;
-    color: #8b949e !important;
-    border: none !important;
-    background: transparent !important;
-    transition: all 0.15s ease !important;
-}
-.stTabs [aria-selected="true"] {
-    background: #1e2235 !important;
-    color: #ffffff !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
-}
-.stTabs [data-baseweb="tab-highlight"] { display: none !important; }
+    padding: 4px !important; gap: 4px !important; margin-bottom: 16px !important;
+}}
+.stTabs [data-baseweb="tab"] {{
+    border-radius: 8px !important; padding: 8px 20px !important;
+    font-size: 13px !important; font-weight: 600 !important;
+    color: {t['text_dim']} !important; border: none !important;
+    background: transparent !important; transition: all 0.15s ease !important;
+}}
+.stTabs [aria-selected="true"] {{
+    background: {t['tab_act']} !important; color: {t['text']} !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4) !important;
+}}
+.stTabs [data-baseweb="tab-highlight"] {{ display: none !important; }}
 
-/* Buttons */
-.stButton > button {
-    background: #4f46e5 !important;
-    color: #ffffff !important;
-    border: 1px solid rgba(255, 255, 255, 0.12) !important;
-    border-radius: 10px !important;
-    font-weight: 600 !important;
-    font-size: 12px !important;
-    padding: 8px 18px !important;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+.stButton > button {{
+    background: {t['accent1']} !important; color: #ffffff !important;
+    border: 1px solid rgba(255,255,255,0.12) !important; border-radius: 10px !important;
+    font-weight: 600 !important; font-size: 12px !important; padding: 8px 18px !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.15) !important;
     transition: all 0.15s ease !important;
-}
-.stButton > button:hover {
-    background: #4338ca !important;
-    transform: translateY(-1px) !important;
-}
+}}
+.stButton > button:hover {{ background: {t['accent1_h']} !important; transform: translateY(-1px) !important; }}
 
-/* Inputs */
 .stTextInput > div > div > input,
 .stTextArea > div > div > textarea,
-.stSelectbox > div > div > div {
-    background: #0f121d !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    border-radius: 10px !important;
-    color: #f1f5f9 !important;
-    font-size: 12px !important;
-}
+.stSelectbox > div > div > div {{
+    background: {t['surface']} !important; border: 1px solid {t['border']} !important;
+    border-radius: 10px !important; color: {t['text']} !important; font-size: 12px !important;
+}}
 .stTextInput > div > div > input:focus,
-.stTextArea > div > div > textarea:focus {
-    border-color: #6366f1 !important;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
-}
-
-/* Multiselect tags */
-[data-baseweb="tag"] {
-    background: rgba(99, 102, 241, 0.18) !important;
-    border: 1px solid rgba(99, 102, 241, 0.3) !important;
-    border-radius: 99px !important;
-    color: #a5b4fc !important;
-}
+.stTextArea > div > div > textarea:focus {{
+    border-color: {t['accent1']} !important;
+    box-shadow: 0 0 0 3px {t['accent1_bg']} !important;
+}}
+[data-baseweb="tag"] {{
+    background: {t['accent1_bg']} !important; border: 1px solid {t['accent1_bd']} !important;
+    border-radius: 99px !important; color: {t['accent1_tx']} !important;
+}}
 </style>
 """
-st.markdown(CRAFTWORK_DESIGN, unsafe_allow_html=True)
+
+st.markdown(build_css(T), unsafe_allow_html=True)
 
 def render_html(html_str: str) -> None:
     """Safely render HTML without CommonMark 4-space code block conversion."""
@@ -161,18 +266,19 @@ def make_job_card_html(job_entry: Dict) -> str:
     title = str(job_entry.get("title", "Untitled")).replace("<", "&lt;").replace(">", "&gt;")
     url = job_entry.get("url", "#")
     domain = job_entry.get("domain", "")
+    t = THEMES[st.session_state.get("theme", "Obsidian")]
 
     return (
-        f'<div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px 20px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:16px;">'
+        f'<div style="background:{t["surface"]};border:1px solid {t["border"]};border-radius:12px;padding:16px 20px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:16px;">'
         f'<div style="min-width:0;flex:1;">'
         f'<div style="margin-bottom:6px;">'
-        f'<span style="font-size:9px;font-weight:700;letter-spacing:0.06em;padding:2px 8px;border-radius:99px;background:rgba(99,102,241,0.1);color:#a5b4fc;border:1px solid rgba(99,102,241,0.25);">{dom}</span>'
-        f'<span style="font-size:9px;color:#64748b;margin-left:6px;font-weight:600;">VERIFIED OPPORTUNITY</span>'
+        f'<span style="font-size:9px;font-weight:700;letter-spacing:0.06em;padding:2px 8px;border-radius:99px;background:{t["accent1_bg"]};color:{t["accent1_tx"]};border:1px solid {t["accent1_bd"]};">{dom}</span>'
+        f'<span style="font-size:9px;color:{t["text_mute"]};margin-left:6px;font-weight:600;">VERIFIED OPPORTUNITY</span>'
         f'</div>'
-        f'<div style="font-size:14px;font-weight:700;color:#f0f6fc;line-height:1.4;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{title}</div>'
-        f'<div style="font-size:11px;color:#8b949e;">via {domain}{loc}{sal}{d_str}</div>'
+        f'<div style="font-size:14px;font-weight:700;color:{t["text"]};line-height:1.4;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{title}</div>'
+        f'<div style="font-size:11px;color:{t["text_dim"]};">via {domain}{loc}{sal}{d_str}</div>'
         f'</div>'
-        f'<a href="{url}" target="_blank" style="padding:7px 14px;border-radius:8px;background:#4f46e5;color:#ffffff;font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap;">Apply ↗</a>'
+        f'<a href="{url}" target="_blank" style="padding:7px 14px;border-radius:8px;background:{t["accent1"]};color:#ffffff;font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap;">Apply ↗</a>'
         f'</div>'
     )
 
@@ -182,18 +288,19 @@ def make_course_card_html(c: Dict) -> str:
     d_str = f" · {c['date']}" if c.get("date") else ""
     title = str(c.get("title", "Untitled")).replace("<", "&lt;").replace(">", "&gt;")
     url = c.get("url", "#")
+    t = THEMES[st.session_state.get("theme", "Obsidian")]
 
     return (
-        f'<div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px 20px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:16px;">'
+        f'<div style="background:{t["surface"]};border:1px solid {t["border"]};border-radius:12px;padding:16px 20px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:16px;">'
         f'<div style="min-width:0;flex:1;">'
         f'<div style="margin-bottom:6px;">'
-        f'<span style="font-size:9px;font-weight:700;letter-spacing:0.06em;padding:2px 8px;border-radius:99px;background:rgba(16,185,129,0.1);color:#6ee7b7;border:1px solid rgba(16,185,129,0.25);">100% FREE</span>'
-        f'<span style="font-size:9px;color:#64748b;margin-left:6px;font-weight:600;">COUPON APPLIED</span>'
+        f'<span style="font-size:9px;font-weight:700;letter-spacing:0.06em;padding:2px 8px;border-radius:99px;background:{t["accent2_bg"]};color:{t["accent2_tx"]};border:1px solid {t["accent2_bd"]};">100% FREE</span>'
+        f'<span style="font-size:9px;color:{t["text_mute"]};margin-left:6px;font-weight:600;">COUPON APPLIED</span>'
         f'</div>'
-        f'<div style="font-size:14px;font-weight:700;color:#f0f6fc;line-height:1.4;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{title}</div>'
-        f'<div style="font-size:11px;color:#8b949e;">via {dom}{d_str}</div>'
+        f'<div style="font-size:14px;font-weight:700;color:{t["text"]};line-height:1.4;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{title}</div>'
+        f'<div style="font-size:11px;color:{t["text_dim"]};">via {dom}{d_str}</div>'
         f'</div>'
-        f'<a href="{url}" target="_blank" style="padding:7px 14px;border-radius:8px;background:#059669;color:#ffffff;font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap;">Claim Free ↗</a>'
+        f'<a href="{url}" target="_blank" style="padding:7px 14px;border-radius:8px;background:{t["accent2"]};color:#ffffff;font-size:11px;font-weight:700;text-decoration:none;white-space:nowrap;">Claim Free ↗</a>'
         f'</div>'
     )
 
@@ -378,15 +485,15 @@ status_text  = "Radar Active (Daily 8:00 AM IST)" if is_active else "Radar Pause
 col_head_info, col_head_logout = st.columns([5, 1])
 with col_head_info:
     render_html(f"""
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:14px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;border-bottom:1px solid {T['border']};padding-bottom:14px;">
         <div>
             <div style="display:flex;align-items:center;gap:10px;">
-                <div style="font-size:22px;font-weight:800;color:#ffffff;letter-spacing:-0.02em;">{user_name}'s Career Radar</div>
-                <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(16,185,129,0.12);color:{status_color};border:1px solid rgba(16,185,129,0.25);">
+                <div style="font-size:22px;font-weight:800;color:{T['text']};letter-spacing:-0.02em;">{user_name}'s Career Radar</div>
+                <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:{T['accent2_bg']};color:{T['accent2_tx']};border:1px solid {T['accent2_bd']};">
                     {status_text}
                 </span>
             </div>
-            <div style="font-size:12px;color:#64748b;margin-top:4px;">
+            <div style="font-size:12px;color:{T['text_mute']};margin-top:4px;">
                 Targeting: {", ".join(user.get('keywords', [])[:5])} · {user_email}
             </div>
         </div>
@@ -401,50 +508,72 @@ with col_head_logout:
         st.query_params.clear()
         st.rerun()
 
+# ── THEME SWITCHER STRIP ──────────────────────────────────────────────────────
+theme_names = list(THEMES.keys())
+theme_emojis = [THEMES[n]["emoji"] for n in theme_names]
+th_cols = st.columns(len(theme_names) + 1)
+with th_cols[0]:
+    st.markdown(
+        f'<div style="font-size:11px;font-weight:700;color:{T["text_mute"]};padding-top:10px;letter-spacing:0.04em;">THEME</div>',
+        unsafe_allow_html=True,
+    )
+for i, name in enumerate(theme_names):
+    with th_cols[i + 1]:
+        is_active_theme = st.session_state.theme == name
+        t_col = THEMES[name]["accent1"]
+        border_style = f"3px solid {t_col}" if is_active_theme else f"1px solid rgba(255,255,255,0.08)"
+        label = f"{THEMES[name]['emoji']} {name}"
+        if st.button(label, key=f"theme_btn_{name}", use_container_width=True,
+                     help=f"Switch to {name} theme"):
+            st.session_state.theme = name
+            st.rerun()
+
+st.markdown("<div style='height:14px;'></div>", unsafe_allow_html=True)
+
 # Bento Grid via native Streamlit columns (no CommonMark indentation escape bugs)
 b1, b2, b3 = st.columns(3)
 
 with b1:
     st.markdown(
-        f'<div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:18px 20px;box-shadow:0 8px 24px rgba(0,0,0,0.4);">'
+        f'<div style="background:{T["surface"]};border:1px solid {T["border"]};border-radius:16px;padding:18px 20px;box-shadow:0 8px 24px rgba(0,0,0,0.4);">'
         f'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">'
-        f'<span style="font-size:10px;font-weight:700;color:#6366f1;letter-spacing:0.08em;text-transform:uppercase;">Active Inventory</span>'
-        f'<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(99,102,241,0.12);color:#a5b4fc;border:1px solid rgba(99,102,241,0.25);">Live Verified</span>'
+        f'<span style="font-size:10px;font-weight:700;color:{T["accent1"]};letter-spacing:0.08em;text-transform:uppercase;">Active Inventory</span>'
+        f'<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:{T["accent1_bg"]};color:{T["accent1_tx"]};border:1px solid {T["accent1_bd"]};">Live Verified</span>'
         f'</div>'
         f'<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">'
         f'<div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:8px 12px;">'
-        f'<div style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;">Curated Jobs</div>'
-        f'<div style="font-size:22px;font-weight:800;color:#ffffff;margin-top:2px;">{len(jobs)}</div>'
+        f'<div style="font-size:9px;font-weight:700;color:{T["text_mute"]};text-transform:uppercase;">Curated Jobs</div>'
+        f'<div style="font-size:22px;font-weight:800;color:{T["text"]};margin-top:2px;">{len(jobs)}</div>'
         f'</div>'
         f'<div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:10px;padding:8px 12px;">'
-        f'<div style="font-size:9px;font-weight:700;color:#64748b;text-transform:uppercase;">Free Courses</div>'
-        f'<div style="font-size:22px;font-weight:800;color:#ffffff;margin-top:2px;">{len(courses)}</div>'
+        f'<div style="font-size:9px;font-weight:700;color:{T["text_mute"]};text-transform:uppercase;">Free Courses</div>'
+        f'<div style="font-size:22px;font-weight:800;color:{T["text"]};margin-top:2px;">{len(courses)}</div>'
         f'</div>'
         f'</div>'
         f'<div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,0.05);padding-top:10px;">'
-        f'<span style="font-size:11px;color:#94a3b8;">Est. Tuition Unlocked</span>'
-        f'<span style="font-size:13px;font-weight:700;color:#10b981;font-family:JetBrains Mono,monospace;">${est_tuition}+ USD</span>'
+        f'<span style="font-size:11px;color:{T["text_dim"]};">Est. Tuition Unlocked</span>'
+        f'<span style="font-size:13px;font-weight:700;color:{T["accent2"]};font-family:JetBrains Mono,monospace;">${est_tuition}+ USD</span>'
         f'</div>'
         f'</div>',
         unsafe_allow_html=True
     )
 
 with b2:
-    dots_html = "".join([f'<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#f59e0b;margin-right:5px;"></span>' for _ in range(7)])
+    dots_html = "".join([f'<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:{T["accent3"]};margin-right:5px;"></span>' for _ in range(7)])
     st.markdown(
-        f'<div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:18px 20px;box-shadow:0 8px 24px rgba(0,0,0,0.4);">'
+        f'<div style="background:{T["surface"]};border:1px solid {T["border"]};border-radius:16px;padding:18px 20px;box-shadow:0 8px 24px rgba(0,0,0,0.4);">'
         f'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">'
-        f'<span style="font-size:10px;font-weight:700;color:#f59e0b;letter-spacing:0.08em;text-transform:uppercase;">Daily Momentum</span>'
-        f'<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(245,158,11,0.12);color:#fcd34d;border:1px solid rgba(245,158,11,0.25);">Day {st.session_state.user_streak}</span>'
+        f'<span style="font-size:10px;font-weight:700;color:{T["accent3"]};letter-spacing:0.08em;text-transform:uppercase;">Daily Momentum</span>'
+        f'<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:{T["accent3_bg"]};color:{T["accent3_tx"]};border:1px solid {T["accent3_bd"]};">Day {st.session_state.user_streak}</span>'
         f'</div>'
         f'<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:4px;">'
-        f'<span style="font-size:26px;font-weight:800;color:#ffffff;line-height:1;">{st.session_state.user_xp}</span>'
-        f'<span style="font-size:12px;font-weight:700;color:#64748b;">XP · Career Sniper</span>'
+        f'<span style="font-size:26px;font-weight:800;color:{T["text"]};line-height:1;">{st.session_state.user_xp}</span>'
+        f'<span style="font-size:12px;font-weight:700;color:{T["text_mute"]};">XP · Career Sniper</span>'
         f'</div>'
-        f'<div style="font-size:12px;color:#94a3b8;margin-bottom:12px;">Active habit loop maintaining daily cadence.</div>'
+        f'<div style="font-size:12px;color:{T["text_dim"]};margin-bottom:12px;">Active habit loop maintaining daily cadence.</div>'
         f'<div style="display:flex;align-items:center;border-top:1px solid rgba(255,255,255,0.05);padding-top:10px;">'
         f'{dots_html}'
-        f'<span style="font-size:11px;color:#64748b;margin-left:auto;font-weight:500;">7-Day History</span>'
+        f'<span style="font-size:11px;color:{T["text_mute"]};margin-left:auto;font-weight:500;">7-Day History</span>'
         f'</div>'
         f'</div>',
         unsafe_allow_html=True
@@ -452,16 +581,16 @@ with b2:
 
 with b3:
     st.markdown(
-        f'<div style="background:#0f121d;border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:18px 20px;box-shadow:0 8px 24px rgba(0,0,0,0.4);">'
+        f'<div style="background:{T["surface"]};border:1px solid {T["border"]};border-radius:16px;padding:18px 20px;box-shadow:0 8px 24px rgba(0,0,0,0.4);">'
         f'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">'
-        f'<span style="font-size:10px;font-weight:700;color:#10b981;letter-spacing:0.08em;text-transform:uppercase;">Automation Schedule</span>'
-        f'<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:rgba(16,185,129,0.12);color:#6ee7b7;border:1px solid rgba(16,185,129,0.25);">Connected</span>'
+        f'<span style="font-size:10px;font-weight:700;color:{T["accent2"]};letter-spacing:0.08em;text-transform:uppercase;">Automation Schedule</span>'
+        f'<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;background:{T["accent2_bg"]};color:{T["accent2_tx"]};border:1px solid {T["accent2_bd"]};">Connected</span>'
         f'</div>'
-        f'<div style="font-size:15px;font-weight:700;color:#ffffff;margin-bottom:4px;">Daily Digest ~8:00 AM IST</div>'
-        f'<div style="font-size:12px;color:#94a3b8;line-height:1.5;margin-bottom:12px;">LinkedIn, Naukri, and Udemy feeds scanned daily.</div>'
+        f'<div style="font-size:15px;font-weight:700;color:{T["text"]};margin-bottom:4px;">Daily Digest ~8:00 AM IST</div>'
+        f'<div style="font-size:12px;color:{T["text_dim"]};line-height:1.5;margin-bottom:12px;">LinkedIn, Naukri, and Udemy feeds scanned daily.</div>'
         f'<div style="display:flex;align-items:center;gap:6px;border-top:1px solid rgba(255,255,255,0.05);padding-top:10px;">'
-        f'<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#10b981;"></span>'
-        f'<span style="font-size:11px;color:#64748b;">PostgreSQL seen-link deduplication active</span>'
+        f'<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:{T["accent2"]};"></span>'
+        f'<span style="font-size:11px;color:{T["text_mute"]};">PostgreSQL seen-link deduplication active</span>'
         f'</div>'
         f'</div>',
         unsafe_allow_html=True
