@@ -553,28 +553,32 @@ if "auth_user_email" not in st.session_state:
     st.session_state.auth_user_email = None
 if "just_logged_out" not in st.session_state:
     st.session_state.just_logged_out = False
-if "auth_screen" not in st.session_state:
-    qp_mode = str(st.query_params.get("mode") or st.query_params.get("action") or st.query_params.get("tab") or "").lower()
-    if qp_mode in ["signup", "register", "join", "new"]:
-        st.session_state.auth_screen = "signup"
-    else:
-        st.session_state.auth_screen = "signin"   # "signin" | "signup" | "onboard"
+
+# Ensure ?mode=signup or ?mode=signin is always respected from query parameters
+qp_mode = str(st.query_params.get("mode") or st.query_params.get("action") or st.query_params.get("tab") or "").lower()
+if qp_mode in ["signup", "register", "join", "new"]:
+    st.session_state.auth_screen = "signup"
+elif qp_mode in ["signin", "login"]:
+    st.session_state.auth_screen = "signin"
+elif "auth_screen" not in st.session_state:
+    st.session_state.auth_screen = "signin"   # "signin" | "signup" | "onboard"
+
 if "signup_data" not in st.session_state:
     st.session_state.signup_data = {}
 
-# Auto-login via signed email magic link if user did not explicitly log out
-if not st.session_state.auth_user_email and not st.session_state.just_logged_out:
-    param_email = ""
-    for qk in ["email", "user", "u", "id"]:
-        qv = str(st.query_params.get(qk, "")).strip()
-        if "@" in qv and "." in qv:
-            param_email = qv.lower()
-            break
-    param_magic = str(st.query_params.get("magic") or st.query_params.get("sig") or "").strip()
-    if param_email and param_magic and verify_magic_token(param_email, param_magic):
-        # Reload subscribers list in case new user signed up
-        all_subscribers = get_subscribers()
-        st.session_state.auth_user_email = param_email
+# Auto-login via signed email magic link — always authenticates if signature is valid
+param_email = ""
+for qk in ["email", "user", "u", "id"]:
+    qv = str(st.query_params.get(qk, "")).strip()
+    if "@" in qv and "." in qv:
+        param_email = qv.lower()
+        break
+param_magic = str(st.query_params.get("magic") or st.query_params.get("sig") or "").strip()
+
+if param_email and param_magic and verify_magic_token(param_email, param_magic):
+    all_subscribers = get_subscribers()
+    st.session_state.auth_user_email = param_email
+    st.session_state.just_logged_out = False
 
 # ─────────────────────────────────────────────────────────────────────────────
 # AUTH SCREENS (Sign In / Sign Up / Onboarding)
@@ -921,6 +925,37 @@ def derive_title(url: str, meta: Optional[Dict] = None) -> str:
 
 seen_dict = main.load_seen_dict()
 user_seen = seen_dict.get(user_email, {}) if isinstance(seen_dict, dict) else {}
+
+# Fallback: If subscriber has fewer than 5 items (e.g. freshly onboarded friend or newly created account),
+# supply from the active verified catalog pool filtered by their target keywords so the dashboard is NEVER empty!
+valid_personal = {k: v for k, v in user_seen.items() if not str(k).startswith("__")}
+if len(valid_personal) < 5:
+    catalog_pool = {}
+    for em, items in seen_dict.items():
+        if isinstance(items, dict) and len(items) > len(catalog_pool):
+            catalog_pool = items
+
+    merged_items = dict(valid_personal)
+    user_kws = [k.lower() for k in user.get("keywords", []) if k]
+    for url, meta in catalog_pool.items():
+        if str(url).startswith("__"):
+            continue
+        m = meta if isinstance(meta, dict) else {}
+        title = (m.get("title") or url).lower()
+        if not user_kws or any(kw in title or kw in url.lower() for kw in user_kws):
+            merged_items[url] = meta
+
+    # Ensure everyone has verified jobs in their radar
+    job_count = sum(1 for url, m in merged_items.items() if (m.get("type") if isinstance(m, dict) else "") == "job")
+    if job_count < 10:
+        for url, meta in catalog_pool.items():
+            if str(url).startswith("__"):
+                continue
+            m = meta if isinstance(meta, dict) else {}
+            if (m.get("type") if isinstance(m, dict) else "") == "job":
+                merged_items[url] = meta
+
+    user_seen = merged_items
 
 vault_items = []
 for url, meta in user_seen.items():
