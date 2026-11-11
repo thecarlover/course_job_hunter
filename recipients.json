@@ -129,5 +129,42 @@
     "active": true,
     "course_feeds": [],
     "welcome_sent": true
+  },
+  {
+    "name": "Bharti",
+    "email": "vbharti2020@gmail.com",
+    "active": true,
+    "keywords": [
+      "project management",
+      "pmp",
+      "agile",
+      "scrum",
+      "jira",
+      "product management",
+      "operations",
+      "free"
+    ],
+    "job_searches": [
+      "project management",
+      "scrum master",
+      "agile",
+      "product management",
+      "operations"
+    ],
+    "job_sources": [
+      "linkedin",
+      "naukri",
+      "remotive",
+      "indeed_india"
+    ],
+    "course_sources": [
+      "udemy_coupons",
+      "swayam_nptel",
+      "freecodecamp"
+    ],
+    "max_items": 10,
+    "course_feeds": [],
+    "portal_password": "sha256:969e0ced2b825c3229f4ad9aa350f49247151f737661bc3c7554dfcb7032480c",
+    "welcome_sent": true
   }
 ]
