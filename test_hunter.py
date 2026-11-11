@@ -1092,6 +1092,49 @@ def test_widget_api_pro_gate():
     assert "top_courses" in data
 
 
+def test_early_bird_radar():
+    """Test Early Bird urgent radar tagging and badge formatting."""
+    import streamlit_app
+    import main
+
+    # 1. Test Early Bird card HTML rendering in streamlit_app
+    job_early = {
+        "title": "Lead Agile PM",
+        "domain": "linkedin.com",
+        "url": "https://linkedin.com/jobs/123",
+        "date": "2026-11-11",
+        "is_early_bird": True,
+    }
+    html_early = streamlit_app.make_job_card_html(job_early)
+    assert "EARLY BIRD" in html_early
+    assert "15 APPLICANTS" in html_early
+    assert "3x Callback Window" in html_early
+
+    # 2. Test standard job card without early bird badge
+    job_standard = {
+        "title": "Senior Engineer",
+        "domain": "naukri.com",
+        "url": "https://naukri.com/jobs/456",
+        "date": "2026-10-20",
+        "is_early_bird": False,
+    }
+    html_std = streamlit_app.make_job_card_html(job_standard)
+    assert "EARLY BIRD" not in html_std
+
+    # 3. Test email digest Early Bird badge in main.build_html_digest
+    sample_jobs = [
+        {"title": "Job 1", "link": "https://example.com/1", "type": "job", "source": "LinkedIn"},
+        {"title": "Job 2", "link": "https://example.com/2", "type": "job", "source": "Remotive"},
+    ]
+    digest = main.build_html_digest(
+        recipient_name="Tester",
+        recipient_email="test@example.com",
+        items=sample_jobs,
+        stats={"streak": 5, "level_num": 2, "level_title": "Hunter", "badge": "🎯", "money_saved": 100},
+    )
+    assert "Early Bird" in digest
+
+
 
 
 

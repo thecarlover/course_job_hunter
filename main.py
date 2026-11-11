@@ -651,7 +651,7 @@ def build_html_digest(
     job_cards_html = ""
     if jobs:
         cards = []
-        for j in jobs:
+        for idx, j in enumerate(jobs):
             j_title = html.escape(j.get("title", "Untitled Job"))
             j_link = html.escape(j.get("link", "#"))
             source_raw = j.get("source") or extract_domain_from_url(j.get("link", ""))
@@ -662,6 +662,9 @@ def build_html_digest(
             tags = j.get("tags") or []
             tags_str = " ".join(tags).lower() if isinstance(tags, list) else str(tags).lower()
             loc_lower = location.lower()
+            is_early = (idx < 2)
+
+            early_badge = '<span style="display: inline-block; background-color: #fef3c7; color: #b45309; font-size: 10px; font-weight: 800; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; border: 1px solid #fde68a; margin-right: 6px;">🔥 Early Bird (&lt;15 Applicants)</span>' if is_early else ''
 
             meta_pills = []
             if location:
@@ -676,19 +679,22 @@ def build_html_digest(
                 meta_pills.append("""<span style="display: inline-block; background-color: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 4px; margin-right: 4px; margin-bottom: 4px;">🌍 Open Worldwide</span>""")
 
             pills_html = "".join(meta_pills)
+            border_accent = "#f59e0b" if is_early else "#3b82f6"
+            btn_bg = "#d97706" if is_early else "#2563eb"
             card = f"""
-            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #ffffff; border: 1px solid #e2e8f0; border-left: 4px solid #3b82f6; border-radius: 10px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #ffffff; border: 1px solid #e2e8f0; border-left: 4px solid {border_accent}; border-radius: 10px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
               <tr>
                 <td style="padding: 14px 16px;">
                   <div style="margin-bottom: 6px;">
                     <span style="display: inline-block; background-color: #eff6ff; color: #1d4ed8; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; padding: 2px 7px; border-radius: 4px; border: 1px solid #bfdbfe; margin-right: 6px;">{source}</span>
-                    <span style="display: inline-block; background-color: #f1f5f9; color: #475569; font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 2px 7px; border-radius: 4px;">Remote</span>
+                    <span style="display: inline-block; background-color: #f1f5f9; color: #475569; font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; margin-right: 6px;">Remote</span>
+                    {early_badge}
                   </div>
                   <div style="font-size: 14px; font-weight: 600; color: #0f172a; line-height: 1.4; margin-bottom: 8px;">
                     {j_title}
                   </div>
                   {f'<div style="margin-bottom: 10px;">{pills_html}</div>' if pills_html else ''}
-                  <a href="{j_link}" target="_blank" style="display: inline-block; background-color: #2563eb; color: #ffffff; font-size: 12px; font-weight: 600; text-decoration: none; padding: 6px 14px; border-radius: 6px;">
+                  <a href="{j_link}" target="_blank" style="display: inline-block; background-color: {btn_bg}; color: #ffffff; font-size: 12px; font-weight: 600; text-decoration: none; padding: 6px 14px; border-radius: 6px;">
                     View &amp; Apply ↗
                   </a>
                 </td>
